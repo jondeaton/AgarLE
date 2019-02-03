@@ -1,0 +1,8 @@
+//
+// Created by Jonathan Deaton on 2019-01-28.
+//
+
+#ifndef PROJECT_AGARIO_INTERFACE_CPP_HPP
+#define PROJECT_AGARIO_INTERFACE_CPP_HPP
+
+#endif //PROJECT_AGARIO_INTERFACE_CPP_HPP
