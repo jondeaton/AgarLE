@@ -15,4 +15,9 @@ namespace Agario {
     return (mass) std::round(MASS_AREA_RADIO * M_PI * std::pow(radius, 2));
   }
 
+  template <typename T>
+  T div_round_up(T num, T denom) {
+    return (num + denom - 1) / denom;
+  }
+
 }

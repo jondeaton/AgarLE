@@ -3,32 +3,46 @@
 
 #include "types.hpp"
 #include "Ball.hpp"
-
-#define FOOD_SIZE 1
-#define MASS_SIZE 5
-#define VIRUS_SIZE 75
+#include "settings.hpp"
 
 namespace Agario {
 
-  class Food : public Ball {
+  class Pellet : public Ball {
   public:
-    explicit Food(position x, position y) :
-      Ball(x, y, FOOD_SIZE) { }
+    explicit Pellet(position x, position y) : Ball(x, y) { }
+    explicit Pellet(Location &loc) : Ball(loc) { }
+    length radius() const override { return FOOD_SIZE; }
+    Agario::mass mass () const override { return FOOD_MASS; }
   private:
   };
 
-  class Mass : public Ball {
+  class MovingBall : public Ball {
   public:
-    explicit Mass(position x, position y) : Ball(x, y, MASS_SIZE) { }
+    explicit MovingBall(position x, position y) : Ball(x, y) { }
+    explicit MovingBall(Location &loc) : Ball(loc) { }
+    explicit MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) { }
+    Velocity velocity;
+  };
+
+  class Food : public MovingBall {
+  public:
+    explicit Food(position x, position y) : MovingBall(x, y) { }
+    explicit Food(Location &loc) : MovingBall(loc) { }
+    length radius() const override { return MASS_SIZE; }
+    Agario::mass mass() const override { return MASS_MASS; }
   private:
   };
 
-  class Virus : public Ball {
+  class Virus : public MovingBall {
   public:
-    explicit Virus(position x, position y) : Ball(x, y, VIRUS_SIZE) { }
+    explicit Virus(position x, position y) : MovingBall(x, y) { }
+    explicit Virus(Location &loc) : MovingBall(loc) { }
+
+    // todo: viruses have variable mass and size
+    length radius() const override { return VIRUS_SIZE; }
+    Agario::mass mass() const override { return VIRUS_MASS; }
   private:
   };
-
 }
 
 #endif //AGARIO_ENTITIES_HPP

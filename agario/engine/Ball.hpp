@@ -2,30 +2,33 @@
 #define AGARIO_BALL_HPP
 
 #include "types.hpp"
+#include "Player.hpp"
 #include <math.h>
 
 namespace Agario {
 
   class Ball {
   public:
+    explicit Ball(position x, position y) :
+      x(x), y(y) { }
 
-    explicit Ball(position x, position y, length radius) :
-      x(x), y(y), r(radius) { }
+    explicit Ball(Agario::Location &loc) : x(loc.x), y(loc.y) { }
 
-    length height() const { return 2 * r; }
-    length width() const { return 2 * r; }
-    length raidus() const { return r; }
+    virtual length radius() const = 0;
+    virtual Agario::mass mass() const = 0;
 
-    void set_radius(length radius) { r = radius; }
+    length height() const { return 2 * radius(); }
+    length width() const { return 2 * radius(); }
 
     bool collides_with(const Ball &other) {
-      auto sqr_rads = pow(r + other.raidus(), 2);
+      auto sqr_rads = pow(radius() + other.radius(), 2);
       return sqr_rads <= sqr_distance_to(other);
     }
 
+    Location location() const { return Location(x, y); }
+
     position x;
     position y;
-    length r;
 
   private:
 

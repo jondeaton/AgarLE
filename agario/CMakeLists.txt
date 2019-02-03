@@ -23,8 +23,9 @@ set(AGARIO_SRC
         engine/Player.hpp
         engine/utils.hpp        engine/utils.cpp
         engine/Ball.hpp
-        engine/Entities.hpp
-        engine/THST/QuadTree.h)
+        engine/settings.hpp
+        engine/Entities.hpp)
+#engine/THST/QuadTree.h
 add_library(agario STATIC ${AGARIO_SRC})
 
 include_directories(client)
