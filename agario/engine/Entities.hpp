@@ -11,8 +11,8 @@ namespace Agario {
   public:
     explicit Pellet(position x, position y) : Ball(x, y) { }
     explicit Pellet(Location &loc) : Ball(loc) { }
-    length radius() const override { return FOOD_SIZE; }
-    Agario::mass mass () const override { return FOOD_MASS; }
+    length radius() const override { return PELLET_SIZE; }
+    Agario::mass mass () const override { return PELLET_MASS; }
   private:
   };
 
@@ -21,15 +21,15 @@ namespace Agario {
     explicit MovingBall(position x, position y) : Ball(x, y) { }
     explicit MovingBall(Location &loc) : Ball(loc) { }
     explicit MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) { }
-    Velocity velocity;
+    Agario::Velocity velocity;
   };
 
   class Food : public MovingBall {
   public:
     explicit Food(position x, position y) : MovingBall(x, y) { }
     explicit Food(Location &loc) : MovingBall(loc) { }
-    length radius() const override { return MASS_SIZE; }
-    Agario::mass mass() const override { return MASS_MASS; }
+    length radius() const override { return FOOD_SIZE; }
+    Agario::mass mass() const override { return FOOD_MASS; }
   private:
   };
 

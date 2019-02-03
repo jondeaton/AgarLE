@@ -17,6 +17,11 @@ namespace Agario {
     ticks++;
   }
 
+  std::vector<Player> &Engine::leaderboard() {
+    std::sort(std::begin(players), std::end(players));
+    return players;
+  }
+
   void Engine::tick_player(Player &player) {
     move_player(player);
 
@@ -71,36 +76,34 @@ namespace Agario {
     auto prev_size = total_pellets();
     std::remove_if(pellets.begin(), pellets.end(),
                    [&](const Pellet &pellet) {
-                     return cell.collides_with(pellet);
+                     return cell > pellet && cell.collides_with(pellet);
                    });
-
     auto num_eaten = total_pellets() - prev_size;
-    cell.increment_mass(num_eaten * FOOD_MASS);
+    cell.increment_mass(num_eaten * PELLET_MASS);
   }
 
   void Engine::eat_food(Cell &cell) {
-    if (cell.mass() < MASS_MASS) return;
+    if (cell.mass() < FOOD_MASS) return;
     auto prev_size = total_foods();
     std::remove_if(foods.begin(), foods.end(),
-                   [&](const Food &mass) {
-                     return cell.collides_with(mass);
+                   [&](const Food &food) {
+                     return cell > food && cell.collides_with(food);
                    });
     auto num_eaten = total_foods() - prev_size;
-    cell.increment_mass(num_eaten * MASS_MASS);
+    cell.increment_mass(num_eaten * FOOD_MASS);
   }
 
   void Engine::check_virus_collisions(Cell &cell, std::vector<Cell> &created_cells) {
     for (unsigned long i = 0; i < viruses.size(); i++) {
       Virus &virus = viruses[i];
-      if (cell.mass() < virus.mass()) continue;
 
-      if (cell.collides_with(virus)) {
+      if (cell > virus && cell.collides_with(virus)) {
 
         disrupt(cell, created_cells);
 
         std::swap(viruses[i], viruses.back()); // O(1) removal
         viruses.pop_back();
-        return; // only collide with one
+        return; // only collide once
       }
     }
   }
@@ -130,8 +133,18 @@ namespace Agario {
     }
   }
 
+  template <typename T>
+  T random(T min, T max) {
+    return (max - min) * (static_cast<T>(rand()) / static_cast<T>(RAND_MAX)) + min;
+  }
+
+  template <typename T>
+  T random(T max) { return random<T>(0, max); }
+
   Agario::Location Engine::random_location() {
-    return Location(rand() % canvas_width, rand() % canvas_height);
+    auto x = random<position>(canvas_width);
+    auto y = random<position>(canvas_height);
+    return Location(x, y);
   }
 
 

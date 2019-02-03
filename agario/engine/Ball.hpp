@@ -9,10 +9,9 @@ namespace Agario {
 
   class Ball {
   public:
-    explicit Ball(position x, position y) :
-      x(x), y(y) { }
-
-    explicit Ball(Agario::Location &loc) : x(loc.x), y(loc.y) { }
+    explicit Ball(const Location &loc) : x(loc.x), y(loc.y) { }
+    explicit Ball(Location &&loc) : x(loc.x), y(loc.y) { }
+    explicit Ball(position x, position y) : Ball(Location(x, y)) { }
 
     virtual length radius() const = 0;
     virtual Agario::mass mass() const = 0;
@@ -27,17 +26,27 @@ namespace Agario {
 
     Location location() const { return Location(x, y); }
 
+    bool operator <(const Ball& other) const {
+      return mass() * CELL_EAT_MARGIN < other.mass();
+    }
+
+    bool operator >(const Ball& other) const {
+      return mass() > other.mass() * CELL_EAT_MARGIN;
+    }
+
+    bool operator ==(const Ball &other) const {
+      return mass() == other.mass();
+    }
+
     position x;
     position y;
 
   private:
-
     length sqr_distance_to(const Ball &other) {
       auto dx = std::abs(x - other.x);
       auto dy = std::abs(y - other.y);
       return dx * dx + dy * dy;
     }
-
   };
 
 }

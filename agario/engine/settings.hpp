@@ -3,14 +3,15 @@
 
 #define SEED 42
 
-#define FOOD_SIZE 1
-#define FOOD_MASS 1
-#define MASS_SIZE 10
-#define MASS_MASS 10
+#define PELLET_SIZE 1
+#define PELLET_MASS 1
+#define FOOD_SIZE 10
+#define FOOD_MASS 10
 #define VIRUS_SIZE 75
 #define VIRUS_MASS 0
 
 #define CELL_MIN_SIZE 10
+#define CELL_EAT_MARGIN 1.1
 
 // virus disruption
 #define CELL_POP_REDUCTION 2

@@ -74,6 +74,10 @@ namespace Agario {
 
     Agario::score score() const { return mass(); }
 
+    bool operator <(const Player& other) const {
+      return score() < other.score();
+    }
+
   private:
     const pid pid;
     std::string name;

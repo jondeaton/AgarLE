@@ -30,7 +30,7 @@ namespace Agario {
     explicit Velocity() : dx(0), dy(0) { }
     explicit Velocity(length dx, length dy) : dx(dx), dy(dy) { }
     explicit Velocity(Agario::angle angle, Agario::length speed) :
-    dx(speed * std::cos(angle)), dy(speed * std::sin(angle)) { }
+      dx(speed * std::cos(angle)), dy(speed * std::sin(angle)) { }
     Velocity(Velocity&& v) : dx(v.dx), dy(v.dy) { }
     Velocity(const Velocity& v) : dx(v.dx), dy(v.dy) { }
 
@@ -68,15 +68,6 @@ namespace Agario {
     lhs -= rhs;
     return lhs;
   }
-
-//  template <typename T> struct Box2 {
-//    T min[2];
-//    T max[2];
-//
-//    explicit operator spatial::BoundingBox<int, 2>() const {
-//      return spatial::BoundingBox<int, 2>(min, max);
-//    }
-//  };
 
 }
 

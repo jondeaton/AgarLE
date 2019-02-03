@@ -20,6 +20,8 @@ namespace Agario {
       std::srand(SEED);
     }
 
+    std::vector<Player> &leaderboard();
+
     void tick();
 
     int total_players() { return players.size(); }
@@ -27,9 +29,6 @@ namespace Agario {
     int total_viruses() { return viruses.size(); }
     int total_foods() { return foods.size(); }
 
-    std::vector<Player> &leaderboard() {
-
-    }
 
   private:
     std::vector<Player> players;
