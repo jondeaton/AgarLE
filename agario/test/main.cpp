@@ -1,4 +1,11 @@
-//
-// Created by Jonathan Deaton on 2019-02-02.
-//
+#include <gtest/gtest.h>
+#include <Engine.hpp>
 
+namespace {
+
+}
+
+int main(int argc, char *argv[]) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

@@ -8,10 +8,11 @@ Author: Jon Deaton (jdeaton@stanford.edu)
 from gym.envs.registration import register
 
 register(
-    id='agar-v0',
-    entry_point='gym_agar.envs:AgarEnv',
+    id='agario-v0',
+    entry_point='gym_agario.envs:AgarioEnv',
 )
-register(
-    id='agar-extrahard-v0',
-    entry_point='gym_foo.envs:FooExtraHardEnv',
-)
+
+# register(
+#     id='agar-extrahard-v0',
+#     entry_point='gym_foo.envs:FooExtraHardEnv',
+# )

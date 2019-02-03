@@ -2,34 +2,59 @@
 #include "Engine.hpp"
 #include <iostream>
 
-void AgarioEngine::tick() {
-  std::cout << "tick!" << std::endl;
+namespace Agario {
+  
+  void Engine::tick() {
+    std::cout << "tick!" << std::endl;
 
-  for (Player &player : players)
-    tick_player(player);
+    for (Player &player : players)
+      tick_player(player);
 
-  ticks++;
-}
+    ticks++;
+  }
 
-void AgarioEngine::tick_player(Player &player) {
+  void Engine::tick_player(Player &player) {
+    move_player(player);
 
-  move_player(player);
+    for (Cell &cell : player.cells) {
 
-  for (Player &other : players) {
+      for (Food &food : foods) {
+        if (cell.collides_with(food)) {
 
+        }
+      }
+
+      for (Virus &virus : viruses) {
+        if (cell.collides_with(virus)) {
+
+        }
+      }
+
+      for (Mass &mass : masses) {
+
+      }
+
+
+    }
+
+    for (Player &other : players) {
+
+    }
+
+  }
+
+  void Engine::move_player(Player &player) {
+    // todo
+  }
+
+
+  void Engine::add_food(int num_food) {
+    //todo
+  }
+
+  void Engine::add_virus(int num_virus) {
+    // todo
   }
 
 }
 
-void AgarioEngine::move_player(Player &player) {
-  // todo
-}
-
-
-void AgarioEngine::add_food(int num_food) {
-  //todo
-}
-
-void AgarioEngine::add_virus(int num_virus) {
-  // todo
-}
