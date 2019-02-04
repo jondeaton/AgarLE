@@ -9,14 +9,12 @@
 #include "Player.hpp"
 #include "Entities.hpp"
 
-#include "THST/QuadTree.h"
-
 namespace Agario {
 
   class Engine {
   public:
     explicit Engine(position canvas_width, position canvas_height) :
-    ticks(0), canvas_width(canvas_width), canvas_height(canvas_height) {
+    canvas_width(canvas_width), canvas_height(canvas_height), ticks(0) {
       std::srand(SEED);
     }
 
@@ -41,8 +39,6 @@ namespace Agario {
     position canvas_height;
 
     Agario::tick ticks;
-
-//  spatial::QuadTree<position, Box2<position>, 2> qtree();
 
     void add_pellets(int num_pellets);
     void add_virus(int num_virus);

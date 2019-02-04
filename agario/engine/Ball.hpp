@@ -38,16 +38,33 @@ namespace Agario {
       return mass() == other.mass();
     }
 
-    position x;
+    position x; // todo: turn these into a single Location
     position y;
-
+    virtual ~Ball() {}; // todo: WHY the F do i need this
   private:
+
     length sqr_distance_to(const Ball &other) {
       auto dx = std::abs(x - other.x);
       auto dy = std::abs(y - other.y);
       return dx * dx + dy * dy;
     }
   };
+
+  class MovingBall : public Ball {
+  public:
+    explicit MovingBall(position x, position y) : Ball(x, y) { }
+//    explicit MovingBall(Location &loc) : Ball(loc) { }
+    explicit MovingBall(Location &&loc) : Ball(loc) { }
+
+    MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) { }
+
+//    MovingBall(MovingBall &&b) noexcept :
+//      Ball(b.location()), velocity(std::move(b.velocity)) { }
+//
+    Agario::Velocity velocity;
+    ~MovingBall() override {}; // TODO: WHY WHY WHY
+  };
+
 
 }
 

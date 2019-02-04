@@ -11,6 +11,9 @@
 #include "utils.hpp"
 
 
+#include <assert.h>
+#include <type_traits>
+
 namespace Agario {
 
   class Player;
@@ -18,11 +21,16 @@ namespace Agario {
   class Cell : public MovingBall {
     friend class Engine; // todo: remove?
   public:
-    explicit Cell(position x, position y, Agario::mass mass, Player &player) :
-      MovingBall(x, y), _player(player) { set_mass(mass); }
+    explicit Cell(position x, position y, Agario::mass mass) :
+      MovingBall(x, y) { set_mass(mass); }
 
-    explicit Cell(Location &loc, Velocity &vel, Agario::mass mass, Player &player) :
-      MovingBall(loc, vel), _player(player), _mass(mass) { }
+    explicit Cell(Location &&loc, Velocity &vel, Agario::mass mass) :
+      MovingBall(loc, vel), _mass(mass) { }
+
+//      Cell(Cell &&c) = default;
+
+//    length radius() const  {return 0;}
+//    Agario::mass mass() const {return 0;}
 
     Agario::mass mass() const override { return _mass; }
     length radius() const override {
@@ -36,15 +44,13 @@ namespace Agario {
     void increment_mass(int inc) { set_mass(mass() + inc); }
     void reduce_mass_by_factor(float factor) { set_mass(mass() / factor); }
 
-    Player &player() const { return _player; }
-
   private:
-    Player &_player;
+    // const Agario::pid pid; // maybe?
     Agario::mass _mass;
     // todo: cache radius better performance?
   };
 
-  enum action { none = 0, feed = 1, split = 2 };
+//  static_assert(std::is_constructible<Cell>::value);
 
   class Player {
     friend class Engine;
@@ -54,8 +60,11 @@ namespace Agario {
       pid(pid),
       name(std::move(name)), action(none), target(0, 0), _score(0) { }
 
-    void add_cell(position x, position y, length radius) {
-      cells.emplace_back(x, y, radius, *this);
+      Player(Player &&p) = default;
+
+    template<typename... Args>
+    void add_cell(Args&&... args) {
+      cells.emplace_back(std::forward<Args>(args)...);
     }
 
     void set_score(score new_score) { _score = new_score; }

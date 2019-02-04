@@ -9,25 +9,16 @@ namespace Agario {
 
   class Pellet : public Ball {
   public:
-    explicit Pellet(position x, position y) : Ball(x, y) { }
-    explicit Pellet(Location &loc) : Ball(loc) { }
+    using Ball::Ball;
     length radius() const override { return PELLET_SIZE; }
     Agario::mass mass () const override { return PELLET_MASS; }
+    ~Pellet() override {}
   private:
-  };
-
-  class MovingBall : public Ball {
-  public:
-    explicit MovingBall(position x, position y) : Ball(x, y) { }
-    explicit MovingBall(Location &loc) : Ball(loc) { }
-    explicit MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) { }
-    Agario::Velocity velocity;
   };
 
   class Food : public MovingBall {
   public:
-    explicit Food(position x, position y) : MovingBall(x, y) { }
-    explicit Food(Location &loc) : MovingBall(loc) { }
+    using MovingBall::MovingBall;
     length radius() const override { return FOOD_SIZE; }
     Agario::mass mass() const override { return FOOD_MASS; }
   private:
@@ -35,8 +26,7 @@ namespace Agario {
 
   class Virus : public MovingBall {
   public:
-    explicit Virus(position x, position y) : MovingBall(x, y) { }
-    explicit Virus(Location &loc) : MovingBall(loc) { }
+    using MovingBall::MovingBall;
 
     // todo: viruses have variable mass and size
     length radius() const override { return VIRUS_SIZE; }

@@ -18,7 +18,7 @@ namespace Agario {
   }
 
   std::vector<Player> &Engine::leaderboard() {
-    std::sort(std::begin(players), std::end(players));
+//    std::sort(std::begin(players), std::end(players)); todo: wtf
     return players;
   }
 
@@ -50,11 +50,13 @@ namespace Agario {
 
     // player collisions
     for (Player &other : players) {
+      (void) other;
       // todo: player collisions
     }
   }
 
   void Engine::move_player(Player &player) {
+    (void) player;
     // todo
   }
 
@@ -101,7 +103,7 @@ namespace Agario {
 
         disrupt(cell, created_cells);
 
-        std::swap(viruses[i], viruses.back()); // O(1) removal
+//        std::swap(viruses[i], viruses.back()); // O(1) removal
         viruses.pop_back();
         return; // only collide once
       }
@@ -124,11 +126,11 @@ namespace Agario {
     Agario::angle theta = cell.velocity.direction();
     for (int c = 0; c < num_new_cells; c++) {
       Agario::angle dvel_angle = cell.velocity.direction() + (2 * M_PI * c / num_new_cells);
-      Agario::Velocity vel = cell.velocity + Velocity(dvel_angle, CELL_POP_SPEED);
+      Agario::Velocity vel = cell.velocity + Velocity(theta + dvel_angle, CELL_POP_SPEED);
 
       Agario::mass new_cell_mass = std::min<Agario::mass>(remaining_mass, CELL_POP_SIZE);
 
-      created_cells.emplace_back(cell.location(), vel, new_cell_mass, cell.player());
+      created_cells.emplace_back(cell.location(), vel, new_cell_mass);
       remaining_mass -= new_cell_mass;
     }
   }

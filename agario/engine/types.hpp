@@ -16,6 +16,7 @@ namespace Agario {
   typedef unsigned short pid;
   typedef unsigned long tick;
 
+  enum action { none = 0, feed = 1, split = 2 };
   enum Color { red = 0, orange = 1, yellow = 2, green = 3, blue = 4, purple = 5 };
 
   class Location {
@@ -31,8 +32,9 @@ namespace Agario {
     explicit Velocity(length dx, length dy) : dx(dx), dy(dy) { }
     explicit Velocity(Agario::angle angle, Agario::length speed) :
       dx(speed * std::cos(angle)), dy(speed * std::sin(angle)) { }
-    Velocity(Velocity&& v) : dx(v.dx), dy(v.dy) { }
-    Velocity(const Velocity& v) : dx(v.dx), dy(v.dy) { }
+
+//    Velocity(Velocity&& v) : dx(v.dx), dy(v.dy) { }
+//    Velocity(const Velocity& v) : dx(v.dx), dy(v.dy) { }
 
     Agario::angle direction() const {
       auto angle = std::atan(dx / dy);

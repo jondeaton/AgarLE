@@ -1,8 +1,9 @@
+
 #include "utils.hpp"
 #include "types.hpp"
-#include <cmath>
+#include "settings.hpp"
 
-#define MASS_AREA_RADIO 1.0
+#include <cmath>
 
 namespace Agario {
 
@@ -11,13 +12,8 @@ namespace Agario {
     return (length) std::sqrt(area / M_PI);
   }
 
-  mass mass_conversion(length radius) {
+  Agario::mass mass_conversion(length radius) {
     return (mass) std::round(MASS_AREA_RADIO * M_PI * std::pow(radius, 2));
-  }
-
-  template <typename T>
-  T div_round_up(T num, T denom) {
-    return (num + denom - 1) / denom;
   }
 
 }
