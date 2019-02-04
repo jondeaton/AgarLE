@@ -18,7 +18,7 @@ namespace Agario {
   }
 
   std::vector<Player> &Engine::leaderboard() {
-//    std::sort(std::begin(players), std::end(players)); todo: wtf
+    std::sort(std::begin(players), std::end(players));
     return players;
   }
 
@@ -103,7 +103,7 @@ namespace Agario {
 
         disrupt(cell, created_cells);
 
-//        std::swap(viruses[i], viruses.back()); // O(1) removal
+        std::swap(viruses[i], viruses.back()); // O(1) removal
         viruses.pop_back();
         return; // only collide once
       }

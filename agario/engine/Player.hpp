@@ -50,8 +50,6 @@ namespace Agario {
     // todo: cache radius better performance?
   };
 
-//  static_assert(std::is_constructible<Cell>::value);
-
   class Player {
     friend class Engine;
 
@@ -59,8 +57,6 @@ namespace Agario {
     explicit Player(pid pid, std::string name) :
       pid(pid),
       name(std::move(name)), action(none), target(0, 0), _score(0) { }
-
-      Player(Player &&p) = default;
 
     template<typename... Args>
     void add_cell(Args&&... args) {
@@ -88,17 +84,19 @@ namespace Agario {
     }
 
   private:
-    const pid pid;
+    pid pid;
     std::string name;
     std::vector<Cell> cells;
 
     Agario::action action;
-    bool has_target = false;
+    bool has_target;
     Location target;
 
     Agario::score _score;
   };
 
+  static_assert(std::is_move_assignable<Cell>::value);
+  static_assert(std::is_move_assignable<Player>::value);
 }
 
 #endif //AGARIO_PLAYER_HPP

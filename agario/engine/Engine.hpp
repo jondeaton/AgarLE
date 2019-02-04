@@ -51,6 +51,11 @@ namespace Agario {
     void disrupt(Cell &cell, std::vector<Cell> &created_cells);
 
     Agario::Location random_location();
+
+    Engine(const Engine&) = delete; // no copy constructor
+    Engine& operator=(const Engine&) = delete; // no copy assignments
+    Engine(Engine&&) = delete; // no move constructor
+    Engine& operator=(Engine&&) = delete; // no move assignment
   };
 }
 

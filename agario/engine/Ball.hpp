@@ -53,16 +53,11 @@ namespace Agario {
   class MovingBall : public Ball {
   public:
     explicit MovingBall(position x, position y) : Ball(x, y) { }
-//    explicit MovingBall(Location &loc) : Ball(loc) { }
     explicit MovingBall(Location &&loc) : Ball(loc) { }
-
     MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) { }
 
-//    MovingBall(MovingBall &&b) noexcept :
-//      Ball(b.location()), velocity(std::move(b.velocity)) { }
-//
     Agario::Velocity velocity;
-    ~MovingBall() override {}; // TODO: WHY WHY WHY
+    ~MovingBall() override = default; // TODO: WHY WHY WHY
   };
 
 
