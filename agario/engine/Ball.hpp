@@ -40,7 +40,7 @@ namespace Agario {
 
     position x; // todo: turn these into a single Location
     position y;
-    virtual ~Ball() {}; // todo: WHY the F do i need this
+    virtual ~Ball() = default;
   private:
 
     length sqr_distance_to(const Ball &other) {
@@ -57,7 +57,6 @@ namespace Agario {
     MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) { }
 
     Agario::Velocity velocity;
-    ~MovingBall() override = default; // TODO: WHY WHY WHY
   };
 
 

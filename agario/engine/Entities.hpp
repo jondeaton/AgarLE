@@ -12,7 +12,6 @@ namespace Agario {
     using Ball::Ball;
     length radius() const override { return PELLET_SIZE; }
     Agario::mass mass () const override { return PELLET_MASS; }
-    ~Pellet() override {}
   private:
   };
 

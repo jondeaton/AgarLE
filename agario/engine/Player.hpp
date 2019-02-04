@@ -55,8 +55,8 @@ namespace Agario {
 
   public:
     explicit Player(pid pid, std::string name) :
-      pid(pid),
-      name(std::move(name)), action(none), target(0, 0), _score(0) { }
+      _pid(pid),
+      _name(std::move(name)), action(none), target(0, 0), _score(0) { }
 
     template<typename... Args>
     void add_cell(Args&&... args) {
@@ -83,20 +83,20 @@ namespace Agario {
       return score() < other.score();
     }
 
+    Agario::pid pid() const { return _pid; }
+    std::string name() const { return _name; }
+
   private:
-    pid pid;
-    std::string name;
+    Agario::pid _pid;
+    std::string _name;
     std::vector<Cell> cells;
 
     Agario::action action;
-    bool has_target;
+
     Location target;
 
     Agario::score _score;
   };
-
-  static_assert(std::is_move_assignable<Cell>::value);
-  static_assert(std::is_move_assignable<Player>::value);
 }
 
 #endif //AGARIO_PLAYER_HPP
