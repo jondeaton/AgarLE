@@ -83,7 +83,9 @@ namespace Agario {
       // not big enough to emit pellet
       if (cell.mass() < CELL_MIN_SIZE + PELLET_SIZE) continue;
 
-      Location loc = player.target - cell.location();
+      Location loc = (player.target - cell.location());
+
+      auto dir = (player.target - cell.location()).normed();
 
 //        Agario::Velocity vel =
     }
@@ -159,8 +161,8 @@ namespace Agario {
   T random(T max) { return random<T>(0, max); }
 
   Agario::Location Engine::random_location() {
-    auto x = random<position>(canvas_width);
-    auto y = random<position>(canvas_height);
+    auto x = random<distance>(canvas_width);
+    auto y = random<distance>(canvas_height);
     return Location(x, y);
   }
 

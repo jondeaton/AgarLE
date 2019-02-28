@@ -21,7 +21,7 @@ namespace Agario {
   class Cell : public MovingBall {
     friend class Engine; // todo: remove?
   public:
-    explicit Cell(position x, position y, Agario::mass mass) :
+    explicit Cell(distance x, distance y, Agario::mass mass) :
       MovingBall(x, y) { set_mass(mass); }
 
     explicit Cell(Location &&loc, Velocity &vel, Agario::mass mass) :
@@ -33,7 +33,7 @@ namespace Agario {
 //    Agario::mass mass() const {return 0;}
 
     Agario::mass mass() const override { return _mass; }
-    length radius() const override {
+    distance radius() const override {
       return radius_conversion(mass());
     }
 

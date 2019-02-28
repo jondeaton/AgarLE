@@ -13,7 +13,7 @@ namespace Agario {
 
   class Engine {
   public:
-    explicit Engine(position canvas_width, position canvas_height) :
+    explicit Engine(distance canvas_width, distance canvas_height) :
     canvas_width(canvas_width), canvas_height(canvas_height), ticks(0) {
       std::srand(SEED);
     }
@@ -35,8 +35,8 @@ namespace Agario {
     std::vector<Food> foods;
     std::vector<Virus> viruses;
 
-    position canvas_width;
-    position canvas_height;
+    distance canvas_width;
+    distance canvas_height;
 
     Agario::tick ticks;
 

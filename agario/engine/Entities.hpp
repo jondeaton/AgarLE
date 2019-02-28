@@ -10,7 +10,7 @@ namespace Agario {
   class Pellet : public Ball {
   public:
     using Ball::Ball;
-    length radius() const override { return PELLET_SIZE; }
+    distance radius() const override { return PELLET_SIZE; }
     Agario::mass mass () const override { return PELLET_MASS; }
   private:
   };
@@ -18,7 +18,7 @@ namespace Agario {
   class Food : public MovingBall {
   public:
     using MovingBall::MovingBall;
-    length radius() const override { return FOOD_SIZE; }
+    distance radius() const override { return FOOD_SIZE; }
     Agario::mass mass() const override { return FOOD_MASS; }
   private:
   };
@@ -28,7 +28,7 @@ namespace Agario {
     using MovingBall::MovingBall;
 
     // todo: viruses have variable mass and size
-    length radius() const override { return VIRUS_SIZE; }
+    distance radius() const override { return VIRUS_SIZE; }
     Agario::mass mass() const override { return VIRUS_MASS; }
   private:
   };

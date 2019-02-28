@@ -6,9 +6,8 @@
 
 namespace Agario {
 
-  typedef float position;
-  typedef float length;
-  typedef double angle;
+  typedef double distance;
+  typedef float angle;
 
   typedef unsigned int mass;
   typedef unsigned int score;
@@ -37,6 +36,24 @@ namespace Agario {
       y -= rhs.y;
       return *this;
     }
+
+    Agario::distance norm_sqr() const {
+      auto dx = std::abs(x);
+      auto dy = std::abs(y);
+      return dx * dx + dy * dy;
+    }
+
+    Agario::distance norm() const {
+      return std::sqrt(norm_sqr());
+    }
+
+    void normalize() {
+      *this = *this / this->norm();
+    }
+
+    Coordinate normed() {
+      return *this / this->norm();
+    }
   };
 
   template <typename T>
@@ -51,16 +68,29 @@ namespace Agario {
     return lhs;
   }
 
-  typedef Coordinate<Agario::position> Location;
-  typedef Coordinate<Agario::length> Displacement;
+  template <typename T, typename U>
+  inline Coordinate<T> operator/(Coordinate<T> v, U norm) {
+    v.x /= norm;
+    v.y /= norm;
+    return v;
+  }
 
-  
+  template <typename T, typename U>
+  inline Coordinate<T> operator*(Coordinate<T> v, U norm) {
+    v.x *= norm;
+    v.y *= norm;
+    return v;
+  }
+
+  typedef Coordinate<Agario::distance> Location;
+
+
 
   class Velocity {
   public:
     explicit Velocity() : dx(0), dy(0) { }
-    explicit Velocity(length dx, length dy) : dx(dx), dy(dy) { }
-    explicit Velocity(Agario::angle angle, Agario::length speed) :
+    explicit Velocity(Agario::distance dx, Agario::distance dy) : dx(dx), dy(dy) { }
+    explicit Velocity(Agario::angle angle, Agario::distance speed) :
       dx(speed * std::cos(angle)), dy(speed * std::sin(angle)) { }
 
 //    Velocity(Velocity&& v) : dx(v.dx), dy(v.dy) { }
@@ -87,8 +117,8 @@ namespace Agario {
       return *this;
     }
 
-    length dx;
-    length dy;
+    distance dx;
+    distance dy;
   };
 
   inline Velocity operator+(Velocity lhs, const Velocity& rhs) {

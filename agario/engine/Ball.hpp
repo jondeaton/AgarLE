@@ -11,13 +11,13 @@ namespace Agario {
   public:
     explicit Ball(const Location &loc) : x(loc.x), y(loc.y) { }
     explicit Ball(Location &&loc) : x(loc.x), y(loc.y) { }
-    explicit Ball(position x, position y) : Ball(Location(x, y)) { }
+    explicit Ball(distance x, distance y) : Ball(Location(x, y)) { }
 
-    virtual length radius() const = 0;
+    virtual distance radius() const = 0;
     virtual Agario::mass mass() const = 0;
 
-    length height() const { return 2 * radius(); }
-    length width() const { return 2 * radius(); }
+    distance height() const { return 2 * radius(); }
+    distance width() const { return 2 * radius(); }
 
     bool collides_with(const Ball &other) {
       auto sqr_rads = pow(radius() + other.radius(), 2);
@@ -38,21 +38,19 @@ namespace Agario {
       return mass() == other.mass();
     }
 
-    position x; // todo: turn these into a single Location
-    position y;
+    distance x; // todo: turn these into a single Location
+    distance y;
     virtual ~Ball() = default;
   private:
 
-    length sqr_distance_to(const Ball &other) {
-      auto dx = std::abs(x - other.x);
-      auto dy = std::abs(y - other.y);
-      return dx * dx + dy * dy;
+    distance sqr_distance_to(const Ball &other) {
+      return (location() - other.location()).norm_sqr();
     }
   };
 
   class MovingBall : public Ball {
   public:
-    explicit MovingBall(position x, position y) : Ball(x, y) { }
+    explicit MovingBall(distance x, distance y) : Ball(x, y) { }
     explicit MovingBall(Location &&loc) : Ball(loc) { }
     MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) { }
 
