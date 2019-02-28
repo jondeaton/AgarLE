@@ -19,19 +19,42 @@ namespace Agario {
   enum action { none = 0, feed = 1, split = 2 };
   enum Color { red = 0, orange = 1, yellow = 2, green = 3, blue = 4, purple = 5 };
 
-  class Location {
+  template<typename T>
+  class Coordinate {
   public:
-    explicit Location(position x, position y) : x(x), y(y) { }
-    position x;
-    position y;
+    explicit Coordinate(T x, T y) : x(x), y(y) { }
+    T x;
+    T y;
+
+    Coordinate& operator +=(const Coordinate &rhs) {
+      x += rhs.x;
+      y += rhs.y;
+      return *this;
+    }
+
+    Coordinate& operator -=(const Coordinate &rhs) {
+      x -= rhs.x;
+      y -= rhs.y;
+      return *this;
+    }
   };
 
-  class Displacement {
-  public:
-    explicit Displacement(Agario::length dx, Agario::length dy) : dx(dx), dy(dy) { }
-    Agario::length dx;
-    Agario::length dy;
-  };
+  template <typename T>
+  inline Coordinate<T> operator+(Coordinate<T> lhs, const Coordinate<T>& rhs) {
+    lhs += rhs;
+    return lhs;
+  }
+
+  template <typename T>
+  inline Coordinate<T> operator-(Coordinate<T> lhs, const Coordinate<T>& rhs) {
+    lhs -= rhs;
+    return lhs;
+  }
+
+  typedef Coordinate<Agario::position> Location;
+  typedef Coordinate<Agario::length> Displacement;
+
+  
 
   class Velocity {
   public:

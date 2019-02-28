@@ -1,2 +1,4 @@
-# RL-Project
-Reinforcement Learning project from CS 234
+# AgarAI
+
+Reinforcement Learning environment for Agar.io
+

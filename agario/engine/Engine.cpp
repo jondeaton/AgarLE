@@ -83,8 +83,8 @@ namespace Agario {
       // not big enough to emit pellet
       if (cell.mass() < CELL_MIN_SIZE + PELLET_SIZE) continue;
 
-//      Agario::Location loc =
-//
+      Location loc = player.target - cell.location();
+
 //        Agario::Velocity vel =
     }
   }
