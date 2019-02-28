@@ -40,13 +40,17 @@ namespace Agario {
 
     Agario::tick ticks;
 
+
     void add_pellets(int num_pellets);
     void add_virus(int num_virus);
 
     void tick_player(Player &player);
     void move_player(Player &player);
+
     void eat_pellets(Cell &cell);
     void eat_food(Cell &cell);
+    void emit_pellets(Player &player);
+
     void check_virus_collisions(Cell &cell, std::vector<Cell> &created_cells);
     void disrupt(Cell &cell, std::vector<Cell> &created_cells);
 

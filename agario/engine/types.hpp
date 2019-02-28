@@ -26,6 +26,13 @@ namespace Agario {
     position y;
   };
 
+  class Displacement {
+  public:
+    explicit Displacement(Agario::length dx, Agario::length dy) : dx(dx), dy(dy) { }
+    Agario::length dx;
+    Agario::length dy;
+  };
+
   class Velocity {
   public:
     explicit Velocity() : dx(0), dy(0) { }

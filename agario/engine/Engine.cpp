@@ -33,10 +33,8 @@ namespace Agario {
       // todo: change VIRUS_SIZE to static member of Virus?
       check_virus_collisions(cell, created_cells);
 
-      if (player.action == Agario::action::feed) {
-
-        // todo: create mass
-      }
+      if (player.action == Agario::action::feed)
+        emit_pellets(player);
 
       if (player.action == Agario::action::split) {
         // todo: split
@@ -53,6 +51,9 @@ namespace Agario {
       (void) other;
       // todo: player collisions
     }
+
+    // todo: recombine cells
+    // todo: decrement recombine timers
   }
 
   void Engine::move_player(Player &player) {
@@ -71,6 +72,20 @@ namespace Agario {
     while (num_virus > 0) {
       viruses.emplace_back(random_location());
       num_virus--;
+    }
+  }
+
+  void Engine::emit_pellets(Agario::Player &player) {
+
+    // emit one pellet from each sufficiently large cell
+    for (Cell &cell : player.cells) {
+
+      // not big enough to emit pellet
+      if (cell.mass() < CELL_MIN_SIZE + PELLET_SIZE) continue;
+
+//      Agario::Location loc =
+//
+//        Agario::Velocity vel =
     }
   }
 
