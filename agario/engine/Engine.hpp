@@ -49,7 +49,10 @@ namespace Agario {
 
     void eat_pellets(Cell &cell);
     void eat_food(Cell &cell);
+
+    // actions
     void emit_foods(Player &player);
+    void player_split(Player &player);
 
     void check_virus_collisions(Cell &cell, std::vector<Cell> &created_cells);
     void disrupt(Cell &cell, std::vector<Cell> &created_cells);

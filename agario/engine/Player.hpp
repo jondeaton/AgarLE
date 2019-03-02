@@ -27,6 +27,10 @@ namespace Agario {
     explicit Cell(Location &&loc, Velocity &vel, Agario::mass mass) :
       MovingBall(loc, vel), _mass(mass) { }
 
+
+      explicit Cell(Location &loc, Velocity &vel, Agario::mass mass) :
+      MovingBall(loc, vel), _mass(mass) { }
+
 //      Cell(Cell &&c) = default;
 
 //    length radius() const  {return 0;}

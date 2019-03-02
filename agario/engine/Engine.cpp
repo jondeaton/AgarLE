@@ -36,9 +36,9 @@ namespace Agario {
       if (player.action == Agario::action::feed)
         emit_foods(player);
 
-      if (player.action == Agario::action::split) {
-        // todo: split
-      }
+      if (player.action == Agario::action::split)
+        player_split(player);
+
     }
 
     // add any cells that were created
@@ -54,6 +54,7 @@ namespace Agario {
 
     // todo: recombine cells
     // todo: decrement recombine timers
+    // todo: increment or decrement item speeds
   }
 
   void Engine::move_player(Player &player) {
@@ -90,6 +91,31 @@ namespace Agario {
 
       foods.emplace_back(loc, vel);
     }
+  }
+
+  void Engine::player_split(Agario::Player &player) {
+
+    std::vector<Cell> created_cells;
+    for (Cell &cell : player.cells) {
+
+      if (cell.mass() < CELL_MIN_SIZE * 2) continue;
+
+      Agario::mass split_mass = cell.mass() / 2;
+      auto remaining_mass = cell.mass() - split_mass;
+
+      cell.set_mass(remaining_mass);
+
+      auto dir = (player.target - cell.location()).normed();
+      Location loc = cell.location() + dir * cell.radius();
+
+      Velocity vel(dir * 2 * Agario::max_speed(split_mass));
+
+      created_cells.emplace_back(loc, vel, split_mass);
+    }
+
+    // add created cells to list of player cells
+    std::copy(created_cells.begin(), created_cells.end(),
+              std::back_inserter(player.cells));
   }
 
   void Engine::eat_pellets(Cell &cell) {

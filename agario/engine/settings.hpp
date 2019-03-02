@@ -14,6 +14,7 @@
 #define VIRUS_MASS 0
 
 #define CELL_MIN_SIZE 10
+#define CELL_MAX_SPEED 10
 
 // must be `CELL_EAT_MARGIN` times larger
 // than another cell in order to eat it

@@ -16,4 +16,8 @@ namespace Agario {
     return (mass) std::round(MASS_AREA_RADIO * M_PI * std::pow(radius, 2));
   }
 
+  float max_speed(Agario::mass mass) {
+    return CELL_MAX_SPEED * CELL_MIN_SIZE / (float) mass;
+  }
+
 }
