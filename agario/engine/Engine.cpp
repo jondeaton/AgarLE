@@ -34,7 +34,7 @@ namespace Agario {
       check_virus_collisions(cell, created_cells);
 
       if (player.action == Agario::action::feed)
-        emit_pellets(player);
+        emit_foods(player);
 
       if (player.action == Agario::action::split) {
         // todo: split
@@ -75,7 +75,7 @@ namespace Agario {
     }
   }
 
-  void Engine::emit_pellets(Agario::Player &player) {
+  void Engine::emit_foods(Agario::Player &player) {
 
     // emit one pellet from each sufficiently large cell
     for (Cell &cell : player.cells) {
@@ -83,11 +83,12 @@ namespace Agario {
       // not big enough to emit pellet
       if (cell.mass() < CELL_MIN_SIZE + PELLET_SIZE) continue;
 
-      Location loc = (player.target - cell.location());
-
       auto dir = (player.target - cell.location()).normed();
+      Location loc = cell.location() + dir * cell.radius();
 
-//        Agario::Velocity vel =
+      Velocity vel(dir * FOOD_SPEED);
+
+      foods.emplace_back(loc, vel);
     }
   }
 

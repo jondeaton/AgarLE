@@ -8,6 +8,7 @@
 
 #define FOOD_SIZE 10
 #define FOOD_MASS 10
+#define FOOD_SPEED 10
 
 #define VIRUS_SIZE 75
 #define VIRUS_MASS 0

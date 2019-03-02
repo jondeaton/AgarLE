@@ -89,6 +89,7 @@ namespace Agario {
   class Velocity {
   public:
     explicit Velocity() : dx(0), dy(0) { }
+    explicit Velocity(Agario::Location dir) : dx(dir.x), dy(dir.y) {}
     explicit Velocity(Agario::distance dx, Agario::distance dy) : dx(dx), dy(dy) { }
     explicit Velocity(Agario::angle angle, Agario::distance speed) :
       dx(speed * std::cos(angle)), dy(speed * std::sin(angle)) { }
