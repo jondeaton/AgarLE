@@ -47,20 +47,43 @@ namespace Agario {
                         std::end(created_cells));
 
     // player collisions
-    for (Player &other : players) {
-      (void) other;
-      // todo: player collisions
-    }
+    check_player_collisions(player);
+
 
     // todo: recombine cells
     // todo: decrement recombine timers
     // todo: increment or decrement item speeds
     // todo: reset player action?
+    // todo: player dead if no more cells
   }
 
   void Engine::move_player(Player &player) {
     (void) player;
     // todo
+  }
+
+  void Engine::check_player_collisions(Player &player) {
+    for (Cell &cell : player.cells)
+      eat_others(cell);
+  }
+
+  void Engine::eat_others(Cell &cell) {
+
+    Agario::mass gained_mass = 0;
+
+    for (Player &other_player : players) {
+      for (Cell &other_cell : other_player.cells) {
+        if (cell > other_cell)
+          gained_mass += other_cell.mass();
+      }
+
+      std::remove_if(other_player.cells.begin(), other_player.cells.end(),
+                     [&](const Cell &other_cell) {
+                       return cell > other_cell;
+                     });
+    }
+
+    cell.increment_mass(gained_mass);
   }
 
   void Engine::add_pellets(int num_pellets) {
