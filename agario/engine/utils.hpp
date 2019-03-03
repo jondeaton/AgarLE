@@ -11,6 +11,8 @@ namespace Agario {
     return static_cast<T>((num + denom - 1) / denom);
   }
 
+
+  // todo: new type speed?
   float max_speed(Agario::mass mass);
 
 }
