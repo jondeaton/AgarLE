@@ -1,5 +1,4 @@
-#ifndef AGARIO_UTILS_HPP
-#define AGARIO_UTILS_HPP
+#pragma once
 
 #include "types.hpp"
 
@@ -16,5 +15,3 @@ namespace Agario {
   float max_speed(Agario::mass mass);
 
 }
-
-#endif //AGARIO_UTILS_HPP

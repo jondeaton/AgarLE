@@ -53,9 +53,8 @@ namespace Agario {
   public:
 
     explicit Player(pid pid, std::string name) :
-      _pid(pid),
-      _name(std::move(name)), action(none), target(0, 0), _score(0) { }
-
+      action(none), target(0, 0),
+      _pid(pid), _name(std::move(name)), _score(0) { }
 
     std::vector<Cell> cells;
     Agario::action action;

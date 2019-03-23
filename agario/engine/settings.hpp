@@ -1,5 +1,4 @@
-#ifndef AGARIO_SETTINGS_HPP
-#define AGARIO_SETTINGS_HPP
+#pragma once
 
 #define SEED 42
 
@@ -27,6 +26,3 @@
 #define CELL_POP_REDUCTION 2
 #define CELL_POP_SIZE  25
 #define CELL_POP_SPEED 25
-
-
-#endif //AGARIO_SETTINGS_HPP

@@ -1,9 +1,9 @@
-#ifndef AGARIO_BALL_HPP
-#define AGARIO_BALL_HPP
+#pragma once
+
+#include <math.h>
 
 #include "Player.hpp"
 #include "types.hpp"
-#include <math.h>
 #include "settings.hpp"
 
 namespace Agario {
@@ -60,5 +60,3 @@ namespace Agario {
 
 
 }
-
-#endif //AGARIO_BALL_HPP
