@@ -28,9 +28,6 @@ namespace Agario {
     explicit Cell(Location &loc, Velocity &vel, Agario::mass mass) :
       MovingBall(loc, vel), _mass(mass) { }
 
-//    length radius() const  {return 0;}
-//    Agario::mass mass() const {return 0;}
-
     Agario::mass mass() const override { return _mass; }
     distance radius() const override {
       return radius_conversion(mass());
@@ -44,7 +41,6 @@ namespace Agario {
     void reduce_mass_by_factor(float factor) { set_mass(mass() / factor); }
 
   private:
-    // const Agario::pid pid; // todo: maybe?
     Agario::mass _mass;
   };
 

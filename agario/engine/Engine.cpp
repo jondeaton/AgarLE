@@ -1,7 +1,7 @@
 #include <iostream>
 #include <algorithm>
 
-#include "engine.hpp"
+#include "Engine.hpp"
 #include "Entities.hpp"
 #include "utils.hpp"
 
@@ -91,12 +91,14 @@ namespace Agario {
   }
 
   void Engine::recombine_cells(Player &player) {
-    (void) player;
-//    for (Cell &cell : player.cells) {
-//      for (Cell &other_cell : player.cells) {
-//
-//      }
-//    }
+
+    for (Cell &cell : player.cells) {
+      for (Cell &other_cell : player.cells) {
+        (void) cell;
+        (void) other_cell;
+        // todo: write this
+      }
+    }
 
   }
 
@@ -229,7 +231,6 @@ namespace Agario {
     auto y = random<distance>(canvas_height);
     return Location(x, y);
   }
-
 
 }
 

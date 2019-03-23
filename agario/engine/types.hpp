@@ -1,8 +1,5 @@
-#ifndef AGARIO_TYPES_HPP
-#define AGARIO_TYPES_HPP
-
+#pragma once
 #include <cmath>
-//#include "THST/QuadTree.h"
 
 namespace Agario {
 
@@ -94,9 +91,6 @@ namespace Agario {
     explicit Velocity(Agario::angle angle, Agario::distance speed) :
       dx(speed * std::cos(angle)), dy(speed * std::sin(angle)) { }
 
-//    Velocity(Velocity&& v) : dx(v.dx), dy(v.dy) { }
-//    Velocity(const Velocity& v) : dx(v.dx), dy(v.dy) { }
-
     Agario::angle direction() const {
       auto angle = std::atan(dx / dy);
       if (dx < 0) {
@@ -133,6 +127,3 @@ namespace Agario {
   }
 
 }
-
-
-#endif //AGARIO_TYPES_HPP

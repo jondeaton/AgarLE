@@ -39,7 +39,6 @@ namespace Agario {
 
     Agario::tick ticks;
 
-
     void add_pellets(int num_pellets);
     void add_virus(int num_virus);
 

@@ -2,7 +2,7 @@
 #define AGARIO_ENGINE_TEST_HPP
 
 #include <gtest/gtest.h>
-#include <engine.hpp>
+#include <Engine.hpp>
 
 namespace {
 

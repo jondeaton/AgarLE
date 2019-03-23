@@ -19,7 +19,7 @@ endif()
 
 include_directories(engine engine/THST)
 set(AGARIO_SRC
-        engine/engine.hpp engine/engine.cpp
+        engine/Engine.hpp       engine/Engine.cpp
         engine/Player.hpp       engine/Player.cpp
         engine/utils.hpp        engine/utils.cpp
         engine/Ball.hpp
