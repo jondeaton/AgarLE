@@ -1,12 +1,11 @@
-#ifndef PROJECT_AGARIO_HPP
-#define PROJECT_AGARIO_HPP
+#pragma once
 
 #include <vector>
 #include <cstdlib>
 
+#include "Player.hpp"
 #include "settings.hpp"
 #include "types.hpp"
-#include "Player.hpp"
 #include "Entities.hpp"
 
 namespace Agario {
@@ -54,8 +53,9 @@ namespace Agario {
     void emit_foods(Player &player);
     void player_split(Player &player, std::vector<Cell>& created_cells);
     void check_player_collisions(Player &player);
-    void eat_others(Cell &cell);
+    void eat_others(Player &player, Cell &cell);
 
+    void recombine_cells(Player &player);
     void check_virus_collisions(Cell &cell, std::vector<Cell> &created_cells);
     void disrupt(Cell &cell, std::vector<Cell> &created_cells);
 
@@ -68,5 +68,3 @@ namespace Agario {
   };
 }
 
-
-#endif //PROJECT_AGARIO_HPP

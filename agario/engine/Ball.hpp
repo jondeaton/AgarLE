@@ -1,9 +1,10 @@
 #ifndef AGARIO_BALL_HPP
 #define AGARIO_BALL_HPP
 
-#include "types.hpp"
 #include "Player.hpp"
+#include "types.hpp"
 #include <math.h>
+#include "settings.hpp"
 
 namespace Agario {
 

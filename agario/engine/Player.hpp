@@ -1,15 +1,14 @@
-#ifndef AGARIO_PLAYER_HPP
-#define AGARIO_PLAYER_HPP
+#pragma once
 
 #include <string>
 #include <algorithm>
+#include <vector>
 
+//#include "Engine.hpp"
 #include "types.hpp"
 #include "Entities.hpp"
 #include "Ball.hpp"
-#include "Engine.hpp"
 #include "utils.hpp"
-
 
 #include <assert.h>
 #include <type_traits>
@@ -19,7 +18,7 @@ namespace Agario {
   class Player;
 
   class Cell : public MovingBall {
-    friend class Engine; // todo: remove?
+//    friend class Engine; // todo: remove?
   public:
     explicit Cell(distance x, distance y, Agario::mass mass) :
       MovingBall(x, y) { set_mass(mass); }
@@ -28,7 +27,7 @@ namespace Agario {
       MovingBall(loc, vel), _mass(mass) { }
 
 
-      explicit Cell(Location &loc, Velocity &vel, Agario::mass mass) :
+    explicit Cell(Location &loc, Velocity &vel, Agario::mass mass) :
       MovingBall(loc, vel), _mass(mass) { }
 
 //      Cell(Cell &&c) = default;
@@ -55,12 +54,18 @@ namespace Agario {
   };
 
   class Player {
-    friend class Engine;
+//    friend class Engine;
 
   public:
+
     explicit Player(pid pid, std::string name) :
       _pid(pid),
       _name(std::move(name)), action(none), target(0, 0), _score(0) { }
+
+
+    std::vector<Cell> cells;
+    Agario::action action;
+    Location target;
 
     template<typename... Args>
     void add_cell(Args&&... args) {
@@ -93,14 +98,12 @@ namespace Agario {
   private:
     Agario::pid _pid;
     std::string _name;
-    std::vector<Cell> cells;
-
-    Agario::action action;
-
-    Location target;
-
     Agario::score _score;
   };
-}
 
-#endif //AGARIO_PLAYER_HPP
+
+//  bool operator==(Player &plhs, Player &prhs) {
+//    return plhs.pid() == prhs.pid();
+//  }
+
+}

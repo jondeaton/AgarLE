@@ -20,12 +20,12 @@ endif()
 include_directories(engine engine/THST)
 set(AGARIO_SRC
         engine/Engine.hpp       engine/Engine.cpp
-        engine/Player.hpp
+        engine/Player.hpp       engine/Player.cpp
         engine/utils.hpp        engine/utils.cpp
         engine/Ball.hpp
         engine/settings.hpp
         engine/Entities.hpp)
-#engine/THST/QuadTree.h
+
 add_library(agario STATIC ${AGARIO_SRC})
 
 include_directories(client)

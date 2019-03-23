@@ -49,7 +49,7 @@ namespace Agario {
     // player collisions
     check_player_collisions(player);
 
-
+    recombine_cells(player);
     // todo: recombine cells
     // todo: decrement recombine timers
     // todo: increment or decrement item speeds
@@ -64,26 +64,40 @@ namespace Agario {
 
   void Engine::check_player_collisions(Player &player) {
     for (Cell &cell : player.cells)
-      eat_others(cell);
+      eat_others(player, cell);
   }
 
-  void Engine::eat_others(Cell &cell) {
+  void Engine::eat_others(Player &player, Cell &cell) {
 
     Agario::mass gained_mass = 0;
 
     for (Player &other_player : players) {
+//      if (other_player == player) continue;
       for (Cell &other_cell : other_player.cells) {
         if (cell > other_cell)
           gained_mass += other_cell.mass();
       }
 
-      std::remove_if(other_player.cells.begin(), other_player.cells.end(),
-                     [&](const Cell &other_cell) {
-                       return cell > other_cell;
-                     });
+      // remove all the cells that we eat
+      other_player.cells.erase(
+        std::remove_if(other_player.cells.begin(), other_player.cells.end(),
+                       [&](const Cell &other_cell) {
+                         return cell > other_cell;
+                       }),
+        other_player.cells.end());
     }
 
     cell.increment_mass(gained_mass);
+  }
+
+  void Engine::recombine_cells(Player &player) {
+    (void) player;
+//    for (Cell &cell : player.cells) {
+//      for (Cell &other_cell : player.cells) {
+//
+//      }
+//    }
+
   }
 
   void Engine::add_pellets(int num_pellets) {
@@ -150,6 +164,8 @@ namespace Agario {
   void Engine::eat_food(Cell &cell) {
     if (cell.mass() < FOOD_MASS) return;
     auto prev_size = total_foods();
+
+    // todo: fix remove_if
     std::remove_if(foods.begin(), foods.end(),
                    [&](const Food &food) {
                      return cell > food && cell.collides_with(food);
