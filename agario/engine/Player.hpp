@@ -3,8 +3,6 @@
 #include <string>
 #include <algorithm>
 #include <vector>
-
-//#include "Engine.hpp"
 #include "types.hpp"
 #include "Entities.hpp"
 #include "Ball.hpp"
@@ -18,7 +16,7 @@ namespace Agario {
   class Player;
 
   class Cell : public MovingBall {
-//    friend class Engine; // todo: remove?
+
   public:
     explicit Cell(distance x, distance y, Agario::mass mass) :
       MovingBall(x, y) { set_mass(mass); }
@@ -29,8 +27,6 @@ namespace Agario {
 
     explicit Cell(Location &loc, Velocity &vel, Agario::mass mass) :
       MovingBall(loc, vel), _mass(mass) { }
-
-//      Cell(Cell &&c) = default;
 
 //    length radius() const  {return 0;}
 //    Agario::mass mass() const {return 0;}
@@ -48,13 +44,11 @@ namespace Agario {
     void reduce_mass_by_factor(float factor) { set_mass(mass() / factor); }
 
   private:
-    // const Agario::pid pid; // maybe?
+    // const Agario::pid pid; // todo: maybe?
     Agario::mass _mass;
-    // todo: cache radius better performance?
   };
 
   class Player {
-//    friend class Engine;
 
   public:
 
@@ -95,15 +89,14 @@ namespace Agario {
     Agario::pid pid() const { return _pid; }
     std::string name() const { return _name; }
 
+    bool operator==(const Player &other) {
+      return this->_pid == other.pid();
+    }
+
   private:
     Agario::pid _pid;
     std::string _name;
     Agario::score _score;
   };
-
-
-//  bool operator==(Player &plhs, Player &prhs) {
-//    return plhs.pid() == prhs.pid();
-//  }
 
 }

@@ -72,7 +72,7 @@ namespace Agario {
     Agario::mass gained_mass = 0;
 
     for (Player &other_player : players) {
-//      if (other_player == player) continue;
+      if (other_player == player) continue;
       for (Cell &other_cell : other_player.cells) {
         if (cell > other_cell)
           gained_mass += other_cell.mass();
@@ -153,6 +153,8 @@ namespace Agario {
 
   void Engine::eat_pellets(Cell &cell) {
     auto prev_size = total_pellets();
+
+    // todo: fix remove_if
     std::remove_if(pellets.begin(), pellets.end(),
                    [&](const Pellet &pellet) {
                      return cell > pellet && cell.collides_with(pellet);
