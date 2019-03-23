@@ -1,5 +1,4 @@
-#ifndef AGARIO_ENTITIES_HPP
-#define AGARIO_ENTITIES_HPP
+#pragma once
 
 #include "types.hpp"
 #include "Ball.hpp"
@@ -33,5 +32,3 @@ namespace Agario {
   private:
   };
 }
-
-#endif //AGARIO_ENTITIES_HPP

@@ -74,7 +74,7 @@ namespace Agario {
     for (Player &other_player : players) {
       if (other_player == player) continue;
       for (Cell &other_cell : other_player.cells) {
-        if (cell > other_cell)
+        if (cell.collides_with(other_cell) &&  cell > other_cell)
           gained_mass += other_cell.mass();
       }
 
@@ -82,7 +82,7 @@ namespace Agario {
       other_player.cells.erase(
         std::remove_if(other_player.cells.begin(), other_player.cells.end(),
                        [&](const Cell &other_cell) {
-                         return cell > other_cell;
+                         return cell.collides_with(other_cell) &&  cell > other_cell;
                        }),
         other_player.cells.end());
     }
@@ -91,12 +91,13 @@ namespace Agario {
   }
 
   void Engine::recombine_cells(Player &player) {
+    for (auto cell = player.cells.begin(); cell != player.cells.end(); ++cell) {
+      Agario::mass gained_mass = 0;
+      for (auto other_cell = cell + 1; other_cell != player.cells.end(); ++other_cell) {
+//        if (cell->collides_with(*other_cell))
+//          gained_mass += other_cell->mass();
 
-    for (Cell &cell : player.cells) {
-      for (Cell &other_cell : player.cells) {
-        (void) cell;
-        (void) other_cell;
-        // todo: write this
+// todo: uhh this is more complicated than anticipated...
       }
     }
 
