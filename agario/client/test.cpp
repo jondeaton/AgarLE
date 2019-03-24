@@ -75,7 +75,6 @@ void render_loop(GLFWwindow *window) {
 	circles = nullptr;
 	GLfloat color[3] = { 1.0f, 0.0f, 0.0f };
 	circle_obj *circle = generate_circle(0, 0, 0, 100.0f, color);
-
 	circle_obj *circle2 = generate_circle(0, 0, 0, 100.f, color);
 
 	int i = 0;
@@ -92,15 +91,15 @@ void render_loop(GLFWwindow *window) {
 		render_circle(circle, &shader);
 		render_circle(circle2, &shader);
 
-		if (i % 100 == 0) {
-			position_circle(circle, i, 0, 0, 100.f);
-		}
+		position_circle(circle2, i, 0, 0, 100.f);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
 		i++;
 	}
+
+	std::cout << "Total iterations: " << i << std::endl;
 
 	free_circle(circle);
 	free_circle(circle2);
@@ -128,10 +127,21 @@ void position_circle(circle_obj *circle, GLfloat x, GLfloat y, GLfloat z, GLfloa
 	circle->verts[2] = z;
 
 	for (int i = 1; i < CIRCLE_VERTS; i++) {
-		circle->verts[i * 3] = (x + (radius * cos(i *  2 * M_PI / CIRCLE_SIDES))) / SCREEN_WIDTH;
-		circle->verts[i * 3 + 1] = (y + (radius * sin(i * 2 * M_PI / CIRCLE_SIDES))) / SCREEN_HEIGHT;
+		circle->verts[i * 3] = static_cast<float> (x + (radius * cos(i *  2 * M_PI / CIRCLE_SIDES))) / SCREEN_WIDTH;
+		circle->verts[i * 3 + 1] = static_cast<float> (y + (radius * sin(i * 2 * M_PI / CIRCLE_SIDES))) / SCREEN_HEIGHT;
 		circle->verts[i * 3 + 2] = z;
 	}
+
+	glGenVertexArrays(1, &circle->vao);
+	glGenBuffers(1, &circle->vbo);
+
+	glBindVertexArray(circle->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, circle->vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(circle->verts), circle->verts, GL_STREAM_DRAW);
+
+	// Position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 }
 
 // Generates a circle with desired pos/radius/color.
@@ -140,18 +150,6 @@ circle_obj *generate_circle(GLfloat x, GLfloat y, GLfloat z, GLfloat radius, GLf
 	assert(circle != nullptr);
 
 	position_circle(circle, x, y, z, radius);
-
-	glGenVertexArrays(1, &circle->vao);
-	glGenBuffers(1, &circle->vbo);
-
-	glBindVertexArray(circle->vao);
-	glBindBuffer(GL_ARRAY_BUFFER, circle->vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(circle->verts),
-		circle->verts, GL_STREAM_DRAW);
-
-	// Position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
 
 	// Set color
 	memcpy(circle->color, color, COLOR_LEN * sizeof(float));
