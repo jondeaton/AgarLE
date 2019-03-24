@@ -5,10 +5,8 @@
 #include <sstream>
 #include <iostream>
 
-#include <GLUT/glut.h>
-#include <OpenGL/glext.h>
-#include <OpenGL/glu.h>
-#include <OpenGL/gl.h>
+// todo: remove this
+#define GL_SILENCE_DEPRECATION
 
 class Shader {
 public:
@@ -38,7 +36,7 @@ public:
 			// convert stream into string
 			vertexCode = vShaderStream.str();
 			fragmentCode = fShaderStream.str();
-		} catch (std::ifstream::failure e) {
+		} catch (std::ifstream::failure &e) {
 			std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
 		}
 		const char* vShaderCode = vertexCode.c_str();
@@ -47,12 +45,12 @@ public:
 		unsigned int vertex, fragment;
 		// vertex shader
 		vertex = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vertex, 1, &vShaderCode, NULL);
+		glShaderSource(vertex, 1, &vShaderCode, nullptr);
 		glCompileShader(vertex);
 		checkCompileErrors(vertex, "VERTEX");
 		// fragment Shader
 		fragment = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fragment, 1, &fShaderCode, NULL);
+		glShaderSource(fragment, 1, &fShaderCode, nullptr);
 		glCompileShader(fragment);
 		checkCompileErrors(fragment, "FRAGMENT");
 		// shader Program

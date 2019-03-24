@@ -5,10 +5,9 @@
 #include <math.h>
 #include <assert.h>
 
-#include <GLUT/glut.h>
-#include <OpenGL/glext.h>
-#include <OpenGL/glu.h>
-#include <OpenGL/gl.h>
+// todo: remove this
+#define GL_SILENCE_DEPRECATION
+
 #include <GLFW/glfw3.h>
 #include <OpenGL/gl3.h>
 
@@ -16,12 +15,9 @@
 
 #define CIRCLE_SIDES 50
 #define CIRCLE_VERTS (CIRCLE_SIDES + 2)
-#define PI 3.141592f
 #define COLOR_LEN 3
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
-
-using namespace std;
 
 // Defines circle to be rendered.
 struct circle_obj {
@@ -34,13 +30,12 @@ struct circle_obj {
 
 // Forward declarations
 void render_loop(GLFWwindow *window);
-void updateVerts(circle_obj *circle);
+void update_verts(circle_obj *circle);
 void render_circle(circle_obj *circle, Shader *shader);
-circle_obj *generateCircle(GLfloat x, GLfloat y, GLfloat z, GLfloat radius,
-	GLfloat *color);
+circle_obj *generate_circle(GLfloat x, GLfloat y, GLfloat z, GLfloat radius, GLfloat *color);
 void free_circle(circle_obj *circle);
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window);
+void process_input(GLFWwindow *window);
+void position_circle(circle_obj *circle, GLfloat x, GLfloat y, GLfloat z, GLfloat radius);
 
 circle_obj *circles;
 
@@ -57,17 +52,15 @@ int main(int argc, char *argv[]) {
 #endif
 
 	// Create a windowed mode window and its OpenGL context
-	window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Draw Circles Test", NULL, NULL);
+	window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Draw Circles Test", nullptr, nullptr);
 
 	if (!window) {
 		glfwTerminate();
-		cerr << "window create failed" << endl;
+		std::cerr << "window create failed" << std::endl;
 		return -1;
 	}
 
-	// Set window context
 	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	render_loop(window);
 
@@ -79,13 +72,16 @@ void render_loop(GLFWwindow *window) {
 	// Load shader (for positioning and color)
 	Shader shader("client/vertex.shader", "client/fragment.shader");
 	
-	circles = NULL;
+	circles = nullptr;
 	GLfloat color[3] = { 1.0f, 0.0f, 0.0f };
-	circle_obj *circle = generateCircle(0, 0, 0, 100.0f, color);
+	circle_obj *circle = generate_circle(0, 0, 0, 100.0f, color);
 
+	circle_obj *circle2 = generate_circle(0, 0, 0, 100.f, color);
+
+	int i = 0;
 	// Loop until the user closes the window
 	while (!glfwWindowShouldClose(window)) {
-		processInput(window);
+		process_input(window);
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -94,17 +90,25 @@ void render_loop(GLFWwindow *window) {
 		shader.use();
 		//update verts
 		render_circle(circle, &shader);
+		render_circle(circle2, &shader);
+
+		if (i % 100 == 0) {
+			position_circle(circle, i, 0, 0, 100.f);
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
+		i++;
 	}
 
 	free_circle(circle);
+	free_circle(circle2);
 	glfwTerminate();
 }
 
 // Shell update for vertices
-void updateVerts(circle_obj *circle) {
+void update_verts(circle_obj *circle) {
 	glBindBuffer(GL_ARRAY_BUFFER, circle->vbo);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(circle->verts), circle->verts);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -118,22 +122,24 @@ void render_circle(circle_obj *circle, Shader *shader) {
 	glBindVertexArray(0);
 }
 
-// Generates a circle with desired pos/radius/color.
-circle_obj *generateCircle(GLfloat x, GLfloat y, GLfloat z, GLfloat radius, GLfloat *color)
-{
-	circle_obj *circle = (circle_obj *) malloc(sizeof(circle_obj));
-	assert(circle != NULL);
-
+void position_circle(circle_obj *circle, GLfloat x, GLfloat y, GLfloat z, GLfloat radius) {
 	circle->verts[0] = x / SCREEN_WIDTH;
 	circle->verts[1] = y / SCREEN_HEIGHT;
 	circle->verts[2] = z;
 
-	for (int i = 1; i < CIRCLE_VERTS; i++)
-	{
-		circle->verts[i * 3] = (x + (radius * cos(i *  2 * PI / CIRCLE_SIDES))) / SCREEN_WIDTH;
-		circle->verts[i * 3 + 1] = (y + (radius * sin(i * 2 * PI / CIRCLE_SIDES))) / SCREEN_HEIGHT;
+	for (int i = 1; i < CIRCLE_VERTS; i++) {
+		circle->verts[i * 3] = (x + (radius * cos(i *  2 * M_PI / CIRCLE_SIDES))) / SCREEN_WIDTH;
+		circle->verts[i * 3 + 1] = (y + (radius * sin(i * 2 * M_PI / CIRCLE_SIDES))) / SCREEN_HEIGHT;
 		circle->verts[i * 3 + 2] = z;
 	}
+}
+
+// Generates a circle with desired pos/radius/color.
+circle_obj *generate_circle(GLfloat x, GLfloat y, GLfloat z, GLfloat radius, GLfloat *color) {
+	auto circle = new circle_obj;
+	assert(circle != nullptr);
+
+	position_circle(circle, x, y, z, radius);
 
 	glGenVertexArrays(1, &circle->vao);
 	glGenBuffers(1, &circle->vbo);
@@ -152,10 +158,10 @@ circle_obj *generateCircle(GLfloat x, GLfloat y, GLfloat z, GLfloat radius, GLfl
 
 	glBindVertexArray(0);
 
-	if (circles == NULL) circles = circle;
+	if (circles == nullptr) circles = circle;
 	else circles->next = circle;
-	circle->next = NULL;
 
+	circle->next = nullptr;
 	return circle;
 }
 
@@ -163,18 +169,14 @@ circle_obj *generateCircle(GLfloat x, GLfloat y, GLfloat z, GLfloat radius, GLfl
 void free_circle(circle_obj *circle) {
 	glDeleteVertexArrays(1, &circle->vao);
 	glDeleteBuffers(1, &circle->vbo);
-	free(circle);
+	delete circle;
 }
 
 // Handle key input
-void processInput(GLFWwindow *window)
-{
+void process_input(GLFWwindow *window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-}
 
-// Handle window resize
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	glViewport(0, 0, width, height);
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    std::cout << "Space bar pressed!" << std::endl;
 }
