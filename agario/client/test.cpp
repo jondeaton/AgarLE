@@ -3,9 +3,15 @@
 #include <stdio.h>
 #include <string.h> 
 #include <math.h>
-#include <assert.h> 
-#include <GL/glew.h>
+#include <assert.h>
+
+#include <GLUT/glut.h>
+#include <OpenGL/glext.h>
+#include <OpenGL/glu.h>
+#include <OpenGL/gl.h>
 #include <GLFW/glfw3.h>
+#include <OpenGL/gl3.h>
+
 #include "shader.h"
 
 #define CIRCLE_SIDES 50
@@ -38,8 +44,7 @@ void processInput(GLFWwindow *window);
 
 circle_obj *circles;
 
-int main(void)
-{
+int main(int argc, char *argv[]) {
 	GLFWwindow *window;
 
 	// Initialize the library
@@ -54,8 +59,7 @@ int main(void)
 	// Create a windowed mode window and its OpenGL context
 	window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Draw Circles Test", NULL, NULL);
 
-	if (!window)
-	{
+	if (!window) {
 		glfwTerminate();
 		cerr << "window create failed" << endl;
 		return -1;
@@ -65,15 +69,6 @@ int main(void)
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	// Initialize GLEW
-	glewExperimental = true;
-	if (glewInit() != GLEW_OK)
-	{
-		cerr << "glew init failed" << endl;
-		glfwTerminate();
-		return -1;
-	}
-
 	render_loop(window);
 
 	return 0;
@@ -82,15 +77,14 @@ int main(void)
 // Rendering update loop.
 void render_loop(GLFWwindow *window) {
 	// Load shader (for positioning and color)
-	Shader shader("./vertex.shader", "./fragment.shader");
+	Shader shader("client/vertex.shader", "client/fragment.shader");
 	
 	circles = NULL;
 	GLfloat color[3] = { 1.0f, 0.0f, 0.0f };
 	circle_obj *circle = generateCircle(0, 0, 0, 100.0f, color);
 
 	// Loop until the user closes the window
-	while (!glfwWindowShouldClose(window))
-	{
+	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -111,9 +105,6 @@ void render_loop(GLFWwindow *window) {
 
 // Shell update for vertices
 void updateVerts(circle_obj *circle) {
-	// update verts
-
-
 	glBindBuffer(GL_ARRAY_BUFFER, circle->vbo);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(circle->verts), circle->verts);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

@@ -17,7 +17,6 @@ else()
     set(CMAKE_CXX_FLAGS ${DEBUG_FLAGS})
 endif()
 
-include_directories(engine engine/THST)
 set(AGARIO_SRC
         engine/Engine.hpp       engine/Engine.cpp
         engine/Player.hpp
@@ -25,21 +24,27 @@ set(AGARIO_SRC
         engine/Ball.hpp
         engine/settings.hpp
         engine/Entities.hpp)
-#engine/THST/QuadTree.h
 add_library(agario STATIC ${AGARIO_SRC})
 
-include_directories(client)
-set(AGARIO_CLIENT_SRC
-        client/main.cpp)
-add_executable(client ${AGARIO_CLIENT_SRC})
+
+find_package(OpenGL REQUIRED)
+find_package(GLUT)
+include_directories(client ${OPENGL_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
+
+set(AGARIO_CLIENT_SRC client/shader.h)
+
+add_executable(client ${AGARIO_CLIENT_SRC} client/main.cpp)
+add_executable(client-test ${AGARIO_CLIENT_SRC}
+        client/test.cpp)
 target_link_libraries(client agario)
+target_link_libraries(client-test agario glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
+
 
 include_directories(server)
 set(AGARIO_SERVER_SRC
         server/main.cpp)
 add_executable(server ${AGARIO_SERVER_SRC})
 target_link_libraries(server agario)
-
 
 include_directories(test)
 set(TEST_SRC
