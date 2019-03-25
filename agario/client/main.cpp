@@ -1,6 +1,14 @@
 #include <iostream>
 
+#include "client.hpp"
+
 int main(int argc, char *argv[]) {
-  std::cout << "Agario client not yet implemented" << std::endl;
+
+  AgarioClient client;
+
+  client.connect();
+
+
+
   return 0;
 }

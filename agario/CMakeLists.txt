@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 project(Agario CXX)
 set(CMAKE_CXX_STANDARD 17)
 
-#set(DEBUG_FLAGS -g -O0 -Wall -Wextra -pedantic -DDEBUG)
-#set(RELEASE_FLAGS -Ofast -DNDEBUG)
-#set(BENCH_FLAGS -Ofast -fno-omit-frame-pointer -DNDEBUG)
-set(TEST_FLAGS -g -O0 -Wall -Wextra -pedantic -DDEBUG)
+#set(DEBUG_FLAGS "-g -O0 -Wall -Wextra -pedantic")
+#set(RELEASE_FLAGS "-O3")
+#set(BENCH_FLAGS "-Ofast -fno-omit-frame-pointer")
+#set(TEST_FLAGS "-g -O0 -Wall -Wextra -pedantic")
 
 # To configure for "release", then run cmake with:
 # cmake -DCMAKE_BUILD_TYPE=Release
@@ -31,7 +31,11 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT)
 include_directories(client ${OPENGL_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 
-set(AGARIO_CLIENT_SRC client/shader.h)
+set(AGARIO_CLIENT_SRC
+        client/client.hpp
+        client/entities.hpp
+        client/renderer.hpp
+        client/shader.h)
 
 add_executable(client ${AGARIO_CLIENT_SRC} client/main.cpp)
 add_executable(client-test ${AGARIO_CLIENT_SRC}
