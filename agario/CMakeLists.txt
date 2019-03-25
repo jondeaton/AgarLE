@@ -17,6 +17,8 @@ else()
     set(CMAKE_CXX_FLAGS ${DEBUG_FLAGS})
 endif()
 
+include_directories(".")
+
 set(AGARIO_SRC
         engine/Engine.hpp       engine/Engine.cpp
         engine/Player.hpp       engine/Player.cpp
@@ -30,11 +32,12 @@ add_library(agario STATIC ${AGARIO_SRC})
 
 find_package(OpenGL REQUIRED)
 find_package(GLUT)
-include_directories(client ${OPENGL_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
+include_directories(client engine ${OPENGL_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 
 set(AGARIO_CLIENT_SRC
+        engine/Entities.hpp
         client/client.hpp
-        client/entities.hpp
+        client/renderables.hpp
         client/renderer.hpp
         client/shader.hpp)
 

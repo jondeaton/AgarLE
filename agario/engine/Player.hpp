@@ -3,9 +3,10 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+
+#include "Ball.hpp"
 #include "types.hpp"
 #include "Entities.hpp"
-#include "Ball.hpp"
 #include "utils.hpp"
 
 #include <assert.h>

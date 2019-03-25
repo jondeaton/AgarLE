@@ -2,7 +2,6 @@
 
 #include <math.h>
 
-#include "Player.hpp"
 #include "types.hpp"
 #include "settings.hpp"
 

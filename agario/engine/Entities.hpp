@@ -1,7 +1,7 @@
 #pragma once
 
-#include "types.hpp"
 #include "Ball.hpp"
+#include "types.hpp"
 #include "settings.hpp"
 
 namespace Agario {

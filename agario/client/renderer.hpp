@@ -6,7 +6,7 @@
 #include <math.h>
 
 #include "shader.hpp"
-#include "entities.hpp"
+#include "renderables.hpp"
 
 // todo: remove this
 #define GL_SILENCE_DEPRECATION
@@ -113,19 +113,19 @@ private:
   GLfloat screen_height;
   Shader shader;
 
-  void draw_circle(circle &circle, GLfloat screen_x, GLfloat screen_y, GLfloat screen_radius) {
+  void draw_circle(Circle &circle, GLfloat screen_x, GLfloat screen_y, GLfloat screen_radius) {
     position_circle(circle, screen_x, screen_y, screen_radius);
     render_circle(circle);
   }
 
-  void render_circle(circle &circle) {
+  void render_circle(Circle &circle) {
     shader.setVec3("col", circle.color[0], circle.color[1], circle.color[2]);
     glBindVertexArray(circle.vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, CIRCLE_VERTS);
     glBindVertexArray(0);
   }
 
-  void position_circle(circle &circle, GLfloat x, GLfloat y, GLfloat radius) {
+  void position_circle(Circle &circle, GLfloat x, GLfloat y, GLfloat radius) {
     update_verts(circle, x, y, radius);
 
     glGenVertexArrays(1, &circle.vao);
@@ -140,7 +140,7 @@ private:
     glEnableVertexAttribArray(0);
   }
 
-  void update_verts(circle &circle, GLfloat x, GLfloat y, GLfloat radius) {
+  void update_verts(Circle &circle, GLfloat x, GLfloat y, GLfloat radius) {
     circle.verts[0] = x / screen_width;
     circle.verts[1] = y / screen_width;
     circle.verts[2] = 0;
