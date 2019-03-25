@@ -13,7 +13,6 @@
 
 class Circle {
 
-
 };
 
 struct circle {
@@ -38,6 +37,18 @@ struct player {
 };
 
 struct food {
+  GLfloat x;
+  GLfloat y;
+  circle circle;
+};
+
+struct pellet {
+  GLfloat x;
+  GLfloat y;
+  circle circle;
+};
+
+struct virus {
   GLfloat x;
   GLfloat y;
   circle circle;

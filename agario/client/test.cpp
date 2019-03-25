@@ -140,7 +140,7 @@ void position_circle(circle_obj *circle, GLfloat x, GLfloat y, GLfloat z, GLfloa
 	glBufferData(GL_ARRAY_BUFFER, sizeof(circle->verts), circle->verts, GL_STREAM_DRAW);
 
 	// Position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
 	glEnableVertexAttribArray(0);
 }
 

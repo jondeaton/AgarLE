@@ -1,14 +1,10 @@
 #pragma once
 
 #include "renderer.hpp"
+#include "entities.hpp"
 
 #include <string>
-
-// probably going to need something like this
-//#include <netdb.h>                // for gethostbyname
-//#include <sys/socket.h>           // for socket, AF_INET
-//#include <sys/types.h>            // for SOCK_STREAM
-//#include <unistd.h>               // for close
+#include <ctime>
 
 
 class AgarioClient {
@@ -20,13 +16,13 @@ public:
 
   void game_loop(){
     renderer.draw_grid();
-    renderer.draw_foods();
-    renderer.draw_pellets();
-    renderer.draw_viruses();
+    renderer.draw_foods(_player, foods);
+    renderer.draw_pellets(_player, pellets);
+    renderer.draw_viruses(_player, viruses);
 
     renderer.draw_border();
 
-    renderer.draw_players();
+    renderer.draw_players(_player, players);
 
 //    socket.emit('0', window.canvas.target); // playerSendTarget "Heartbeat".
   }
@@ -34,11 +30,20 @@ public:
 
   // socket.on('serverTellPlayerMove', function (userData, foodsList, massList, virusList) {
   void server_tell_player_move() {
-
+    // todo: yeah gotta figure ouw how to do this one
   }
 
 private:
   AgarioRenderer renderer;
 
-  std::vector<
+  std::clock_t g_PreviousTicks;
+  std::clock_t g_CurrentTicks;
+
+  unsigned int player_id;
+
+  player _player;
+  std::vector<player> players;
+  std::vector<food> foods;
+  std::vector<pellet> pellets;
+  std::vector<virus> viruses;
 };
