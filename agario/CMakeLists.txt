@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 project(Agario CXX)
 set(CMAKE_CXX_STANDARD 17)
 
-#set(DEBUG_FLAGS -g -O0 -Wall -Wextra -pedantic -DDEBUG)
-#set(RELEASE_FLAGS -Ofast -DNDEBUG)
-#set(BENCH_FLAGS -Ofast -fno-omit-frame-pointer -DNDEBUG)
-set(TEST_FLAGS -g -O0 -Wall -Wextra -pedantic -DDEBUG)
+#set(DEBUG_FLAGS "-g -O0 -Wall -Wextra -pedantic")
+#set(RELEASE_FLAGS "-O3")
+#set(BENCH_FLAGS "-Ofast -fno-omit-frame-pointer")
+#set(TEST_FLAGS "-g -O0 -Wall -Wextra -pedantic")
 
 # To configure for "release", then run cmake with:
 # cmake -DCMAKE_BUILD_TYPE=Release
@@ -17,7 +17,6 @@ else()
     set(CMAKE_CXX_FLAGS ${DEBUG_FLAGS})
 endif()
 
-include_directories(engine engine/THST)
 set(AGARIO_SRC
         engine/Engine.hpp       engine/Engine.cpp
         engine/Player.hpp       engine/Player.cpp
@@ -28,18 +27,29 @@ set(AGARIO_SRC
 
 add_library(agario STATIC ${AGARIO_SRC})
 
-include_directories(client)
+
+find_package(OpenGL REQUIRED)
+find_package(GLUT)
+include_directories(client ${OPENGL_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
+
 set(AGARIO_CLIENT_SRC
-        client/main.cpp)
-add_executable(client ${AGARIO_CLIENT_SRC})
-target_link_libraries(client agario)
+        client/client.hpp
+        client/entities.hpp
+        client/renderer.hpp
+        client/shader.hpp)
+
+add_executable(client ${AGARIO_CLIENT_SRC} client/main.cpp)
+add_executable(client-test ${AGARIO_CLIENT_SRC}
+        client/test.cpp)
+target_link_libraries(client agario glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
+target_link_libraries(client-test agario glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
+
 
 include_directories(server)
 set(AGARIO_SERVER_SRC
         server/main.cpp)
 add_executable(server ${AGARIO_SERVER_SRC})
 target_link_libraries(server agario)
-
 
 include_directories(test)
 set(TEST_SRC
