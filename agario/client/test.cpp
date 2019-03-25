@@ -11,7 +11,7 @@
 #include <GLFW/glfw3.h>
 #include <OpenGL/gl3.h>
 
-#include "shader.h"
+#include "shader.hpp"
 
 #define CIRCLE_SIDES 50
 #define CIRCLE_VERTS (CIRCLE_SIDES + 2)

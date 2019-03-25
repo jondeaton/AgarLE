@@ -6,10 +6,8 @@
 #include <string>
 #include <ctime>
 
-
 class AgarioClient {
 public:
-
 
   void connect() { }
 
@@ -30,7 +28,7 @@ public:
 
   // socket.on('serverTellPlayerMove', function (userData, foodsList, massList, virusList) {
   void server_tell_player_move() {
-    // todo: yeah gotta figure ouw how to do this one
+    // todo: yeah... gotta figure this one out
   }
 
 private:

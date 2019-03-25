@@ -35,12 +35,12 @@ set(AGARIO_CLIENT_SRC
         client/client.hpp
         client/entities.hpp
         client/renderer.hpp
-        client/shader.h)
+        client/shader.hpp)
 
 add_executable(client ${AGARIO_CLIENT_SRC} client/main.cpp)
 add_executable(client-test ${AGARIO_CLIENT_SRC}
         client/test.cpp)
-target_link_libraries(client agario)
+target_link_libraries(client agario glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
 target_link_libraries(client-test agario glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
 
 

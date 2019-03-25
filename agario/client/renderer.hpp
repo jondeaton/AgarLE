@@ -5,14 +5,14 @@
 #include <string>
 #include <math.h>
 
+#include "shader.hpp"
+#include "entities.hpp"
+
 // todo: remove this
 #define GL_SILENCE_DEPRECATION
 
 #include <GLFW/glfw3.h>
 #include <OpenGL/gl3.h>
-
-#include "shader.h"
-#include "entities.hpp"
 
 #define CIRCLE_SIDES 50
 #define CIRCLE_VERTS (CIRCLE_SIDES + 2)
@@ -41,8 +41,8 @@ class AgarioRenderer {
 public:
 
   AgarioRenderer() : 
-  screen_width(DEFAULT_SCREEN_WIDTH), screen_height(DEFAULT_SCREEN_HEIGHT) {}
-//  shader("client/vertex.shader", "client/fragment.shader") { }
+  screen_width(DEFAULT_SCREEN_WIDTH), screen_height(DEFAULT_SCREEN_HEIGHT),
+  shader("client/vertex.shader", "client/fragment.shader") { }
 
   void initialize_window() {
     GLFWwindow *window;
@@ -111,7 +111,7 @@ public:
 private:
   GLfloat screen_width;
   GLfloat screen_height;
-//  Shader shader;
+  Shader shader;
 
   void draw_circle(circle &circle, GLfloat screen_x, GLfloat screen_y, GLfloat screen_radius) {
     position_circle(circle, screen_x, screen_y, screen_radius);
@@ -119,7 +119,7 @@ private:
   }
 
   void render_circle(circle &circle) {
-//    shader.setVec3("col", circle.color[0], circle.color[1], circle.color[2]);
+    shader.setVec3("col", circle.color[0], circle.color[1], circle.color[2]);
     glBindVertexArray(circle.vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, CIRCLE_VERTS);
     glBindVertexArray(0);
