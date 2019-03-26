@@ -31,7 +31,7 @@ add_library(agario STATIC ${AGARIO_SRC})
 
 
 find_package(OpenGL REQUIRED)
-find_package(GLUT)
+find_package(GLUT REQUIRED)
 include_directories(client engine ${OPENGL_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 
 set(AGARIO_CLIENT_SRC
@@ -59,8 +59,10 @@ set(TEST_SRC
         test/engine-test.hpp
         test/main.cpp)
 
-find_library(gtest gtest)
-if (gtest)
+find_package(gtest REQUIRED)
+if (GTEST_FOUND)
+    find_library(gtest required)
+    message("Found Google Test: ${GTEST_INCLUDE_DIRS}")
     include_directories(test ${GTEST_INCLUDE_DIR})
 
     add_executable(engine-test ${TEST_SRC} ${AGARIO_SRC})
