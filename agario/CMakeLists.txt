@@ -9,6 +9,12 @@ set(CMAKE_CXX_STANDARD 17)
 
 # To configure for "release", then run cmake with:
 # cmake -DCMAKE_BUILD_TYPE=Release
+
+IF(APPLE)
+    # Fix linking on 10.14+. See https://stackoverflow.com/questions/54068035
+    link_directories(/usr/local/lib)
+ENDIF()
+
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     message(STATUS "Mode: Release")
     set(CMAKE_CXX_FLAGS  ${RELEASE_FLAGS})
@@ -61,12 +67,11 @@ set(TEST_SRC
 
 find_package(gtest REQUIRED)
 if (GTEST_FOUND)
-    find_library(gtest required)
-    message("Found Google Test: ${GTEST_INCLUDE_DIRS}")
-    include_directories(test ${GTEST_INCLUDE_DIR})
+
+    include_directories(test ${GTEST_INCLUDE_DIRS})
 
     add_executable(engine-test ${TEST_SRC} ${AGARIO_SRC})
-    target_link_libraries(engine-test gtest pthread)
+    target_link_libraries(engine-test pthread gtest)
     target_compile_options(engine-test PUBLIC ${TEST_FLAGS})
 else()
     message("Google Test not found")
