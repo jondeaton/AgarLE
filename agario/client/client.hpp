@@ -6,24 +6,34 @@
 #include <string>
 #include <ctime>
 
+void process_input(GLFWwindow *window);
+
 class AgarioClient {
 public:
 
   void connect() { }
 
 
-  void game_loop(){
-    renderer.draw_grid();
-    renderer.draw_foods(_player, foods);
-    renderer.draw_pellets(_player, pellets);
-    renderer.draw_viruses(_player, viruses);
+  void game_loop() {
 
-    renderer.draw_border();
-
-    renderer.draw_players(_player, players);
-
-//    socket.emit('0', window.canvas.target); // playerSendTarget "Heartbeat".
+    while (renderer.ready()) {
+//      process_input(window);
+      renderer.render_screen(_player, players, foods, pellets, viruses);
+    }
   }
+
+  void render() {
+
+
+    //    socket.emit('0', window.canvas.target); // playerSendTarget "Heartbeat".
+  }
+
+  // todo: change these over to
+  void init_player(unsigned int pid, unsigned int mass) {
+//    _player.assign_pid(pid);
+//    _player.set_mass(mass)
+  }
+
 
 
   // socket.on('serverTellPlayerMove', function (userData, foodsList, massList, virusList) {
@@ -37,11 +47,18 @@ private:
   std::clock_t g_PreviousTicks;
   std::clock_t g_CurrentTicks;
 
-  unsigned int player_id;
-
   player _player;
   std::vector<player> players;
   std::vector<food> foods;
   std::vector<pellet> pellets;
   std::vector<virus> viruses;
 };
+
+// Handle key input
+void process_input(GLFWwindow *window) {
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    glfwSetWindowShouldClose(window, true);
+
+  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    std::cout << "Space bar pressed!" << std::endl;
+}

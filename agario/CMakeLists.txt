@@ -47,12 +47,14 @@ set(AGARIO_CLIENT_SRC
         client/renderer.hpp
         client/shader.hpp)
 
-add_executable(client ${AGARIO_CLIENT_SRC} client/main.cpp)
-add_executable(client-test ${AGARIO_CLIENT_SRC}
-        client/test.cpp)
-target_link_libraries(client agario glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
-target_link_libraries(client-test agario glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
+add_executable(test-opengl test/test-opengl.cpp)
+target_link_libraries(test-opengl glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
 
+add_executable(test-client ${AGARIO_CLIENT_SRC} test/test-client.cpp)
+target_link_libraries(test-client agario glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
+
+add_executable(client ${AGARIO_CLIENT_SRC} client/main.cpp)
+target_link_libraries(client agario glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
 
 include_directories(server)
 set(AGARIO_SERVER_SRC
@@ -62,7 +64,7 @@ target_link_libraries(server agario)
 
 include_directories(test)
 set(TEST_SRC
-        test/engine-test.hpp
+        test/test-engine.hpp
         test/main.cpp)
 
 find_package(gtest REQUIRED)
@@ -70,9 +72,9 @@ if (GTEST_FOUND)
 
     include_directories(test ${GTEST_INCLUDE_DIRS})
 
-    add_executable(engine-test ${TEST_SRC} ${AGARIO_SRC})
-    target_link_libraries(engine-test pthread gtest)
-    target_compile_options(engine-test PUBLIC ${TEST_FLAGS})
+    add_executable(test-engine ${TEST_SRC} ${AGARIO_SRC})
+    target_link_libraries(test-engine pthread gtest)
+    target_compile_options(test-engine PUBLIC ${TEST_FLAGS})
 else()
     message("Google Test not found")
 endif()

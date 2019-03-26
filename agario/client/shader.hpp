@@ -8,55 +8,61 @@
 // todo: remove this
 #define GL_SILENCE_DEPRECATION
 
-//#include <GLFW/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <OpenGL/gl3.h>
 
 class Shader {
 public:
 	unsigned int ID;
-	// constructor generates the shader on the fly
-	// ------------------------------------------------------------------------
-	Shader(const char* vertexPath, const char* fragmentPath) {
-		// 1. retrieve the vertex/fragment source code from filePath
-		std::string vertexCode;
-		std::string fragmentCode;
-		std::ifstream vShaderFile;
-		std::ifstream fShaderFile;
-		// ensure ifstream objects can throw exceptions:
-		vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-		fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+	Shader() = default;
+
+	// generates the shader on the fly
+	Shader(const char* vertexPath, const char* fragmentPath) : ID(0) {
+		generate_shader(vertexPath, fragmentPath);
+	}
+
+	void generate_shader(const char* vertexPath, const char* fragmentPath) {
+		std::string vertexCode = get_file_contents(vertexPath);
+		std::string fragmentCode = get_file_contents(fragmentPath);
+		compile_shaders(vertexCode, fragmentCode);
+	}
+
+	std::string get_file_contents(const char* path) {
+		std::string contents;
+		std::ifstream file;
+
+		file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 		try {
-			// open files
-			vShaderFile.open(vertexPath);
-			fShaderFile.open(fragmentPath);
-			std::stringstream vShaderStream, fShaderStream;
-			// read file's buffer contents into streams
-			vShaderStream << vShaderFile.rdbuf();
-			fShaderStream << fShaderFile.rdbuf();
-			// close file handlers
-			vShaderFile.close();
-			fShaderFile.close();
-			// convert stream into string
-			vertexCode = vShaderStream.str();
-			fragmentCode = fShaderStream.str();
+			file.open(path);
+			std::stringstream stream;
+			stream << file.rdbuf();
+			file.close();
+			return stream.str();
 		} catch (std::ifstream::failure &e) {
-			std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+			std::cerr << "SHDER FILE \"" << path << "\" not successfully read" << std::endl;
 		}
+		return std::string();
+	}
+
+	void compile_shaders(const std::string &vertexCode, const std::string &fragmentCode) {
 		const char* vShaderCode = vertexCode.c_str();
 		const char * fShaderCode = fragmentCode.c_str();
 
-		// 2. compile shaders
 		unsigned int vertex, fragment;
+
 		// vertex shader
 		vertex = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertex, 1, &vShaderCode, nullptr);
 		glCompileShader(vertex);
 		checkCompileErrors(vertex, "VERTEX");
+
 		// fragment Shader
 		fragment = glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fragment, 1, &fShaderCode, nullptr);
 		glCompileShader(fragment);
 		checkCompileErrors(fragment, "FRAGMENT");
+
 		// shader Program
 		ID = glCreateProgram();
 		glAttachShader(ID, vertex);
@@ -67,32 +73,30 @@ public:
 		glDeleteShader(vertex);
 		glDeleteShader(fragment);
 	}
-	// activate the shader
-	// ------------------------------------------------------------------------
+
 	void use() {
 		glUseProgram(ID);
 	}
-	// utility uniform functions
-	// ------------------------------------------------------------------------
+
 	void setBool(const std::string &name, bool value) const {
 		glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
 	}
-	// ------------------------------------------------------------------------
+
 	void setInt(const std::string &name, int value) const {
 		glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 	}
-	// ------------------------------------------------------------------------
+
 	void setFloat(const std::string &name, float value) const {
 		glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 	}
-	// ------------------------------------------------------------------------
+
 	void setVec3(const std::string &name, float value1, float value2, float value3) const {
 		glUniform3f(glGetUniformLocation(ID, name.c_str()), value1, value2, value3);
 	}
 
 private:
+
 	// utility function for checking shader compilation/linking errors.
-	// ------------------------------------------------------------------------
 	void checkCompileErrors(unsigned int shader, const std::string &type) {
 		int success;
 		char infoLog[1024];

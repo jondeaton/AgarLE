@@ -40,13 +40,17 @@ class circle_obj {
 class AgarioRenderer {
 public:
 
-  AgarioRenderer() : 
+  AgarioRenderer(bool draw=true) :
   screen_width(DEFAULT_SCREEN_WIDTH), screen_height(DEFAULT_SCREEN_HEIGHT),
-  shader("client/vertex.shader", "client/fragment.shader") { }
+  window(nullptr), shader() {
+    if (draw) {
+      initialize_window();
+      shader.generate_shader("../client/vertex.shader", "../client/fragment.shader");
+      shader.use();
+    }
+  }
 
   void initialize_window() {
-    GLFWwindow *window;
-
     // Initialize the library
     if (!glfwInit())
       throw std::exception();
@@ -71,8 +75,13 @@ public:
   }
 
   // todo: how to draw lines in OpenGL?
-  void draw_grid() { }
-  void draw_border() { }
+  void draw_grid() {
+
+  }
+
+  void draw_border() {
+
+  }
 
   void draw_pellets(player &player, std::vector<pellet> &pellets) {
     for (auto &pellet : pellets)
@@ -107,10 +116,34 @@ public:
                     cell.radius);
   }
 
+  bool ready() {
+    if (window == nullptr) return false;
+    return !glfwWindowShouldClose(window);
+  }
+
+  void render_screen(player &p1, std::vector<player> &players,
+    std::vector<food> &foods, std::vector<pellet> &pellets, std::vector<virus> &viruses) {
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    draw_grid();
+    draw_foods(p1, foods);
+    draw_pellets(p1, pellets);
+    draw_viruses(p1, viruses);
+
+    draw_border();
+
+    draw_players(p1, players);
+
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+  }
 
 private:
   GLfloat screen_width;
   GLfloat screen_height;
+  GLFWwindow *window;
   Shader shader;
 
   void draw_circle(Circle &circle, GLfloat screen_x, GLfloat screen_y, GLfloat screen_radius) {
