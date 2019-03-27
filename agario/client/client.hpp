@@ -14,18 +14,16 @@ public:
   void connect() { }
 
 
-  void game_loop() {
+  void game_loop(int num_iterations=-1) {
 
-    while (renderer.ready()) {
+    while (num_iterations != 0 && renderer.ready()) {
 //      process_input(window);
       renderer.render_screen(_player, players, foods, pellets, viruses);
+
+      // emit "heartbeat" signal to server
+      if (num_iterations > 0) num_iterations--;
     }
-  }
-
-  void render() {
-
-
-    //    socket.emit('0', window.canvas.target); // playerSendTarget "Heartbeat".
+    renderer.terminate();
   }
 
   // todo: change these over to

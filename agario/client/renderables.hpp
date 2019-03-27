@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <GLFW/glfw3.h>
-#include <OpenGL/gl3.h>
 
 #include <engine/Entities.hpp>
 #include <engine/Player.hpp>

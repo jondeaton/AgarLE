@@ -1,11 +1,24 @@
 #include <client/client.hpp>
 #include <client/shader.hpp>
 
+#include <gtest/gtest.h>
+
+namespace {
+
+  TEST(RenderTest, Once) {
+   AgarioClient client;
+   
+   client.game_loop();
+  }
+
+//  TEST(RenderTest, Simple) {
+//   AgarioClient client;
+//   client.game_loop(10);
+//  }
+
+}
+
 int main(int argc, char *argv[]) {
-
- AgarioClient client;
-
- client.render();
-
- return 0;
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

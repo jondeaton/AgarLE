@@ -52,14 +52,16 @@ namespace Agario {
     recombine_cells(player);
     // todo: recombine cells
     // todo: decrement recombine timers
-    // todo: increment or decrement item speeds
+    // todo: increment or decrement entity speeds
     // todo: reset player action?
-    // todo: player dead if no more cells
+    // todo: player dead if has zero cells remaining
   }
 
   void Engine::move_player(Player &player) {
     (void) player;
-    // todo
+
+    // make sure not to move two of players cells into one another
+    // make sure not to move player past border
   }
 
   void Engine::check_player_collisions(Player &player) {
