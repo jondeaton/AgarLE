@@ -16,10 +16,12 @@ namespace Agario {
   };
 
   class RenderableBall : public Ball {
+    using Ball::Ball;
     Circle circle;
   };
 
   class RenderableMovingBall : public MovingBall {
+    using MovingBall::MovingBall;
     Circle circle;
   };
 

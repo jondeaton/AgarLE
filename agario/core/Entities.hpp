@@ -18,10 +18,13 @@
 
 namespace Agario {
 
-//  template <bool renderable>
-//  class Pellet : public std::conditional<renderable, RenderableBall, Ball>::type {
-  class Pellet : public Ball {
-public:
+  template <bool renderable>
+  class Pellet : public std::conditional<renderable, RenderableBall, Ball>::type {
+  public:
+
+    // inherit constructors
+    typedef typename std::conditional<renderable, RenderableBall, Ball>::type Super;
+    using Super::Super;
 
     Agario::distance radius() const override { return PELLET_SIZE; }
     Agario::mass mass () const override { return PELLET_MASS; }
@@ -32,7 +35,11 @@ public:
   template <bool renderable>
   class Food : public std::conditional<renderable, RenderableMovingBall, MovingBall>::type {
   public:
-    using MovingBall::MovingBall;
+
+    // inherit constructors
+    typedef typename std::conditional<renderable, RenderableMovingBall, MovingBall>::type Super;
+    using Super::Super;
+
     Agario::distance radius() const override { return FOOD_SIZE; }
     Agario::mass mass() const override { return FOOD_MASS; }
   private:
@@ -42,7 +49,11 @@ public:
   template <bool renderable>
   class Virus : public std::conditional<renderable, RenderableMovingBall, MovingBall>::type {
   public:
-    using MovingBall::MovingBall;
+
+    // inherit constructors
+    typedef typename std::conditional<renderable, RenderableMovingBall, MovingBall>::type Super;
+    using Super::Super;
+
     // todo: viruses have variable mass and size
     Agario::distance radius() const override { return VIRUS_SIZE; }
     Agario::mass mass() const override { return VIRUS_MASS; }

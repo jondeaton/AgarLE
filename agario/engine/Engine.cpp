@@ -107,10 +107,10 @@ namespace Agario {
 
   void Engine::add_pellets(int num_pellets) {
     while (num_pellets > 0) {
-      Agario::Location loc = random_location();
-      Agario::Pellet pellet;
+//      Agario::Location loc = random_location();
+//      Agario::Pellet pellet(loc);
 
-//      pellets.emplace_back(random_location());
+      pellets.emplace_back(random_location());
       num_pellets--;
     }
   }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "renderer.hpp"
-#include "renderables.hpp"
+#include "core/renderables.hpp"
 
 #include <string>
 #include <ctime>
@@ -37,7 +37,7 @@ namespace Agario {
 //      process_input(window);
         renderer.render_screen(*_player, players, foods, pellets, viruses);
 
-        // emit "heartbeat" signal to server
+        // todo: emit "heartbeat" signal to server
         if (num_iterations > 0) num_iterations--;
       }
       renderer.terminate();
