@@ -2,13 +2,14 @@
 
 #include <math.h>
 
-#include "types.hpp"
+#include "core/types.hpp"
 #include "settings.hpp"
 
 namespace Agario {
 
   class Ball {
   public:
+    Ball() : x(0), y(0) { }
     explicit Ball(const Location &loc) : x(loc.x), y(loc.y) { }
     explicit Ball(Location &&loc) : x(loc.x), y(loc.y) { }
     explicit Ball(distance x, distance y) : Ball(Location(x, y)) { }
@@ -50,6 +51,7 @@ namespace Agario {
 
   class MovingBall : public Ball {
   public:
+    MovingBall() = default;
     explicit MovingBall(distance x, distance y) : Ball(x, y) { }
     explicit MovingBall(Location &&loc) : Ball(loc) { }
     MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) { }

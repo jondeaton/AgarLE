@@ -6,7 +6,7 @@
 namespace {
 
   TEST(RenderTest, Once) {
-   AgarioClient client;
+   Agario::Client client;
    
    client.game_loop();
   }

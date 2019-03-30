@@ -2,8 +2,8 @@
 #include <algorithm>
 
 #include "Engine.hpp"
-#include "Entities.hpp"
-#include "utils.hpp"
+#include "core/Entities.hpp"
+#include "core/utils.hpp"
 
 namespace Agario {
 
@@ -17,7 +17,7 @@ namespace Agario {
     ticks++;
   }
 
-  std::vector<Player> &Engine::leaderboard() {
+  std::vector<Engine::Player> &Engine::leaderboard() {
     std::sort(std::begin(players), std::end(players));
     return players;
   }
@@ -107,7 +107,10 @@ namespace Agario {
 
   void Engine::add_pellets(int num_pellets) {
     while (num_pellets > 0) {
-      pellets.emplace_back(random_location());
+      Agario::Location loc = random_location();
+      Agario::Pellet pellet;
+
+//      pellets.emplace_back(random_location());
       num_pellets--;
     }
   }
@@ -119,7 +122,7 @@ namespace Agario {
     }
   }
 
-  void Engine::emit_foods(Agario::Player &player) {
+  void Engine::emit_foods(Engine::Player &player) {
 
     // emit one pellet from each sufficiently large cell
     for (Cell &cell : player.cells) {
@@ -136,7 +139,7 @@ namespace Agario {
     }
   }
 
-  void Engine::player_split(Agario::Player &player, std::vector<Cell>& created_cells) {
+  void Engine::player_split(Engine::Player &player, std::vector<Cell>& created_cells) {
 
     for (Cell &cell : player.cells) {
 
@@ -230,8 +233,8 @@ namespace Agario {
   T random(T max) { return random<T>(0, max); }
 
   Agario::Location Engine::random_location() {
-    auto x = random<distance>(canvas_width);
-    auto y = random<distance>(canvas_height);
+    auto x = random<distance>(arena_width);
+    auto y = random<distance>(arena_height);
     return Location(x, y);
   }
 

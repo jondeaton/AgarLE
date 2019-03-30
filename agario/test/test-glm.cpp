@@ -33,15 +33,13 @@ int main( void )
   glMatrixMode( GL_MODELVIEW ); // (default matrix mode) modelview matrix defines how your objects are transformed (meaning translation, rotation and scaling) in your world
   glLoadIdentity( ); // same as above comment
 
-  GLfloat lineVertices[] =
-    {
+  GLfloat lineVertices[] = {
       200, 100, 0,
       100, 300, 0
     };
 
   // Loop until the user closes the window
-  while ( !glfwWindowShouldClose( window ) )
-  {
+  while (!glfwWindowShouldClose(window)) {
     glClear( GL_COLOR_BUFFER_BIT );
 
     // Render OpenGL here

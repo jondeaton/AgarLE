@@ -27,11 +27,12 @@ include_directories(".")
 
 set(AGARIO_SRC
         engine/Engine.hpp       engine/Engine.cpp
-        engine/Player.hpp       engine/Player.cpp
-        engine/utils.hpp        engine/utils.cpp
-        engine/Ball.hpp
+        engine/utils.hpp
+        core/Player.hpp
+        core/utils.hpp core/utils.cpp
+        core/Ball.hpp
         engine/settings.hpp
-        engine/Entities.hpp)
+        core/Entities.hpp)
 
 add_library(agario STATIC ${AGARIO_SRC})
 
@@ -41,9 +42,8 @@ find_package(GLUT REQUIRED)
 include_directories(client engine ${OPENGL_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 
 set(AGARIO_CLIENT_SRC
-        engine/Entities.hpp
+        core/Entities.hpp
         client/client.hpp
-        client/renderables.hpp
         client/renderer.hpp
         client/shader.hpp)
 

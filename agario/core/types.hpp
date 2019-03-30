@@ -82,7 +82,6 @@ namespace Agario {
   typedef Coordinate<Agario::distance> Location;
 
 
-
   class Velocity {
   public:
     explicit Velocity() : dx(0), dy(0) { }
