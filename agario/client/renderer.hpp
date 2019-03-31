@@ -39,7 +39,9 @@ namespace Agario {
     typedef Food<true> Food;
     typedef Virus<true> Virus;
 
-    explicit Renderer(bool draw=true) :
+    std::shared_ptr<Player> player;
+
+    explicit Renderer(bool draw=true) : player(nullptr),
       screen_width(DEFAULT_SCREEN_WIDTH), screen_height(DEFAULT_SCREEN_HEIGHT),
       window(nullptr), shader(), draw(draw) {
       if (draw) {
@@ -72,19 +74,46 @@ namespace Agario {
       return window;
     }
 
-    std::pair<GLfloat, GLfloat> to_screen_position(const Player &player, GLfloat x, GLfloat y) {
-      auto screen_x = static_cast<GLfloat> ((x - player.x()) / screen_x_range);
-      auto screen_y = static_cast<GLfloat> ((y - player.y()) / screen_y_range);
-      return {screen_x, screen_y};
+    GLfloat to_screen_x(Agario::distance x) {
+      return static_cast<GLfloat> ((x - player->x()) / view_width);
     }
 
-    GLfloat lineVertices[6] = {
-      0, 0, 0,
-      0.5, 0.5, 0
-    };
+    GLfloat to_screen_y(Agario::distance y) {
+      return static_cast<GLfloat> ((y - player->y()) / view_height);
+    }
 
     void draw_grid() {
+      // vertical lines
+      int x = round_up(view_left(), GRID_SPACING);
+      while (x <= view_right()) {
+        auto screen_x = to_screen_x(x);
+        draw_line(screen_x, -1, screen_x, 1);
+        x += GRID_SPACING;
+      }
 
+      // horizontal lines
+      int y = round_up(view_low(), GRID_SPACING);
+      while (y <= view_right()) {
+        auto screen_y = to_screen_y(y);
+        draw_line(screen_y, -1, screen_y, 1);
+        y += GRID_SPACING;
+      }
+    }
+
+    Agario::distance view_low() const {
+      return player->y() - view_height / 2;
+    }
+
+    Agario::distance view_high() const {
+      return player->y() + view_height / 2;
+    }
+
+    Agario::distance view_left() const {
+      return player->x() - view_width / 2;
+    }
+
+    Agario::distance view_right() const {
+      return player->x() + view_width / 2;
     }
 
     void draw_border() {
@@ -115,12 +144,10 @@ namespace Agario {
                     VIRUS_RADIUS);
     }
 
-    void draw_players(Player &p, std::vector<Player> &players) {
-      for (auto &player : players)
-        for (auto &cell : player.cells)
-          draw_circle(cell.x - player.x() + screen_width / 2,
-                      cell.y - player.y() + screen_height / 2,
-                      cell.radius());
+    void draw_player(const Player &p) {
+      for (auto &cell : p.cells)
+        draw_circle(to_screen_x(cell.x), to_screen_y(cell.y),
+                    static_cast<GLfloat>(cell.radius()));
     }
 
     void render_screen(Player &p1, std::vector<Player> &players,
@@ -136,7 +163,10 @@ namespace Agario {
 
       draw_border();
 
-      draw_players(p1, players);
+      for (auto &other_player : players)
+        draw_player(other_player);
+
+      draw_player(*player);
 
       glfwSwapBuffers(window);
       glfwPollEvents();
@@ -158,8 +188,11 @@ namespace Agario {
     Shader shader;
     bool draw;
 
-    float screen_x_range;
-    float screen_y_range;
+    Agario::distance view_width;
+    Agario::distance view_height;
+
+    Agario::distance arena_width;
+    Agario::distance arena_height;
 
     void draw_circle(GLfloat x, GLfloat y, GLfloat radius) {
       // todo: I think this is doing the same thing as the previous way?
@@ -199,22 +232,28 @@ namespace Agario {
       glDisableClientState(GL_VERTEX_ARRAY);
     }
 
-    // todo: fix this!!!
-//  void draw_line(lineVertices) {
-//    glEnable(GL_LINE_SMOOTH);
-//    glEnable(GL_LINE_STIPPLE);
-//    glPushAttrib(GL_LINE_BIT);
-//    glLineWidth(10);
-//    glLineStipple(1, 0x00FF);
-//    glEnableClientState(GL_VERTEX_ARRAY);
-//    glVertexPointer(3, GL_FLOAT, 0, lineVertices);
-//    glDrawArrays(GL_LINES, 0, 2);
-//    glDisableClientState(GL_VERTEX_ARRAY);
-//    glPopAttrib();
-//    glDisable(GL_LINE_STIPPLE);
-//    glDisable(GL_LINE_SMOOTH);
-//  }
+  void draw_line_vertices(GLfloat *line_vertices) {
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_LINE_STIPPLE);
+    glPushAttrib(GL_LINE_BIT);
+    glLineWidth(10);
+    glLineStipple(1, 0x00FF);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, line_vertices);
+    glDrawArrays(GL_LINES, 0, 2);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glPopAttrib();
+    glDisable(GL_LINE_STIPPLE);
+    glDisable(GL_LINE_SMOOTH);
+  }
 
+    void draw_line(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2) {
+      GLfloat lineVertices[6] = {
+        x1, y1, 0,
+        x2, y2, 0
+      };
+      draw_line_vertices(lineVertices);
+    }
 
     void set_color(Circle &circle, GLfloat color[3]) {
       memcpy(circle.color, color, 3 * sizeof(GLfloat));
@@ -259,7 +298,19 @@ namespace Agario {
 //    }
 //  }
 
+    int round_up(int n, int multiple) {
+      if (multiple == 0)
+        return n;
+
+      int remainder = abs(n) % multiple;
+      if (remainder == 0)
+        return n;
+
+      if (n < 0)
+        return -(abs(n) - remainder);
+      else
+        return n + multiple - remainder;
+    }
+
   };
-
-
 }

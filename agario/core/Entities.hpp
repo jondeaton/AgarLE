@@ -75,6 +75,7 @@ namespace Agario {
       Super(loc, vel), _mass(mass) { }
 
     Agario::mass mass() const override { return _mass; }
+
     distance radius() const override {
       return radius_conversion(mass());
     }

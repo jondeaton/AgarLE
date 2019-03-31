@@ -23,7 +23,8 @@ namespace Agario {
 
     template<typename... Args>
     void set_player(Args&&... args) {
-      _player = std::make_shared(std::forward<Args>(args)...);
+      _player = std::make_shared<Player>(std::forward<Args>(args)...);
+      renderer.player = _player;
     }
 
     template<typename... Args>
@@ -60,7 +61,7 @@ namespace Agario {
     std::clock_t g_PreviousTicks;
     std::clock_t g_CurrentTicks;
 
-    std::unique_ptr<Player> _player;
+    std::shared_ptr<Player> _player;
 
     std::vector<Player> players;
     std::vector<Food> foods;
