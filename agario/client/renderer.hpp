@@ -134,10 +134,7 @@ namespace Agario {
     }
 
     void draw_border() {
-      GLfloat color[3] = {1.0f, 0.0f, 0.0f};
-//    Circle circle;
-//    set_color(circle, color);
-//      draw_circle(0, 0, 0.25);
+      // todo
     }
 
     void draw_pellets(Player &player, std::vector<Pellet> &pellets) {
@@ -199,17 +196,22 @@ namespace Agario {
     }
 
   private:
-    GLfloat screen_width;
-    GLfloat screen_height;
+    int screen_width;
+    int screen_height;
     GLFWwindow *window;
     Shader shader;
     bool draw;
 
+    // todo: make these scale with player mass
     Agario::distance view_width = 100;
     Agario::distance view_height = 100;
 
     Agario::distance arena_width;
     Agario::distance arena_height;
+
+    void set_color(Circle &circle, GLfloat color[3]) {
+      memcpy(circle.color, color, 3 * sizeof(GLfloat));
+    }
 
     void draw_circle(GLfloat x, GLfloat y, GLfloat radius) {
       // todo: I think this is doing the same thing as the previous way?
@@ -249,30 +251,26 @@ namespace Agario {
       glDisableClientState(GL_VERTEX_ARRAY);
     }
 
+    void draw_line(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2) {
+      GLfloat line_vertices[6] = {
+        x1, y1, 0,
+        x2, y2, 0
+      };
+      draw_line_vertices(line_vertices);
+    }
+
     void draw_line_vertices(GLfloat *line_vertices) {
       glEnable(GL_LINE_SMOOTH);
       glPushAttrib(GL_LINE_BIT);
       glColor3f(0.9, 0.9, 0.9);
-    glLineWidth(1);
-    glLineStipple(1, 0x00FF);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(3, GL_FLOAT, 0, line_vertices);
-    glDrawArrays(GL_LINES, 0, 2);
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glPopAttrib();
-    glDisable(GL_LINE_SMOOTH);
-  }
-
-    void draw_line(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2) {
-      GLfloat lineVertices[6] = {
-        x1, y1, 0,
-        x2, y2, 0
-      };
-      draw_line_vertices(lineVertices);
-    }
-
-    void set_color(Circle &circle, GLfloat color[3]) {
-      memcpy(circle.color, color, 3 * sizeof(GLfloat));
+      glLineWidth(1);
+      glLineStipple(1, 0x00FF);
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glVertexPointer(3, GL_FLOAT, 0, line_vertices);
+      glDrawArrays(GL_LINES, 0, 2);
+      glDisableClientState(GL_VERTEX_ARRAY);
+      glPopAttrib();
+      glDisable(GL_LINE_SMOOTH);
     }
 
 //  void draw_circle(Circle &circle, GLfloat screen_x, GLfloat screen_y, GLfloat screen_radius) {

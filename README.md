@@ -13,6 +13,7 @@ Reinforcement Learning environment for Agar.io
   - store circle vertices in entity objects
   - View sizes that scales with player mass
 - Get basic game mechamics
+  - Handle player mouse/keyboard inputs
   - Player follow mouse
   - player eat food
   - player player split
