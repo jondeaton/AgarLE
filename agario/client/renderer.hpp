@@ -42,6 +42,7 @@ namespace Agario {
     std::shared_ptr<Player> player;
 
     explicit Renderer(bool draw=true) : player(nullptr),
+      arena_width(1000), arena_height(1000),
       screen_width(DEFAULT_SCREEN_WIDTH), screen_height(DEFAULT_SCREEN_HEIGHT),
       window(nullptr), shader(), draw(draw) {
       if (draw) {
@@ -85,7 +86,7 @@ namespace Agario {
     void draw_grid() {
       // vertical lines
       int x = round_up(view_left(), GRID_SPACING);
-      while (x <= view_right()) {
+      while (x <= view_right() && x <= arena_width) {
         auto screen_x = to_screen_x(x);
         draw_line(screen_x, -1, screen_x, 1);
         x += GRID_SPACING;
@@ -93,9 +94,9 @@ namespace Agario {
 
       // horizontal lines
       int y = round_up(view_low(), GRID_SPACING);
-      while (y <= view_right()) {
+      while (y <= view_right() && y <= arena_height) {
         auto screen_y = to_screen_y(y);
-        draw_line(screen_y, -1, screen_y, 1);
+        draw_line(-1, screen_y, 1, screen_y);
         y += GRID_SPACING;
       }
     }
@@ -116,11 +117,16 @@ namespace Agario {
       return player->x() + view_width / 2;
     }
 
+    GLfloat to_screen_size(Agario::distance d) const {
+      // todo: yeah this isn't right
+      return static_cast<GLfloat>(d / view_width);
+    }
+
     void draw_border() {
       GLfloat color[3] = {1.0f, 0.0f, 0.0f};
 //    Circle circle;
 //    set_color(circle, color);
-      draw_circle(0, 0, 0.25);
+//      draw_circle(0, 0, 0.25);
     }
 
     void draw_pellets(Player &player, std::vector<Pellet> &pellets) {
@@ -147,7 +153,7 @@ namespace Agario {
     void draw_player(const Player &p) {
       for (auto &cell : p.cells)
         draw_circle(to_screen_x(cell.x), to_screen_y(cell.y),
-                    static_cast<GLfloat>(cell.radius()));
+                    to_screen_size(cell.radius()));
     }
 
     void render_screen(Player &p1, std::vector<Player> &players,
@@ -188,8 +194,8 @@ namespace Agario {
     Shader shader;
     bool draw;
 
-    Agario::distance view_width;
-    Agario::distance view_height;
+    Agario::distance view_width = 100;
+    Agario::distance view_height = 100;
 
     Agario::distance arena_width;
     Agario::distance arena_height;
@@ -232,18 +238,17 @@ namespace Agario {
       glDisableClientState(GL_VERTEX_ARRAY);
     }
 
-  void draw_line_vertices(GLfloat *line_vertices) {
-    glEnable(GL_LINE_SMOOTH);
-    glEnable(GL_LINE_STIPPLE);
-    glPushAttrib(GL_LINE_BIT);
-    glLineWidth(10);
+    void draw_line_vertices(GLfloat *line_vertices) {
+      glEnable(GL_LINE_SMOOTH);
+      glPushAttrib(GL_LINE_BIT);
+      glColor3f(0.9, 0.9, 0.9);
+    glLineWidth(1);
     glLineStipple(1, 0x00FF);
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(3, GL_FLOAT, 0, line_vertices);
     glDrawArrays(GL_LINES, 0, 2);
     glDisableClientState(GL_VERTEX_ARRAY);
     glPopAttrib();
-    glDisable(GL_LINE_STIPPLE);
     glDisable(GL_LINE_SMOOTH);
   }
 
