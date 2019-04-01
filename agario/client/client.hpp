@@ -44,15 +44,16 @@ namespace Agario {
       renderer->player = player;
     }
 
-    void game_loop(int num_iterations=-1) {
+    void game_loop(std::optional<int> num_iterations=std::nullopt) {
       if (renderer == nullptr) initialize_renderer();
 
-      while (num_iterations != 0 && renderer->ready()) {
+      while ((!num_iterations || num_iterations > 0) && renderer->ready()) {
+
 //      process_input(window);
         renderer->render_screen(*player, players, foods, pellets, viruses);
 
         // todo: emit "heartbeat" signal to server
-        if (num_iterations > 0) num_iterations--;
+        if (num_iterations) (*num_iterations)--;
       }
       renderer->terminate();
     }
