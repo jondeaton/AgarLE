@@ -4,9 +4,9 @@
 #include <algorithm>
 #include <vector>
 
-#include "Ball.hpp"
-#include "types.hpp"
-#include "Entities.hpp"
+#include "core/Ball.hpp"
+#include "core/types.hpp"
+#include "core/Entities.hpp"
 #include "utils.hpp"
 
 #include <assert.h>
@@ -14,40 +14,12 @@
 
 namespace Agario {
 
-  class Player;
-
-  class Cell : public MovingBall {
-
-  public:
-    explicit Cell(distance x, distance y, Agario::mass mass) :
-      MovingBall(x, y) { set_mass(mass); }
-
-    explicit Cell(Location &&loc, Velocity &vel, Agario::mass mass) :
-      MovingBall(loc, vel), _mass(mass) { }
-
-
-    explicit Cell(Location &loc, Velocity &vel, Agario::mass mass) :
-      MovingBall(loc, vel), _mass(mass) { }
-
-    Agario::mass mass() const override { return _mass; }
-    distance radius() const override {
-      return radius_conversion(mass());
-    }
-
-    void set_mass(Agario::mass new_mass) {
-      _mass = std::max<Agario::mass>(new_mass, CELL_MIN_SIZE);
-    }
-
-    void increment_mass(int inc) { set_mass(mass() + inc); }
-    void reduce_mass_by_factor(float factor) { set_mass(mass() / factor); }
-
-  private:
-    Agario::mass _mass;
-  };
-
+  template <bool renderable>
   class Player {
 
   public:
+
+    typedef Cell<renderable> Cell;
 
     explicit Player(pid pid, std::string name) :
       action(none), target(0, 0),
@@ -65,10 +37,26 @@ namespace Agario {
     void set_score(score new_score) { _score = new_score; }
     void increment_score(score inc) { _score += inc; }
 
-    /**
-     * Total mass of the player (sum of masses of all cells)
-     * @return
-     */
+    // todo: cache this so that it doesn't have to be recomputed
+    Agario::distance x() const {
+      Agario::distance x = 0;
+      for (auto &cell : cells)
+        x += cell.x * cell.mass();
+      return x / mass();
+    }
+
+    Agario::distance y() const {
+      Agario::distance y = 0;
+      for (auto &cell : cells)
+        y += cell.y * cell.mass();
+      return y / mass();
+    }
+
+    Agario::Location location() const {
+      return Agario::Location(x(), y());
+    }
+
+    // Total mass of the player (sum of masses of all cells)
     Agario::mass mass() const {
       Agario::mass total_mass = 0;
       for (auto &cell : cells)

@@ -9,7 +9,6 @@
 #define GL_SILENCE_DEPRECATION
 
 #include <GLFW/glfw3.h>
-#include <OpenGL/gl3.h>
 
 #include "shader.hpp"
 
@@ -70,7 +69,7 @@ int main(int argc, char *argv[]) {
 // Rendering update loop.
 void render_loop(GLFWwindow *window) {
 	// Load shader (for positioning and color)
-	Shader shader("client/vertex.shader", "client/fragment.shader");
+	Shader shader("../client/vertex.shader", "../client/fragment.shader");
 	
 	circles = nullptr;
 	GLfloat color[3] = { 1.0f, 0.0f, 0.0f };
@@ -82,7 +81,7 @@ void render_loop(GLFWwindow *window) {
 	while (!glfwWindowShouldClose(window)) {
 		process_input(window);
 
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Render

@@ -1,17 +1,12 @@
 #pragma once
 
-#include "types.hpp"
+#include <core/types.hpp>
+#include <engine/settings.hpp>
 
 namespace Agario {
 
-  distance radius_conversion(mass mass);
-  mass mass_conversion(distance radius);
-  template <typename T> T div_round_up(T num, T denom) {
-    return static_cast<T>((num + denom - 1) / denom);
+  float max_speed(Agario::mass mass) {
+    return CELL_MAX_SPEED * CELL_MIN_SIZE / (float) mass;
   }
-
-
-  // todo: new type speed?
-  float max_speed(Agario::mass mass);
 
 }

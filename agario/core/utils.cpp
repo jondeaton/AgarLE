@@ -1,6 +1,6 @@
 
 #include "utils.hpp"
-#include "types.hpp"
+#include "core/types.hpp"
 #include "settings.hpp"
 
 #include <cmath>
@@ -14,10 +14,6 @@ namespace Agario {
 
   Agario::mass mass_conversion(distance radius) {
     return (mass) std::round(MASS_AREA_RADIO * M_PI * std::pow(radius, 2));
-  }
-
-  float max_speed(Agario::mass mass) {
-    return CELL_MAX_SPEED * CELL_MIN_SIZE / (float) mass;
   }
 
 }
