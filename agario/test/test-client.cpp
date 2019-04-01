@@ -14,10 +14,9 @@ namespace {
    Agario::distance x = 100;
    Agario::distance y = 100;
    Agario::mass mass = 25;
-
    player.add_cell(x, y, mass);
-   client.set_player(player);
 
+   client.set_player(player);
    client.game_loop();
   }
 

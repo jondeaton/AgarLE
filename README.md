@@ -4,14 +4,14 @@ Reinforcement Learning environment for Agar.io
 
 # todo
 - Baseic game rendering
-  - Fix draw grid
-  - Fix getting arena dimensions
   - Fix x/y warping
+  - fix radius to screen dimension
   - Draw pellets
   - Draw viruses
   - Draw food
-  - View sizes that scales with player mass
   - Player colors
+  - store circle vertices in entity objects
+  - View sizes that scales with player mass
 - Get basic game mechamics
   - Player follow mouse
   - player eat food

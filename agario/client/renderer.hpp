@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include <math.h>
+#include <optional>
 
 #include "shader.hpp"
 #include <core/Entities.hpp>
@@ -26,6 +27,10 @@
 #define DEFAULT_SCREEN_HEIGHT 480
 #define GRID_SPACING 25
 
+#define DEFAULT_ARENA_WIDTH 1000
+#define DEFAULT_ARENA_HEIGHT 1000
+
+
 #define WINDOW_NAME "AgarIO"
 
 namespace Agario {
@@ -41,8 +46,9 @@ namespace Agario {
 
     std::shared_ptr<Player> player;
 
-    explicit Renderer(bool draw=true) : player(nullptr),
-      arena_width(1000), arena_height(1000),
+    explicit Renderer(Agario::distance arena_width, Agario::distance arena_height,
+      bool draw=true) : player(nullptr),
+      arena_width(arena_width), arena_height(arena_height),
       screen_width(DEFAULT_SCREEN_WIDTH), screen_height(DEFAULT_SCREEN_HEIGHT),
       window(nullptr), shader(), draw(draw) {
       if (draw) {
@@ -75,37 +81,24 @@ namespace Agario {
       return window;
     }
 
-    GLfloat to_screen_x(Agario::distance x) {
-      return static_cast<GLfloat> ((x - player->x()) / view_width);
+    void set_arena_dimensions(Agario::distance width, Agario::distance height) {
+      arena_width = width;
+      arena_height = height;
     }
 
-    GLfloat to_screen_y(Agario::distance y) {
-      return static_cast<GLfloat> ((y - player->y()) / view_height);
+    GLfloat to_screen_x(Agario::distance x) const {
+      return static_cast<GLfloat> (2 * (x - player->x()) / view_width);
     }
 
-    void draw_grid() {
-      // vertical lines
-      int x = round_up(view_left(), GRID_SPACING);
-      while (x <= view_right() && x <= arena_width) {
-        auto screen_x = to_screen_x(x);
-        draw_line(screen_x, -1, screen_x, 1);
-        x += GRID_SPACING;
-      }
-
-      // horizontal lines
-      int y = round_up(view_low(), GRID_SPACING);
-      while (y <= view_right() && y <= arena_height) {
-        auto screen_y = to_screen_y(y);
-        draw_line(-1, screen_y, 1, screen_y);
-        y += GRID_SPACING;
-      }
+    GLfloat to_screen_y(Agario::distance y) const {
+      return static_cast<GLfloat> (2 * (y - player->y()) / view_height);
     }
 
-    Agario::distance view_low() const {
+    Agario::distance view_bottom() const {
       return player->y() - view_height / 2;
     }
 
-    Agario::distance view_high() const {
+    Agario::distance view_top() const {
       return player->y() + view_height / 2;
     }
 
@@ -120,6 +113,24 @@ namespace Agario {
     GLfloat to_screen_size(Agario::distance d) const {
       // todo: yeah this isn't right
       return static_cast<GLfloat>(d / view_width);
+    }
+
+    void draw_grid() {
+      // vertical lines
+      int x = round_up(view_left(), GRID_SPACING);
+      while (x <= view_right() && x <= arena_width) {
+        auto screen_x = to_screen_x(x);
+        draw_line(screen_x, -1, screen_x, 1);
+        x += GRID_SPACING;
+      }
+
+      // horizontal lines
+      int y = round_up(view_bottom(), GRID_SPACING);
+      while (y <= view_right() && y <= arena_height) {
+        auto screen_y = to_screen_y(y);
+        draw_line(-1, screen_y, 1, screen_y);
+        y += GRID_SPACING;
+      }
     }
 
     void draw_border() {

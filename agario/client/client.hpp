@@ -19,12 +19,16 @@ namespace Agario {
     typedef Food<true> Food;
     typedef Virus<true> Virus;
 
+
+    explicit Client() : renderer(nullptr), g_PreviousTicks(0), g_CurrentTicks(0) { }
+
     void connect() { }
 
     template<typename... Args>
     void set_player(Args&&... args) {
-      _player = std::make_shared<Player>(std::forward<Args>(args)...);
-      renderer.player = _player;
+      player = std::make_shared<Player>(std::forward<Args>(args)...);
+      if (renderer != nullptr)
+        renderer->player = player;
     }
 
     template<typename... Args>
@@ -32,16 +36,25 @@ namespace Agario {
       players.emplace_back(std::forward<Args>(args)...);
     }
 
-    void game_loop(int num_iterations=-1) {
+    void initialize_renderer() {
+      Agario::distance arena_width = 1000;
+      Agario::distance arena_height = 1000;
+      // todo: get arena dimensions from
+      renderer = std::make_unique<Agario::Renderer>(arena_width, arena_height);
+      renderer->player = player;
+    }
 
-      while (num_iterations != 0 && renderer.ready()) {
+    void game_loop(int num_iterations=-1) {
+      if (renderer == nullptr) initialize_renderer();
+
+      while (num_iterations != 0 && renderer->ready()) {
 //      process_input(window);
-        renderer.render_screen(*_player, players, foods, pellets, viruses);
+        renderer->render_screen(*player, players, foods, pellets, viruses);
 
         // todo: emit "heartbeat" signal to server
         if (num_iterations > 0) num_iterations--;
       }
-      renderer.terminate();
+      renderer->terminate();
     }
 
     // todo: change these over to
@@ -56,12 +69,12 @@ namespace Agario {
     }
 
   private:
-    Agario::Renderer renderer;
+    std::unique_ptr<Agario::Renderer> renderer;
 
     std::clock_t g_PreviousTicks;
     std::clock_t g_CurrentTicks;
 
-    std::shared_ptr<Player> _player;
+    std::shared_ptr<Player> player;
 
     std::vector<Player> players;
     std::vector<Food> foods;
