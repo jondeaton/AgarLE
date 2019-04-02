@@ -1,6 +1,6 @@
 #pragma once
 
-#include "renderer.hpp"
+#include "rendering/renderer.hpp"
 #include "core/renderables.hpp"
 
 #include <string>
@@ -18,7 +18,6 @@ namespace Agario {
     typedef Pellet<true> Pellet;
     typedef Food<true> Food;
     typedef Virus<true> Virus;
-
 
     explicit Client() : renderer(nullptr), g_PreviousTicks(0), g_CurrentTicks(0) { }
 

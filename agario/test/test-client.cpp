@@ -1,5 +1,5 @@
 #include <client/client.hpp>
-#include <client/shader.hpp>
+#include <rendering/shader.hpp>
 #include <core/Player.hpp>
 
 #include <gtest/gtest.h>

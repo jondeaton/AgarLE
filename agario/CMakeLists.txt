@@ -25,33 +25,45 @@ endif()
 
 include_directories(".")
 
-set(AGARIO_SRC
+set(AGARIO_CORE_SRC
+        core/Player.hpp
+        core/utils.hpp          core/utils.cpp
+        core/Ball.hpp
+        core/Entities.hpp)
+
+set(AGARIO_ENGINE_SRC
         engine/Engine.hpp       engine/Engine.cpp
         engine/utils.hpp
-        core/Player.hpp
-        core/utils.hpp core/utils.cpp
-        core/Ball.hpp
-        engine/settings.hpp
-        core/Entities.hpp)
+        engine/settings.hpp)
+
+set(AGARIO_RENDERING_SRC
+        rendering/renderer.hpp
+        rendering/shader.hpp)
+
+set(AGARIO_SRC ${AGARIO_CORE_SRC} ${AGARIO_ENGINE_SRC})
 
 add_library(agario STATIC ${AGARIO_SRC})
 
-
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
-include_directories(client engine ${OPENGL_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
+find_library(GLFW REQUIRED)
+include_directories(client engine
+        ${OPENGL_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 
 set(AGARIO_CLIENT_SRC
         core/Entities.hpp
         client/client.hpp
-        client/renderer.hpp
-        client/shader.hpp)
+        rendering/renderer.hpp
+        rendering/shader.hpp)
 
 add_executable(test-opengl test/test-opengl.cpp)
-target_link_libraries(test-opengl glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
+target_link_libraries(test-opengl
+        glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
 
-add_executable(test-glm test/test-glm.cpp)
-target_link_libraries(test-glm glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
+add_executable(test-glm ${AGARIO_RENDERING_SRC} test/test-glm.cpp)
+target_link_libraries(test-glm glfw ${GLFW_LIBRARIES}
+        glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
+
 
 add_executable(test-client ${AGARIO_CLIENT_SRC} test/test-client.cpp)
 target_link_libraries(test-client agario gtest glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})

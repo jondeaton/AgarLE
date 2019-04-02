@@ -3,7 +3,11 @@
 #define GL_SILENCE_DEPRECATION
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <OpenGL/gl3.h>
+#include <OpenGL/OpenGL.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <exception>
 #include <vector>
@@ -30,10 +34,92 @@
 #define DEFAULT_ARENA_WIDTH 1000
 #define DEFAULT_ARENA_HEIGHT 1000
 
-
 #define WINDOW_NAME "AgarIO"
 
 namespace Agario {
+
+  class Grid {
+  public:
+    Grid(Agario::distance arena_width, Agario::distance arena_height) :
+    arena_width(arena_width), arena_height(arena_height),
+    vbo_vertical(0), vbo_horizontal(0) {
+      _create_vertices();
+    }
+
+    void draw() {
+      glEnableVertexAttribArray(attribute_v_coord);
+      // Describe our vertices array to OpenGL (it can't guess its format automatically)
+      glBindBuffer(GL_ARRAY_BUFFER, vbo_sprite_vertices);
+      glVertexAttribPointer(
+        attribute_v_coord, // attribute
+        4,                 // number of elements per vertex, here (x,y,z)
+        GL_FLOAT,          // the type of each element
+        GL_FALSE,          // take our values as-is
+        0,                 // no extra data between each position
+        0                  // offset of first element
+      );
+    }
+
+  private:
+    Agario::distance arena_width;
+    Agario::distance arena_height;
+
+    GLuint vbo_vertical;
+    GLuint vbo_horizontal;
+
+    void _create_vertical_verts() {
+      int num_vert_lines = static_cast<int>(arena_width / GRID_SPACING);
+
+      // allocate vector of vertices
+      auto verts = new GLfloat[2 * 3 * num_vert_lines];
+
+      // vertical lines
+      for (int i = 0; i < num_vert_lines; i++) {
+        verts[6 * i] = i * GRID_SPACING;
+        verts[6 * i + 1] = 0;
+        verts[6 * i + 2] = 0;
+
+        verts[6 * i + 3] = i * GRID_SPACING;
+        verts[6 * i + 4] = static_cast<GLfloat>(arena_height);
+        verts[6 * i + 5] = 0;
+      }
+
+      glGenBuffers(1, &vbo_vertical);
+      glBindBuffer(GL_ARRAY_BUFFER, vbo_vertical);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+
+      delete[] verts;
+    }
+
+    void _create_horiz_verts() {
+      int num_horz_lines = static_cast<int>(arena_height / GRID_SPACING);
+      auto verts = new GLfloat[2 * 3 * num_horz_lines];
+
+      // horizontal lines
+      for (int i = 0; i < num_horz_lines; i++) {
+        verts[6 * i] = 0;
+        verts[6 * i + 1] = i * GRID_SPACING;
+        verts[6 * i + 2] = 0;
+
+        verts[6 * i + 3] = static_cast<GLfloat>(arena_width);
+        verts[6 * i + 4] = i * GRID_SPACING;
+        verts[6 * i + 5] = 0;
+      }
+
+      glGenBuffers(1, &vbo_horizontal);
+      glBindBuffer(GL_ARRAY_BUFFER, vbo_horizontal);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+
+      delete[] verts;
+    }
+
+    void _create_vertices() {
+      _create_vertical_verts();
+      _create_horiz_verts();
+    }
+
+  };
+
 
   class Renderer {
   public:
@@ -56,6 +142,9 @@ namespace Agario {
         shader.generate_shader("../client/vertex.shader", "../client/fragment.shader");
         shader.use();
       }
+      create_grid_vertices();
+
+      glm::mat4 projection = glm::ortho(0, screen_width, screen_height, 0);
     }
 
     GLFWwindow *initialize_window() {
@@ -81,9 +170,8 @@ namespace Agario {
       return window;
     }
 
-    void set_arena_dimensions(Agario::distance width, Agario::distance height) {
-      arena_width = width;
-      arena_height = height;
+    void create_grid_vertices() {
+
     }
 
     GLfloat to_screen_x(Agario::distance x) const {
@@ -116,21 +204,13 @@ namespace Agario {
     }
 
     void draw_grid() {
-      // vertical lines
-      int x = round_up(view_left(), GRID_SPACING);
-      while (x <= view_right() && x <= arena_width) {
-        auto screen_x = to_screen_x(x);
-        draw_line(screen_x, -1, screen_x, 1);
-        x += GRID_SPACING;
-      }
 
-      // horizontal lines
-      int y = round_up(view_bottom(), GRID_SPACING);
-      while (y <= view_right() && y <= arena_height) {
-        auto screen_y = to_screen_y(y);
-        draw_line(-1, screen_y, 1, screen_y);
-        y += GRID_SPACING;
-      }
+      auto scale = player->mass();
+
+      glm::mat4 projection = glm::ortho(0.0f,
+        1.0f * screen_width * scale,
+        1.0f * screen_height * scale,
+        0.0f);
     }
 
     void draw_border() {
@@ -164,8 +244,41 @@ namespace Agario {
                     to_screen_size(cell.radius()));
     }
 
+
+    void make_projections() {
+//      glm::mat4 Projection = glm::perspective(glm::radians(45.0f), screen_width / screen_height, 0.1f, 100.0f);
+      // Or, for an ortho camera :
+      glm::mat4 Projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.0f, 100.0f); // In world coordinates
+
+      auto x = player->x();
+      auto y = player->y();
+
+      // Camera matrix
+      glm::mat4 View = glm::lookAt(
+        glm::vec3(x, y, player->mass()), // Camera location in World Space
+        glm::vec3(x, y, 0), // and looks at the origin
+        glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+      );
+
+      // Model matrix : an identity matrix (model will be at the origin)
+      glm::mat4 Model = glm::mat4(1.0f);
+
+      // Our ModelViewProjection : multiplication of our 3 matrices
+      glm::mat4 mvp = Projection * View * Model;
+
+      // Get a handle for our "MVP" uniform
+      // Only during the initialisation
+      GLuint MatrixID = glGetUniformLocation(shader.program, "MVP");
+
+      // Send our transformation to the currently bound shader, in the "MVP" uniform
+      // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
+      glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
+    }
+
     void render_screen(Player &p1, std::vector<Player> &players,
                        std::vector<Food> &foods, std::vector<Pellet> &pellets, std::vector<Virus> &viruses) {
+
+      make_projections();
 
       glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
       glClear(GL_COLOR_BUFFER_BIT);
@@ -273,44 +386,44 @@ namespace Agario {
       glDisable(GL_LINE_SMOOTH);
     }
 
-//  void draw_circle(Circle &circle, GLfloat screen_x, GLfloat screen_y, GLfloat screen_radius) {
-//    position_circle(circle, screen_x, screen_y, screen_radius);
-//    render_circle(circle);
-//  }
-//
-//  void render_circle(Circle &circle) {
-//    shader.setVec3("col", circle.color[0], circle.color[1], circle.color[2]);
-//    glBindVertexArray(circle.vao);
-//    glDrawArrays(GL_TRIANGLE_FAN, 0, CIRCLE_VERTS);
-//    glBindVertexArray(0);
-//  }
-//
-//  void position_circle(Circle &circle, GLfloat x, GLfloat y, GLfloat radius) {
-//    update_verts(circle, x, y, radius);
-//
-//    glGenVertexArrays(1, &circle.vao);
-//    glGenBuffers(1, &circle.vbo);
-//
-//    glBindVertexArray(circle.vao);
-//    glBindBuffer(GL_ARRAY_BUFFER, circle.vbo);
-//    glBufferData(GL_ARRAY_BUFFER, sizeof(circle.verts), circle.verts, GL_STREAM_DRAW);
-//
-//    // Position attribute
-//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
-//    glEnableVertexAttribArray(0);
-//  }
-//
-//  void update_verts(Circle &circle, GLfloat x, GLfloat y, GLfloat radius) {
-//    circle.verts[0] = x / screen_width;
-//    circle.verts[1] = y / screen_width;
-//    circle.verts[2] = 0;
-//
-//    for (int i = 1; i < CIRCLE_VERTS; i++) {
-//      circle.verts[i * 3] = static_cast<float> (x + (radius * cos(i *  2 * M_PI / CIRCLE_SIDES))) / screen_width;
-//      circle.verts[i * 3 + 1] = static_cast<float> (y + (radius * sin(i * 2 * M_PI / CIRCLE_SIDES))) / screen_height;
-//      circle.verts[i * 3 + 2] = 0;
-//    }
-//  }
+  void draw_circle(Circle &circle, GLfloat screen_x, GLfloat screen_y, GLfloat screen_radius) {
+    position_circle(circle, screen_x, screen_y, screen_radius);
+    render_circle(circle);
+  }
+
+  void render_circle(Circle &circle) {
+    shader.setVec3("col", circle.color[0], circle.color[1], circle.color[2]);
+    glBindVertexArray(circle.vao);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, CIRCLE_VERTS);
+    glBindVertexArray(0);
+  }
+
+  void position_circle(Circle &circle, GLfloat x, GLfloat y, GLfloat radius) {
+    update_verts(circle, x, y, radius);
+
+    glGenVertexArrays(1, &circle.vao);
+    glGenBuffers(1, &circle.vbo);
+
+    glBindVertexArray(circle.vao);
+    glBindBuffer(GL_ARRAY_BUFFER, circle.vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(circle.verts), circle.verts, GL_STREAM_DRAW);
+
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+  }
+
+  void update_verts(Circle &circle, GLfloat x, GLfloat y, GLfloat radius) {
+    circle.verts[0] = x / screen_width;
+    circle.verts[1] = y / screen_width;
+    circle.verts[2] = 0;
+
+    for (int i = 1; i < CIRCLE_VERTS; i++) {
+      circle.verts[i * 3] = static_cast<float> (x + (radius * cos(i *  2 * M_PI / CIRCLE_SIDES))) / screen_width;
+      circle.verts[i * 3 + 1] = static_cast<float> (y + (radius * sin(i * 2 * M_PI / CIRCLE_SIDES))) / screen_height;
+      circle.verts[i * 3 + 2] = 0;
+    }
+  }
 
     int round_up(int n, int multiple) {
       if (multiple == 0)
