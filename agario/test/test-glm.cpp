@@ -4,7 +4,6 @@
 
 #define GLEW_STATIC
 #include <GL/glew.h>
-
 #include <GLFW/glfw3.h>
 
 #include <rendering/shader.hpp>
@@ -29,22 +28,65 @@ static const GLchar* fragment_shader_source =
   "void main() {\n"
   "    color = vec4(ourColor, 1.0f);\n"
   "}\n";
-static GLfloat vertices[] = {
-/*   Positions          Colors */
-  0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-  -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-  0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f
-};
 
 #define CIRCLE_SIDES 50
 #define CIRCLE_VERTS (CIRCLE_SIDES + 2)
 #define COLOR_LEN 3
 
-struct Circle {
+class Circle {
+public:
+
+  Circle(float x, float y) : x(x), y(y) {
+    update_verts(0.5f);
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STREAM_DRAW);
+
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+  }
+
+  float x;
+  float y;
+
   float verts[3 * CIRCLE_VERTS];
-  float color[COLOR_LEN];
+  float color[COLOR_LEN] = {0.5, 0.5, 0.5};
   unsigned int vao; // vertex attribute object
   unsigned int vbo; // vertex buffer object (gpu memory)
+
+  void draw(Shader &shader) {
+    GLint transform_location = glGetUniformLocation(shader.program, "transform");
+
+    GLfloat transform[] = {
+      1.0f, 0.0f, 0.0f, x,
+      0.0f, 1.0f, 0.0f, y,
+      0.0f, 0.0f, 1.0f, 0.0f,
+      0.0f, 0.0f, 0.0f, 1.0f,
+    };
+    glUniformMatrix4fv(transform_location, 1, GL_FALSE, transform);
+
+    shader.setVec3("ourColor", color[0], color[1], color[2]);
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, CIRCLE_VERTS);
+    glBindVertexArray(0);
+  }
+
+private:
+  void update_verts(GLfloat radius) {
+    verts[0] = 0;
+    verts[1] = 0;
+    verts[2] = 0;
+    for (int i = 1; i < CIRCLE_VERTS; i++) {
+      verts[i * 3] = static_cast<float> (0 + (radius * cos(i *  2 * M_PI / CIRCLE_SIDES)));
+      verts[i * 3 + 1] = static_cast<float> (0 + (radius * sin(i * 2 * M_PI / CIRCLE_SIDES)));
+      verts[i * 3 + 2] = 0;
+    }
+  }
 };
 
 int main(int argc, char *argv[]) {
@@ -67,11 +109,20 @@ int main(int argc, char *argv[]) {
   glfwMakeContextCurrent(window);
   glewExperimental = GL_TRUE;
   glewInit();
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glViewport(0, 0, WIDTH, HEIGHT);
 
   Shader shader;
   shader.compile_shaders(vertex_shader_source, fragment_shader_source);
+
+  Circle circle(0.5f, 0.5f);
+
+  static GLfloat vertices[] = {
+    /*   Positions          Colors */
+    0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+    0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f
+  };
 
   glGenVertexArrays(1, &vao);
   glGenBuffers(1, &vbo);
@@ -93,22 +144,25 @@ int main(int argc, char *argv[]) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     shader.use();
-    transform_location = glGetUniformLocation(shader.program, "transform");
-    /* THIS is just a dummy transform. */
-    GLfloat transform[] = {
-      0.0f, 0.0f, 0.0f, 0.0f,
-      0.0f, 0.0f, 0.0f, 0.0f,
-      0.0f, 0.0f, 1.0f, 0.0f,
-      0.0f, 0.0f, 0.0f, 1.0f,
-    };
-    time = glfwGetTime();
-    transform[0] = 2.0f * sin(time);
-    transform[5] = 2.0f * cos(time);
-    glUniformMatrix4fv(transform_location, 1, GL_FALSE, transform);
+    circle.draw(shader);
 
-    glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    glBindVertexArray(0);
+//    transform_location = glGetUniformLocation(shader.program, "transform");
+//    /* THIS is just a dummy transform. */
+//    GLfloat transform[] = {
+//      0.0f, 0.0f, 0.0f, 0.0f,
+//      0.0f, 0.0f, 0.0f, 0.0f,
+//      0.0f, 0.0f, 1.0f, 0.0f,
+//      0.0f, 0.0f, 0.0f, 1.0f,
+//    };
+//    time = glfwGetTime();
+//    transform[0] = 1.0f * sin(3.14 * time);
+//    transform[5] = 1.0f * cos(time);
+//    glUniformMatrix4fv(transform_location, 1, GL_FALSE, transform);
+//
+//    glBindVertexArray(vao);
+//    glDrawArrays(GL_TRIANGLES, 0, 3);
+//    glBindVertexArray(0);
+
     glfwSwapBuffers(window);
   }
   glDeleteVertexArrays(1, &vao);
