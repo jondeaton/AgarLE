@@ -4,10 +4,6 @@ Reinforcement Learning environment for Agar.io
 
 # todo
 - Baseic game rendering
-  - Convert between world coordinates and screen coordinates correctly
-    - Make a screen transposition matrix
-  - (hopefully those will) Fix x/y warping
-  - (hopefully those will) fix radius to screen dimension
   - Draw pellets
   - Draw viruses
   - Draw food

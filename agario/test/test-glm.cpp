@@ -49,23 +49,36 @@ public:
 
   void set_radius(float radius) {
     _radius = radius;
-//    update_verts();
   }
 
   void draw(Shader &shader) {
+    shader.setVec3("color", color[0], color[1], color[2]);
+
+    glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float) WIDTH / (float) HEIGHT, 0.1f, 100.0f);
+    GLint proj_location = glGetUniformLocation(shader.program, "projection_transform");
+    glUniformMatrix4fv(proj_location, 1, GL_FALSE, &Projection[0][0]);
+
     auto world_position = glm::vec3(_x, _y, 0);
     glm::mat4 position_transform(1);
     position_transform = glm::translate(position_transform, world_position);
 
-    GLint transform_location = glGetUniformLocation(shader.program, "position_translation");
-    glUniformMatrix4fv(transform_location, 1, GL_FALSE, &position_transform[0][0]);
+    GLint location_transform = glGetUniformLocation(shader.program, "position_translation");
+    glUniformMatrix4fv(location_transform, 1, GL_FALSE, &position_transform[0][0]);
 
     glm::mat4 scale_transform(1);
     scale_transform = glm::scale(scale_transform, glm::vec3(_radius, _radius, 0));
     GLint scale_location = glGetUniformLocation(shader.program, "scale_transform");
     glUniformMatrix4fv(scale_location, 1, GL_FALSE, &scale_transform[0][0]);
 
-    shader.setVec3("ourColor", color[0], color[1], color[2]);
+    glm::mat4 View = glm::lookAt(
+      glm::vec3(_x, _y, 3), // Camera location in World Space
+      glm::vec3(_x, _y, 0), // camera "looks at" location
+      glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
+    );
+    GLint view_location = glGetUniformLocation(shader.program, "view_transform");
+    glUniformMatrix4fv(view_location, 1, GL_FALSE, &View[0][0]);
+
+    // draw them!
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, CIRCLE_VERTS);
     glBindVertexArray(0);
@@ -99,7 +112,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 }
 
 int main(int argc, char *argv[]) {
-  GLint transform_location;
+
   GLuint vbo;
   GLuint vao;
   GLFWwindow* window;
@@ -121,9 +134,9 @@ int main(int argc, char *argv[]) {
 
   glfwSetMouseButtonCallback(window, mouse_button_callback);
 
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  glOrtho(0.0f, WIDTH, HEIGHT, 0.0f, 0.0f, 1.0f);
+//  glMatrixMode(GL_PROJECTION);
+//  glLoadIdentity();
+//  glOrtho(0.0f, WIDTH, HEIGHT, 0.0f, 0.0f, 1.0f);
 
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glViewport(0, 0, WIDTH, HEIGHT);
@@ -165,12 +178,12 @@ int main(int argc, char *argv[]) {
 
     shader.use();
 
-    float x = 2 * (xpos - WIDTH / 2) / WIDTH;
-    float y = - 2 * (ypos - HEIGHT / 2) / HEIGHT;
+//    float x = 2 * (xpos - WIDTH / 2) / WIDTH;
+//    float y = - 2 * (ypos - HEIGHT / 2) / HEIGHT;
 
     time = glfwGetTime();
 
-    circle.set_location(x, y);
+    circle.set_location(15, 20);
     circle.set_radius(2 * (1 + 0.5 * sin(time)));
     circle.draw(shader);
 
