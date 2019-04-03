@@ -29,15 +29,15 @@ static const GLchar* fragment_shader_source =
   "    color = vec4(ourColor, 1.0f);\n"
   "}\n";
 
-#define CIRCLE_SIDES 50
+#define CIRCLE_SIDES 100
 #define CIRCLE_VERTS (CIRCLE_SIDES + 2)
 #define COLOR_LEN 3
 
 class Circle {
 public:
 
-  Circle(float x, float y) : x(x), y(y) {
-    update_verts(0.5f);
+  Circle(float x, float y) : _x(x), _y(y), _radius(0.1) {
+    update_verts();
 
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
@@ -51,22 +51,30 @@ public:
     glEnableVertexAttribArray(0);
   }
 
-  float x;
-  float y;
 
   float verts[3 * CIRCLE_VERTS];
   float color[COLOR_LEN] = {0.5, 0.5, 0.5};
   unsigned int vao; // vertex attribute object
   unsigned int vbo; // vertex buffer object (gpu memory)
 
+  void set_location(float x, float y) {
+    _x = x;
+    _y = y;
+  }
+
+  void set_radius(float radius) {
+    _radius = radius;
+    update_verts();
+  }
+
   void draw(Shader &shader) {
     GLint transform_location = glGetUniformLocation(shader.program, "transform");
 
     GLfloat transform[] = {
-      1.0f, 0.0f, 0.0f, x,
-      0.0f, 1.0f, 0.0f, y,
+      1.0f, 0.0f, 0.0f, 0.0f,
+      0.0f, 1.0f, 0.0f, 0.0f,
       0.0f, 0.0f, 1.0f, 0.0f,
-      0.0f, 0.0f, 0.0f, 1.0f,
+      _x, _y, 0.0f, 1.0f,
     };
     glUniformMatrix4fv(transform_location, 1, GL_FALSE, transform);
 
@@ -77,17 +85,31 @@ public:
   }
 
 private:
-  void update_verts(GLfloat radius) {
+  float _x;
+  float _y;
+  float _radius;
+
+  void update_verts() {
     verts[0] = 0;
     verts[1] = 0;
     verts[2] = 0;
     for (int i = 1; i < CIRCLE_VERTS; i++) {
-      verts[i * 3] = static_cast<float> (0 + (radius * cos(i *  2 * M_PI / CIRCLE_SIDES)));
-      verts[i * 3 + 1] = static_cast<float> (0 + (radius * sin(i * 2 * M_PI / CIRCLE_SIDES)));
+      verts[i * 3] = static_cast<float> (0 + (_radius * cos(i *  2 * M_PI / CIRCLE_SIDES)));
+      verts[i * 3 + 1] = static_cast<float> (0 + (_radius * sin(i * 2 * M_PI / CIRCLE_SIDES)));
       verts[i * 3 + 2] = 0;
     }
   }
 };
+
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+    double xpos, ypos;
+    //getting cursor position
+    glfwGetCursorPos(window, &xpos, &ypos);
+    std::cout << "Cursor Position at (" << xpos << " : " << ypos << std::endl;
+  }
+}
 
 int main(int argc, char *argv[]) {
   GLint transform_location;
@@ -109,6 +131,14 @@ int main(int argc, char *argv[]) {
   glfwMakeContextCurrent(window);
   glewExperimental = GL_TRUE;
   glewInit();
+
+  glfwSetMouseButtonCallback(window, mouse_button_callback);
+
+//  glMatrixMode(GL_PROJECTION);
+//  glLoadIdentity();
+//  glOrtho(0.0f, WIDTH, HEIGHT, 0.0f, 0.0f, 1.0f);
+//
+
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glViewport(0, 0, WIDTH, HEIGHT);
 
@@ -141,11 +171,22 @@ int main(int argc, char *argv[]) {
 
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
+
+    double xpos, ypos;
+    //getting cursor position
+    glfwGetCursorPos(window, &xpos, &ypos);
+
     glClear(GL_COLOR_BUFFER_BIT);
 
     shader.use();
+
+    float x = 2 * (xpos - WIDTH / 2) / WIDTH;
+    float y = - 2 * (ypos - HEIGHT / 2) / HEIGHT;
+
+    circle.set_location(x, y);
     circle.draw(shader);
 
+//    time = glfwGetTime();
 //    transform_location = glGetUniformLocation(shader.program, "transform");
 //    /* THIS is just a dummy transform. */
 //    GLfloat transform[] = {
@@ -154,7 +195,7 @@ int main(int argc, char *argv[]) {
 //      0.0f, 0.0f, 1.0f, 0.0f,
 //      0.0f, 0.0f, 0.0f, 1.0f,
 //    };
-//    time = glfwGetTime();
+//
 //    transform[0] = 1.0f * sin(3.14 * time);
 //    transform[5] = 1.0f * cos(time);
 //    glUniformMatrix4fv(transform_location, 1, GL_FALSE, transform);
