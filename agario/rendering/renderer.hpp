@@ -139,7 +139,7 @@ namespace Agario {
       window(nullptr), shader(), draw(draw) {
       if (draw) {
         window = initialize_window();
-        shader.generate_shader("../client/vertex.shader", "../client/fragment.shader");
+        shader.generate_shader("../rendering/vertex.shader", "../rendering/fragment.shader");
         shader.use();
       }
       create_grid_vertices();

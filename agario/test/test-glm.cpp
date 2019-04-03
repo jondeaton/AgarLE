@@ -6,29 +6,15 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <rendering/shader.hpp>
 
 static const GLuint WIDTH = 800;
 static const GLuint HEIGHT = 600;
-/* ourColor is passed on to the fragment shader. */
-static const GLchar* vertex_shader_source =
-  "#version 330 core\n"
-  "layout (location = 0) in vec3 position;\n"
-  "layout (location = 1) in vec3 color;\n"
-  "out vec3 ourColor;\n"
-  "uniform mat4 transform;\n"
-  "void main() {\n"
-  "    gl_Position = transform * vec4(position, 1.0f);\n"
-  "    ourColor = color;\n"
-  "}\n";
-static const GLchar* fragment_shader_source =
-  "#version 330 core\n"
-  "in vec3 ourColor;\n"
-  "out vec4 color;\n"
-  "void main() {\n"
-  "    color = vec4(ourColor, 1.0f);\n"
-  "}\n";
 
+/* ourColor is passed on to the fragment shader. */
 #define CIRCLE_SIDES 100
 #define CIRCLE_VERTS (CIRCLE_SIDES + 2)
 #define COLOR_LEN 3
@@ -51,7 +37,6 @@ public:
     glEnableVertexAttribArray(0);
   }
 
-
   float verts[3 * CIRCLE_VERTS];
   float color[COLOR_LEN] = {0.5, 0.5, 0.5};
   unsigned int vao; // vertex attribute object
@@ -64,19 +49,21 @@ public:
 
   void set_radius(float radius) {
     _radius = radius;
-    update_verts();
+//    update_verts();
   }
 
   void draw(Shader &shader) {
-    GLint transform_location = glGetUniformLocation(shader.program, "transform");
+    auto world_position = glm::vec3(_x, _y, 0);
+    glm::mat4 position_transform(1);
+    position_transform = glm::translate(position_transform, world_position);
 
-    GLfloat transform[] = {
-      1.0f, 0.0f, 0.0f, 0.0f,
-      0.0f, 1.0f, 0.0f, 0.0f,
-      0.0f, 0.0f, 1.0f, 0.0f,
-      _x, _y, 0.0f, 1.0f,
-    };
-    glUniformMatrix4fv(transform_location, 1, GL_FALSE, transform);
+    GLint transform_location = glGetUniformLocation(shader.program, "position_translation");
+    glUniformMatrix4fv(transform_location, 1, GL_FALSE, &position_transform[0][0]);
+
+    glm::mat4 scale_transform(1);
+    scale_transform = glm::scale(scale_transform, glm::vec3(_radius, _radius, 0));
+    GLint scale_location = glGetUniformLocation(shader.program, "scale_transform");
+    glUniformMatrix4fv(scale_location, 1, GL_FALSE, &scale_transform[0][0]);
 
     shader.setVec3("ourColor", color[0], color[1], color[2]);
     glBindVertexArray(vao);
@@ -134,16 +121,14 @@ int main(int argc, char *argv[]) {
 
   glfwSetMouseButtonCallback(window, mouse_button_callback);
 
-//  glMatrixMode(GL_PROJECTION);
-//  glLoadIdentity();
-//  glOrtho(0.0f, WIDTH, HEIGHT, 0.0f, 0.0f, 1.0f);
-//
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(0.0f, WIDTH, HEIGHT, 0.0f, 0.0f, 1.0f);
 
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glViewport(0, 0, WIDTH, HEIGHT);
 
-  Shader shader;
-  shader.compile_shaders(vertex_shader_source, fragment_shader_source);
+  Shader shader("../rendering/vertex.shader", "../rendering/fragment.shader");
 
   Circle circle(0.5f, 0.5f);
 
@@ -183,23 +168,24 @@ int main(int argc, char *argv[]) {
     float x = 2 * (xpos - WIDTH / 2) / WIDTH;
     float y = - 2 * (ypos - HEIGHT / 2) / HEIGHT;
 
+    time = glfwGetTime();
+
     circle.set_location(x, y);
+    circle.set_radius(2 * (1 + 0.5 * sin(time)));
     circle.draw(shader);
 
-//    time = glfwGetTime();
 //    transform_location = glGetUniformLocation(shader.program, "transform");
-//    /* THIS is just a dummy transform. */
 //    GLfloat transform[] = {
 //      0.0f, 0.0f, 0.0f, 0.0f,
 //      0.0f, 0.0f, 0.0f, 0.0f,
 //      0.0f, 0.0f, 1.0f, 0.0f,
 //      0.0f, 0.0f, 0.0f, 1.0f,
 //    };
-//
+
 //    transform[0] = 1.0f * sin(3.14 * time);
 //    transform[5] = 1.0f * cos(time);
 //    glUniformMatrix4fv(transform_location, 1, GL_FALSE, transform);
-//
+
 //    glBindVertexArray(vao);
 //    glDrawArrays(GL_TRIANGLES, 0, 3);
 //    glBindVertexArray(0);

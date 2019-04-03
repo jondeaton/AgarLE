@@ -16,15 +16,15 @@ public:
 	Shader() { print_version(); };
 
 	// generates the shader on the fly
-	Shader(const char* vertexPath, const char* fragmentPath) : program(0) {
+	Shader(const char* vertex_path, const char* fragment_path) : program(0) {
     print_version();
-		generate_shader(vertexPath, fragmentPath);
+		generate_shader(vertex_path, fragment_path);
 	}
 
-	void generate_shader(const char* vertexPath, const char* fragmentPath) {
-		std::string vertexCode = get_file_contents(vertexPath);
-		std::string fragmentCode = get_file_contents(fragmentPath);
-		compile_shaders(vertexCode, fragmentCode);
+	void generate_shader(const char* vertex_path, const char* fragment_path) {
+		std::string vertex_code = get_file_contents(vertex_path);
+		std::string fragment_code = get_file_contents(fragment_path);
+		compile_shaders(vertex_code, fragment_code);
 	}
 
 	std::string get_file_contents(const char* path) {
@@ -44,9 +44,9 @@ public:
 		return std::string();
 	}
 
-	void compile_shaders(const std::string &vertexCode, const std::string &fragmentCode) {
-		const char* vShaderCode = vertexCode.c_str();
-		const char * fShaderCode = fragmentCode.c_str();
+	void compile_shaders(const std::string &vertex_code, const std::string &fragment_code) {
+		const char* vShaderCode = vertex_code.c_str();
+		const char* fShaderCode = fragment_code.c_str();
 
 		unsigned int vertex, fragment;
 
