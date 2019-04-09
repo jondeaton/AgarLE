@@ -16,14 +16,19 @@
 #define VIRUS_SIZE 75
 #define VIRUS_MASS 0
 
+#define PELLET_SIDES 5
+#define VIRUS_SIDES 50
+#define FOOD_SIDES 20
+#define CELL_SIDES 50
+
 namespace Agario {
 
   template <bool renderable>
-  class Pellet : public std::conditional<renderable, RenderableBall, Ball>::type {
+  class Pellet : public std::conditional<renderable, RenderableBall<PELLET_SIDES>, Ball>::type {
   public:
 
     // inherit constructors
-    typedef typename std::conditional<renderable, RenderableBall, Ball>::type Super;
+    typedef typename std::conditional<renderable, RenderableBall<PELLET_SIDES>, Ball>::type Super;
     using Super::Super;
 
     Agario::distance radius() const override { return PELLET_SIZE; }
@@ -33,11 +38,11 @@ namespace Agario {
 
 
   template <bool renderable>
-  class Food : public std::conditional<renderable, RenderableMovingBall, MovingBall>::type {
+  class Food : public std::conditional<renderable, RenderableMovingBall<FOOD_SIDES>, MovingBall>::type {
   public:
 
     // inherit constructors
-    typedef typename std::conditional<renderable, RenderableMovingBall, MovingBall>::type Super;
+    typedef typename std::conditional<renderable, RenderableMovingBall<FOOD_SIDES>, MovingBall>::type Super;
     using Super::Super;
 
     Agario::distance radius() const override { return FOOD_SIZE; }
@@ -47,11 +52,11 @@ namespace Agario {
 
 
   template <bool renderable>
-  class Virus : public std::conditional<renderable, RenderableMovingBall, MovingBall>::type {
+  class Virus : public std::conditional<renderable, RenderableMovingBall<VIRUS_SIDES>, MovingBall>::type {
   public:
 
     // inherit constructors
-    typedef typename std::conditional<renderable, RenderableMovingBall, MovingBall>::type Super;
+    typedef typename std::conditional<renderable, RenderableMovingBall<VIRUS_SIDES>, MovingBall>::type Super;
     using Super::Super;
 
     // todo: viruses have variable mass and size
@@ -61,9 +66,9 @@ namespace Agario {
   };
 
   template <bool renderable>
-  class Cell : public std::conditional<renderable, RenderableMovingBall, MovingBall>::type {
+  class Cell : public std::conditional<renderable, RenderableMovingBall<CELL_SIDES>, MovingBall>::type {
   public:
-    typedef typename std::conditional<renderable, RenderableMovingBall, MovingBall>::type Super;
+    typedef typename std::conditional<renderable, RenderableMovingBall<CELL_SIDES>, MovingBall>::type Super;
 
     explicit Cell(distance x, distance y, Agario::mass mass) :
       Super(x, y) { set_mass(mass); }

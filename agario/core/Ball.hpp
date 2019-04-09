@@ -59,5 +59,4 @@ namespace Agario {
     Agario::Velocity velocity;
   };
 
-
 }

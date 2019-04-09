@@ -77,6 +77,13 @@ namespace Agario {
       return this->_pid == other.pid();
     }
 
+
+    template <typename=typename std::enable_if<renderable>::type>
+      void draw(Shader &shader) const {
+        for (auto &cell : cells)
+          cell.draw(shader);
+      }
+
   private:
     Agario::pid _pid;
     std::string _name;

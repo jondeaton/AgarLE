@@ -22,7 +22,7 @@ static const GLuint HEIGHT = 600;
 class Circle {
 public:
 
-  Circle(float x, float y) : _x(x), _y(y), _radius(0.1) {
+  Circle(float x, float y) : _x(x), _y(y), _radius(1) {
     update_verts();
 
     glGenVertexArrays(1, &vao);
@@ -42,6 +42,14 @@ public:
   unsigned int vao; // vertex attribute object
   unsigned int vbo; // vertex buffer object (gpu memory)
 
+  float x() const {
+    return _x;
+  }
+
+  float y() const {
+    return _y;
+  }
+
   void set_location(float x, float y) {
     _x = x;
     _y = y;
@@ -54,10 +62,6 @@ public:
   void draw(Shader &shader) {
     shader.setVec3("color", color[0], color[1], color[2]);
 
-    glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float) WIDTH / (float) HEIGHT, 0.1f, 100.0f);
-    GLint proj_location = glGetUniformLocation(shader.program, "projection_transform");
-    glUniformMatrix4fv(proj_location, 1, GL_FALSE, &Projection[0][0]);
-
     auto world_position = glm::vec3(_x, _y, 0);
     glm::mat4 position_transform(1);
     position_transform = glm::translate(position_transform, world_position);
@@ -69,14 +73,6 @@ public:
     scale_transform = glm::scale(scale_transform, glm::vec3(_radius, _radius, 0));
     GLint scale_location = glGetUniformLocation(shader.program, "scale_transform");
     glUniformMatrix4fv(scale_location, 1, GL_FALSE, &scale_transform[0][0]);
-
-    glm::mat4 View = glm::lookAt(
-      glm::vec3(_x, _y, 3), // Camera location in World Space
-      glm::vec3(_x, _y, 0), // camera "looks at" location
-      glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
-    );
-    GLint view_location = glGetUniformLocation(shader.program, "view_transform");
-    glUniformMatrix4fv(view_location, 1, GL_FALSE, &View[0][0]);
 
     // draw them!
     glBindVertexArray(vao);
@@ -94,13 +90,26 @@ private:
     verts[1] = 0;
     verts[2] = 0;
     for (int i = 1; i < CIRCLE_VERTS; i++) {
-      verts[i * 3] = static_cast<float> (0 + (_radius * cos(i *  2 * M_PI / CIRCLE_SIDES)));
-      verts[i * 3 + 1] = static_cast<float> (0 + (_radius * sin(i * 2 * M_PI / CIRCLE_SIDES)));
+      verts[i * 3] = static_cast<float> (0 + (1 * cos(i *  2 * M_PI / CIRCLE_SIDES)));
+      verts[i * 3 + 1] = static_cast<float> (0 + (1 * sin(i * 2 * M_PI / CIRCLE_SIDES)));
       verts[i * 3 + 2] = 0;
     }
   }
 };
 
+void set_view_projection(Shader &shader, float x, float y) {
+  glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float) WIDTH / (float) HEIGHT, 0.1f, 100.0f);
+  GLint proj_location = glGetUniformLocation(shader.program, "projection_transform");
+  glUniformMatrix4fv(proj_location, 1, GL_FALSE, &Projection[0][0]);
+
+  glm::mat4 View = glm::lookAt(
+    glm::vec3(x, y, 3), // Camera location in World Space
+    glm::vec3(x, y, 0), // camera "looks at" location
+    glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
+  );
+  GLint view_location = glGetUniformLocation(shader.program, "view_transform");
+  glUniformMatrix4fv(view_location, 1, GL_FALSE, &View[0][0]);
+}
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
   if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
@@ -141,9 +150,11 @@ int main(int argc, char *argv[]) {
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glViewport(0, 0, WIDTH, HEIGHT);
 
-  Shader shader("../rendering/vertex.shader", "../rendering/fragment.shader");
+  Shader shader("../rendering/vertex.glsl", "../rendering/fragment.glsl");
 
-  Circle circle(0.5f, 0.5f);
+  Circle circle(0, 0);
+
+  Circle c(0, 0);
 
   static GLfloat vertices[] = {
     /*   Positions          Colors */
@@ -178,14 +189,17 @@ int main(int argc, char *argv[]) {
 
     shader.use();
 
-//    float x = 2 * (xpos - WIDTH / 2) / WIDTH;
-//    float y = - 2 * (ypos - HEIGHT / 2) / HEIGHT;
-
     time = glfwGetTime();
 
-    circle.set_location(15, 20);
-    circle.set_radius(2 * (1 + 0.5 * sin(time)));
+    set_view_projection(shader, circle.x(), circle.y());
+
+    circle.set_location(15 - time / 3, 14);
+    circle.set_radius(0.1 * (1 + 0.5 * sin(time)));
     circle.draw(shader);
+
+    c.set_location(13, 13);
+    circle.set_radius(0.1 * (1 + 0.5 * cos(time)));
+    c.draw(shader);
 
 //    transform_location = glGetUniformLocation(shader.program, "transform");
 //    GLfloat transform[] = {

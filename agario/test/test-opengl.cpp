@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
 // Rendering update loop.
 void render_loop(GLFWwindow *window) {
 	// Load shader (for positioning and color)
-	Shader shader("../client/vertex.shader", "../client/fragment.shader");
+	Shader shader("../client/vertex.glsl", "../client/fragment.glsl");
 	
 	circles = nullptr;
 	GLfloat color[3] = { 1.0f, 0.0f, 0.0f };
