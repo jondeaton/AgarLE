@@ -39,17 +39,17 @@ namespace Agario {
 
     // todo: cache this so that it doesn't have to be recomputed
     Agario::distance x() const {
-      Agario::distance x = 0;
+      Agario::distance x_ = 0;
       for (auto &cell : cells)
-        x += cell.x * cell.mass();
-      return x / mass();
+        x_ += cell.x * cell.mass();
+      return x_ / mass();
     }
 
     Agario::distance y() const {
-      Agario::distance y = 0;
+      Agario::distance y_ = 0;
       for (auto &cell : cells)
-        y += cell.y * cell.mass();
-      return y / mass();
+        y_ += cell.y * cell.mass();
+      return y_ / mass();
     }
 
     Agario::Location location() const {
@@ -78,8 +78,8 @@ namespace Agario {
     }
 
 
-    template <typename=typename std::enable_if<renderable>::type>
-      void draw(Shader &shader) const {
+    std::enable_if<renderable, void>
+    draw(Shader &shader) {
         for (auto &cell : cells)
           cell.draw(shader);
       }

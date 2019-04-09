@@ -49,7 +49,7 @@ namespace Agario {
       while ((!num_iterations || num_iterations > 0) && renderer->ready()) {
 
 //      process_input(window);
-        renderer->render_screen(*player, players, foods, pellets, viruses);
+        renderer->render_screen(players, foods, pellets, viruses);
 
         // todo: emit "heartbeat" signal to server
         if (num_iterations) (*num_iterations)--;

@@ -63,16 +63,16 @@ public:
     shader.setVec3("color", color[0], color[1], color[2]);
 
     auto world_position = glm::vec3(_x, _y, 0);
+
     glm::mat4 position_transform(1);
-    position_transform = glm::translate(position_transform, world_position);
-
-    GLint location_transform = glGetUniformLocation(shader.program, "position_translation");
-    glUniformMatrix4fv(location_transform, 1, GL_FALSE, &position_transform[0][0]);
-
     glm::mat4 scale_transform(1);
+    position_transform = glm::translate(position_transform, world_position);
     scale_transform = glm::scale(scale_transform, glm::vec3(_radius, _radius, 0));
-    GLint scale_location = glGetUniformLocation(shader.program, "scale_transform");
-    glUniformMatrix4fv(scale_location, 1, GL_FALSE, &scale_transform[0][0]);
+
+    glm::mat4 model_matrix = position_transform * scale_transform;
+
+    GLint model_loc = glGetUniformLocation(shader.program, "model_transform");
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE, &model_matrix[0][0]);
 
     // draw them!
     glBindVertexArray(vao);

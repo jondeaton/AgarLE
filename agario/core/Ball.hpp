@@ -49,7 +49,7 @@ namespace Agario {
     }
   };
 
-  class MovingBall : public Ball {
+  class MovingBall : virtual public Ball {
   public:
     MovingBall() = default;
     explicit MovingBall(distance x, distance y) : Ball(x, y) { }
