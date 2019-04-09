@@ -29,7 +29,7 @@
 
 #define DEFAULT_SCREEN_WIDTH 640
 #define DEFAULT_SCREEN_HEIGHT 480
-#define GRID_SPACING 25
+#define NUM_GRID_LINES 100
 
 #define DEFAULT_ARENA_WIDTH 1000
 #define DEFAULT_ARENA_HEIGHT 1000
@@ -66,8 +66,16 @@ namespace Agario {
       if (!glfwInit())
         throw std::exception();
 
+
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+      glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+      glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
+#endif
+
       // Create a windowed mode window and its OpenGL context
-      GLFWwindow *window = glfwCreateWindow(screen_width, screen_height, WINDOW_NAME, nullptr, nullptr);
+      window = glfwCreateWindow(screen_width, screen_height, WINDOW_NAME, nullptr, nullptr);
 
       if (window == nullptr) {
         glfwTerminate();
@@ -76,6 +84,7 @@ namespace Agario {
       }
 
       glfwMakeContextCurrent(window);
+      glewExperimental = GL_TRUE;
 
       GLenum err = glewInit();
       if (err != GLEW_OK)
@@ -93,22 +102,23 @@ namespace Agario {
     }
 
     void make_projections() {
-      glm::mat4 Projection = glm::perspective(glm::radians(45.0f), aspect_ratio(), 0.1f, 100.0f);
+      glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect_ratio(), 0.1f, 100.0f);
       GLint proj_location = glGetUniformLocation(shader.program, "projection_transform");
-      glUniformMatrix4fv(proj_location, 1, GL_FALSE, &Projection[0][0]);
+      glUniformMatrix4fv(proj_location, 1, GL_FALSE, &projection[0][0]);
 
-      glm::mat4 View = glm::lookAt(
-        glm::vec3(player->x(), player->y(), 3), // Camera location in World Space
+      glm::mat4 view = glm::lookAt(
+        glm::vec3(player->x(), player->y(), player->mass()), // Camera location in World Space
         glm::vec3(player->x(), player->y(), 0), // camera "looks at" location
         glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
       );
       GLint view_location = glGetUniformLocation(shader.program, "view_transform");
-      glUniformMatrix4fv(view_location, 1, GL_FALSE, &View[0][0]);
+      glUniformMatrix4fv(view_location, 1, GL_FALSE, &view[0][0]);
     }
 
     void render_screen(std::vector<Player> &players, std::vector<Food> &foods,
                        std::vector<Pellet> &pellets, std::vector<Virus> &viruses) {
 
+      shader.use();
       make_projections();
 
       glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
@@ -157,71 +167,11 @@ namespace Agario {
     Agario::distance arena_width;
     Agario::distance arena_height;
 
-    Grid<GRID_SPACING> grid;
+    Grid<NUM_GRID_LINES> grid;
 
     template<unsigned NSides>
     void set_color(Circle<NSides> &circle, GLfloat color[3]) {
       memcpy(circle.color, color, 3 * sizeof(GLfloat));
-    }
-
-    void draw_circle(GLfloat x, GLfloat y, GLfloat radius) {
-      // todo: I think this is doing the same thing as the previous way?
-      // except that with this we waste time re-allocating memory
-      // todo: fix that...
-      GLint numberOfSides = CIRCLE_VERTS;
-      GLfloat z = 0;
-
-      int numberOfVertices = numberOfSides + 2;
-
-      GLfloat circleVerticesX[numberOfVertices];
-      GLfloat circleVerticesY[numberOfVertices];
-      GLfloat circleVerticesZ[numberOfVertices];
-
-      circleVerticesX[0] = x;
-      circleVerticesY[0] = y;
-      circleVerticesZ[0] = z;
-
-      for (int i = 1; i < numberOfVertices; i++) {
-        circleVerticesX[i] = x + (radius * cos(i * 2.0f * M_PI / numberOfSides));
-        circleVerticesY[i] = y + (radius * sin(i * 2.0f * M_PI / numberOfSides));
-        circleVerticesZ[i] = z;
-      }
-
-      GLfloat allCircleVertices[3 * numberOfVertices];
-
-      for (int i = 0; i < numberOfVertices; i++) {
-        allCircleVertices[i * 3] = circleVerticesX[i];
-        allCircleVertices[(i * 3) + 1] = circleVerticesY[i];
-        allCircleVertices[(i * 3) + 2] = circleVerticesZ[i];
-      }
-
-      glEnableClientState(GL_VERTEX_ARRAY);
-      glColor3f(0.2, 0.5, 0.5);
-      glVertexPointer(3, GL_FLOAT, 0, allCircleVertices);
-      glDrawArrays(GL_TRIANGLE_FAN, 0, numberOfVertices);
-      glDisableClientState(GL_VERTEX_ARRAY);
-    }
-
-    void draw_line(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2) {
-      GLfloat line_vertices[6] = {
-        x1, y1, 0,
-        x2, y2, 0
-      };
-      draw_line_vertices(line_vertices);
-    }
-
-    void draw_line_vertices(GLfloat *line_vertices) {
-      glEnable(GL_LINE_SMOOTH);
-      glPushAttrib(GL_LINE_BIT);
-      glColor3f(0.9, 0.9, 0.9);
-      glLineWidth(1);
-      glLineStipple(1, 0x00FF);
-      glEnableClientState(GL_VERTEX_ARRAY);
-      glVertexPointer(3, GL_FLOAT, 0, line_vertices);
-      glDrawArrays(GL_LINES, 0, 2);
-      glDisableClientState(GL_VERTEX_ARRAY);
-      glPopAttrib();
-      glDisable(GL_LINE_SMOOTH);
     }
   };
 }

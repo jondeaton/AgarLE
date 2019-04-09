@@ -70,7 +70,7 @@ namespace Agario {
   public:
     typedef typename std::conditional<renderable, RenderableMovingBall<CELL_SIDES>, MovingBall>::type Super;
 
-    explicit Cell(distance x, distance y, Agario::mass mass) :
+    Cell(distance x, distance y, Agario::mass mass) :
       Super(x, y) { set_mass(mass); }
 
     explicit Cell(Location &&loc, Velocity &vel, Agario::mass mass) :

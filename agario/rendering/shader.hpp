@@ -13,11 +13,10 @@ class Shader {
 public:
 	GLuint program;
 
-	Shader() { print_version(); };
+	Shader() { };
 
 	// generates the shader on the fly
 	Shader(const char* vertex_path, const char* fragment_path) : program(0) {
-    print_version();
 		generate_shader(vertex_path, fragment_path);
 	}
 

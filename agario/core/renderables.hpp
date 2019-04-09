@@ -31,6 +31,8 @@ namespace Agario {
     using Ball::Ball;
 
     void draw(Shader &shader) {
+      if (!_set_verts) _make_verts();
+
       shader.setVec3("color", circle.color[0], circle.color[1], circle.color[2]);
 
       // world location
@@ -55,8 +57,9 @@ namespace Agario {
 
   private:
     Circle<NSides> circle;
+    bool _set_verts = false;
 
-    void update_verts() {
+    void _make_verts() {
       circle.verts[0] = 0;
       circle.verts[1] = 0;
       circle.verts[2] = 0;
@@ -65,6 +68,7 @@ namespace Agario {
         circle.verts[i * 3 + 1] = static_cast<float> (0 + (1 * sin(i * 2 * M_PI / NSides)));
         circle.verts[i * 3 + 2] = 0;
       }
+      _set_verts = true;
     }
   };
 
