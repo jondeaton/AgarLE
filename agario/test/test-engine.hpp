@@ -42,10 +42,10 @@ namespace {
     EXPECT_EQ(player.cells[0].y, y);
   }
 
-  TEST(PlayerTest, Location) {
+  TEST(PlayerTest, SimpleLocation) {
     Agario::Player<false> player(0, "TestPlayer");
 
-    EXPECT_EQ(player.cells.size(), 1ul);
+    EXPECT_EQ(player.cells.size(), 0ul);
 
     Agario::distance x = 100;
     Agario::distance y = 100;
@@ -56,6 +56,21 @@ namespace {
     EXPECT_EQ(player.y(), y);
   }
 
+  TEST(PlayerTest, Location) {
+    Agario::Player<false> player(0, "TestPlayer");
+
+    EXPECT_EQ(player.cells.size(), 0ul);
+
+    Agario::distance x = 100;
+    Agario::distance y = 100;
+    Agario::mass mass = 25;
+
+    player.add_cell(x, y, mass);
+    player.add_cell(x + 2, y + 2, mass);
+
+    EXPECT_EQ(player.x(), x + 1);
+    EXPECT_EQ(player.y(), y + 1);
+  }
 
   class EngineTest : public testing::Test {
   protected:

@@ -9,15 +9,9 @@ namespace Agario {
 
   class Ball {
   public:
-//    Ball() = delete;
-    Ball() : x(0), y(0) {
-  std::cout << "Ball empty constructor called" << std::endl;
-}
-
+    Ball() = delete;
     explicit Ball(const Location &loc) : x(loc.x), y(loc.y) { }
-    Ball(distance x, distance y) : Ball(Location(x, y)) {
-      std::cout << "Ball constructor" << std::endl;
-    }
+    Ball(distance x, distance y) : Ball(Location(x, y)) { }
 
     virtual distance radius() const = 0;
     virtual Agario::mass mass() const = 0;
@@ -54,13 +48,12 @@ namespace Agario {
     }
   };
 
+  // Virtual inheritance because of
   class MovingBall : virtual public Ball {
   public:
     using Ball::Ball;
     MovingBall() = delete;
-    MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) {
-      std::cout << "MovingBall constructor called" << std::endl;
-    }
+    MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) { }
     Agario::Velocity velocity;
   };
 

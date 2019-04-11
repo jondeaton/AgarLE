@@ -31,6 +31,11 @@ namespace Agario {
     typedef typename std::conditional<renderable, RenderableBall<PELLET_SIDES>, Ball>::type Super;
     using Super::Super;
 
+    // constructors explicitly put here because of virtual inheritance rules...
+    Pellet(distance x, distance y) : Ball(x, y), Super(x, y) { }
+    explicit Pellet(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) { }
+    explicit Pellet(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) { }
+
     Agario::distance radius() const override { return PELLET_SIZE; }
     Agario::mass mass () const override { return PELLET_MASS; }
   private:
@@ -44,6 +49,10 @@ namespace Agario {
     // inherit constructors
     typedef typename std::conditional<renderable, RenderableMovingBall<FOOD_SIDES>, MovingBall>::type Super;
     using Super::Super;
+
+    Food(distance x, distance y) : Ball(x, y), Super(x, y) { }
+    explicit Food(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) { }
+    explicit Food(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) { }
 
     Agario::distance radius() const override { return FOOD_SIZE; }
     Agario::mass mass() const override { return FOOD_MASS; }
@@ -59,6 +68,10 @@ namespace Agario {
     typedef typename std::conditional<renderable, RenderableMovingBall<VIRUS_SIDES>, MovingBall>::type Super;
     using Super::Super;
 
+    Virus(distance x, distance y) : Ball(x, y), Super(x, y) { }
+    explicit Virus(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) { }
+    explicit Virus(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) { }
+
     // todo: viruses have variable mass and size
     Agario::distance radius() const override { return VIRUS_SIZE; }
     Agario::mass mass() const override { return VIRUS_MASS; }
@@ -70,13 +83,14 @@ namespace Agario {
   public:
     typedef typename std::conditional<renderable, RenderableMovingBall<CELL_SIDES>, MovingBall>::type Super;
 
-    Cell(distance x, distance y, Agario::mass mass) :
+    // because of virtual inheritance, must call virtual class constructor from most derived
+    Cell(distance x, distance y, Agario::mass mass) : Ball(x, y),
       Super(x, y), _mass(mass) { set_mass(mass); }
 
-    explicit Cell(Location &&loc, Velocity &vel, Agario::mass mass) :
+    explicit Cell(Location &&loc, Velocity &vel, Agario::mass mass) : Ball(loc),
       Super(loc, vel), _mass(mass) { }
 
-    explicit Cell(Location &loc, Velocity &vel, Agario::mass mass) :
+    explicit Cell(Location &loc, Velocity &vel, Agario::mass mass) : Ball(loc),
       Super(loc, vel), _mass(mass) { }
 
     Agario::mass mass() const override { return _mass; }
