@@ -19,6 +19,8 @@ static const GLuint HEIGHT = 600;
 #define CIRCLE_VERTS (CIRCLE_SIDES + 2)
 #define COLOR_LEN 3
 
+typedef float distance;
+
 class Circle {
 public:
 
@@ -33,7 +35,7 @@ public:
     glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STREAM_DRAW);
 
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(0);
   }
 
@@ -97,13 +99,101 @@ private:
   }
 };
 
-void set_view_projection(Shader &shader, float x, float y) {
+template <unsigned NLines>
+class Grid {
+public:
+  Grid(distance arena_width, distance arena_height) :
+    arena_width(arena_width), arena_height(arena_height),
+    vao_vertical(0), vao_horizontal(0) {
+    _create_vertices();
+  }
+
+  void draw(Shader &shader) {
+    int num_vertices = 2 * NLines;
+
+    shader.setVec3("color", color[0], color[1], color[2]);
+
+    glm::mat4 model_matrix(1);
+    model_matrix = glm::scale(model_matrix, glm::vec3(arena_width, arena_height, 0));
+
+    GLint model_loc = glGetUniformLocation(shader.program, "model_transform");
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE, &model_matrix[0][0]);
+
+
+    glGenBuffers(1, &vao_vertical);
+    glBindBuffer(GL_ARRAY_BUFFER, vao_vertical);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertical_verts), vertical_verts, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    _draw_verts(vao_vertical, num_vertices);
+
+    glGenBuffers(1, &vao_horizontal);
+    glBindBuffer(GL_ARRAY_BUFFER, vao_horizontal);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(horizontal_verts), horizontal_verts, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    _draw_verts(vao_horizontal, num_vertices);
+  }
+
+private:
+  distance arena_width;
+  distance arena_height;
+
+  float color[COLOR_LEN];
+
+  GLuint vao_vertical;
+  GLfloat vertical_verts[2 * 3 * NLines];
+
+  GLuint vao_horizontal;
+  GLfloat horizontal_verts[2 * 3 * NLines];
+
+  void _draw_verts(GLuint vao, int num_vertices) {
+    glBindVertexArray(vao);
+    glDrawArrays(GL_LINES, 0, num_vertices);
+//    glBindVertexArray(0);
+  }
+
+  void _create_vertices() {
+    _create_vertical_verts();
+    _create_horiz_verts();
+  }
+
+  void _create_vertical_verts() {
+    // vertical lines
+    for (unsigned i = 0; i < NLines; i++) {
+      vertical_verts[6 * i] = static_cast<GLfloat>(i) / NLines;
+      vertical_verts[6 * i + 1] = 0;
+      vertical_verts[6 * i + 2] = 0;
+
+      vertical_verts[6 * i + 3] = static_cast<GLfloat>(i) / NLines;
+      vertical_verts[6 * i + 4] = 1;
+      vertical_verts[6 * i + 5] = 0;
+    }
+
+  }
+
+  void _create_horiz_verts() {
+    // horizontal lines
+    for (unsigned i = 0; i < NLines; i++) {
+      horizontal_verts[6 * i] = 0;
+      horizontal_verts[6 * i + 1] = static_cast<GLfloat>(i) / NLines;
+      horizontal_verts[6 * i + 2] = 0;
+
+      horizontal_verts[6 * i + 3] = 1;
+      horizontal_verts[6 * i + 4] = static_cast<GLfloat>(i) / NLines;
+      horizontal_verts[6 * i + 5] = 0;
+    }
+
+  }
+};
+
+void set_view_projection(Shader &shader, float x, float y, float camera_z) {
   glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float) WIDTH / (float) HEIGHT, 0.1f, 100.0f);
   GLint proj_location = glGetUniformLocation(shader.program, "projection_transform");
   glUniformMatrix4fv(proj_location, 1, GL_FALSE, &Projection[0][0]);
 
   glm::mat4 View = glm::lookAt(
-    glm::vec3(x, y, 3), // Camera location in World Space
+    glm::vec3(x, y, camera_z), // Camera location in World Space
     glm::vec3(x, y, 0), // camera "looks at" location
     glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
   );
@@ -112,6 +202,7 @@ void set_view_projection(Shader &shader, float x, float y) {
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+  (void) mods;
   if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
     double xpos, ypos;
     //getting cursor position
@@ -121,8 +212,9 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 }
 
 int main(int argc, char *argv[]) {
+  (void) argc;
+  (void) argv;
 
-  GLuint vbo;
   GLuint vao;
   GLFWwindow* window;
   double time;
@@ -153,30 +245,11 @@ int main(int argc, char *argv[]) {
   Shader shader("../rendering/vertex.glsl", "../rendering/fragment.glsl");
 
   Circle circle(0, 0);
-
   Circle c(0, 0);
+  Circle origin(0, 0);
 
-  static GLfloat vertices[] = {
-    /*   Positions          Colors */
-    0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-    0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f
-  };
-
-  glGenVertexArrays(1, &vao);
-  glGenBuffers(1, &vbo);
-  glBindVertexArray(vao);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-  /* Position attribute */
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
-  glEnableVertexAttribArray(0);
-
-  /* Color attribute */
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-  glEnableVertexAttribArray(1);
-  glBindVertexArray(0);
+  Grid<100> grid(100, 100);
+  GLuint vbo;
 
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
@@ -191,31 +264,20 @@ int main(int argc, char *argv[]) {
 
     time = glfwGetTime();
 
-    set_view_projection(shader, circle.x(), circle.y());
+    set_view_projection(shader, circle.x(), circle.y(), 1 + 2 * time);
 
-    circle.set_location(15 - time / 3, 14);
+    circle.set_location(2 - time / 3, 2);
     circle.set_radius(0.1 * (1 + 0.5 * sin(time)));
-    circle.draw(shader);
+//    circle.draw(shader);
 
-    c.set_location(13, 13);
-    circle.set_radius(0.1 * (1 + 0.5 * cos(time)));
-    c.draw(shader);
+    c.set_location(0.5, 0.5);
+    c.set_radius(0.1 * (1 + 0.5 * cos(time)));
+//    c.draw(shader);
 
-//    transform_location = glGetUniformLocation(shader.program, "transform");
-//    GLfloat transform[] = {
-//      0.0f, 0.0f, 0.0f, 0.0f,
-//      0.0f, 0.0f, 0.0f, 0.0f,
-//      0.0f, 0.0f, 1.0f, 0.0f,
-//      0.0f, 0.0f, 0.0f, 1.0f,
-//    };
-
-//    transform[0] = 1.0f * sin(3.14 * time);
-//    transform[5] = 1.0f * cos(time);
-//    glUniformMatrix4fv(transform_location, 1, GL_FALSE, transform);
-
-//    glBindVertexArray(vao);
-//    glDrawArrays(GL_TRIANGLES, 0, 3);
-//    glBindVertexArray(0);
+    origin.set_radius(0.1);
+//    origin.draw(shader);
+    
+    grid.draw(shader);
 
     glfwSwapBuffers(window);
   }
