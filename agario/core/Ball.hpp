@@ -9,12 +9,12 @@ namespace Agario {
 
   class Ball {
   public:
+//    Ball() = delete;
     Ball() : x(0), y(0) {
-      // todo: delete this?!
-      std::cout << "Ball Empty constructor" << std::endl;
-    }
+  std::cout << "Ball empty constructor called" << std::endl;
+}
+
     explicit Ball(const Location &loc) : x(loc.x), y(loc.y) { }
-    explicit Ball(Location &&loc) : x(loc.x), y(loc.y) { }
     Ball(distance x, distance y) : Ball(Location(x, y)) {
       std::cout << "Ball constructor" << std::endl;
     }
@@ -44,7 +44,7 @@ namespace Agario {
       return mass() == other.mass();
     }
 
-    distance x; // todo: turn these into a single Location
+    distance x;
     distance y;
     virtual ~Ball() = default;
   private:
@@ -57,7 +57,10 @@ namespace Agario {
   class MovingBall : virtual public Ball {
   public:
     using Ball::Ball;
-    MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) { }
+    MovingBall() = delete;
+    MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) {
+      std::cout << "MovingBall constructor called" << std::endl;
+    }
     Agario::Velocity velocity;
   };
 

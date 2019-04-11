@@ -96,6 +96,7 @@ namespace Agario {
   void Engine::recombine_cells(Player &player) {
     for (auto cell = player.cells.begin(); cell != player.cells.end(); ++cell) {
       Agario::mass gained_mass = 0;
+      (void) gained_mass;
       for (auto other_cell = cell + 1; other_cell != player.cells.end(); ++other_cell) {
 //        if (cell->collides_with(*other_cell))
 //          gained_mass += other_cell->mass();

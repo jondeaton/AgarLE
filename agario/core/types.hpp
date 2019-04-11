@@ -1,10 +1,71 @@
 #pragma once
 #include <cmath>
 
-namespace Agario {
+template<class T, int type_distinguisher>
+class numWrapper {
+  // adapted from https://stackoverflow.com/questions/17793298/c-class-wrapper-around-fundamental-types
+  T value;
+public:
+  typedef T value_type;
+  numWrapper() : value() {}
+  numWrapper(T v) : value(v) {}
+  operator T() const {return value;}
 
-  typedef double distance;
-  typedef float angle;
+  //modifiers
+  numWrapper& operator=(T v) {value = v; return *this;}
+  numWrapper& operator+=(T v) {value += v; return *this;}
+  numWrapper& operator-=(T v) {value -= v; return *this;}
+  numWrapper& operator*=(T v) {value *= v; return *this;}
+  numWrapper& operator/=(T v) {value /= v; return *this;}
+  numWrapper& operator%=(T v) {value %= v; return *this;}
+  numWrapper& operator++() {++value; return *this;}
+  numWrapper& operator--() {--value; return *this;}
+  numWrapper operator++(int) {return numWrapper(value++);}
+  numWrapper operator--(int) {return numWrapper(value--);}
+  numWrapper& operator&=(T v) {value&=v; return *this;}
+  numWrapper& operator|=(T v) {value|=v; return *this;}
+  numWrapper& operator^=(T v) {value^=v; return *this;}
+  numWrapper& operator<<=(T v) {value<<=v; return *this;}
+  numWrapper& operator>>=(T v) {value>>=v; return *this;}
+
+  //accessors
+  numWrapper operator+() const {return numWrapper(+value);}
+  numWrapper operator-() const {return numWrapper(-value);}
+  numWrapper operator!() const {return numWrapper(!value);}
+  numWrapper operator~() const {return numWrapper(~value);}
+
+  //friends
+  friend numWrapper operator+(numWrapper iw, numWrapper v) {return iw+=v;}
+  template <typename U>
+  friend numWrapper operator+(numWrapper iw, U v) {return iw+=v;}
+  template <typename U>
+  friend numWrapper operator+(U v, numWrapper iw) {return numWrapper(v)+=iw;}
+
+  friend numWrapper operator-(numWrapper iw, numWrapper v) {return iw-=v;}
+  template <typename U>
+  friend numWrapper operator-(numWrapper iw, U v) {return iw-=v;}
+  template <typename U>
+  friend numWrapper operator-(U v, numWrapper iw) {return numWrapper(v)-=iw;}
+
+  friend numWrapper operator*(numWrapper iw, numWrapper v) {return iw*=v;}
+  template <typename U>
+  friend numWrapper operator*(numWrapper iw, U v) {return iw*=v;}
+  template <typename U>
+  friend numWrapper operator*(U v, numWrapper iw) {return numWrapper(v)*=iw;}
+
+  friend numWrapper operator/(numWrapper iw, numWrapper v) {return iw/=v;}
+  template <typename U>
+  friend numWrapper operator/(numWrapper iw, U v) {return iw/=v;}
+  template <typename U>
+  friend numWrapper operator/(U v, numWrapper iw) {return numWrapper(v)/=iw;}
+
+  // overload the other operators (%, &, |, ^, <<, >>) in the same way if needed
+};
+
+namespace Agario {
+  enum _type_id { _distance, _angle };
+  using distance = numWrapper<float, _distance>;
+  using angle = numWrapper<float, _angle>;
 
   typedef unsigned int mass;
   typedef unsigned int score;
@@ -65,15 +126,15 @@ namespace Agario {
     return lhs;
   }
 
-  template <typename T, typename U>
-  inline Coordinate<T> operator/(Coordinate<T> v, U norm) {
+  template <typename T>
+  inline Coordinate<T> operator/(Coordinate<T> v, distance norm) {
     v.x /= norm;
     v.y /= norm;
     return v;
   }
 
-  template <typename T, typename U>
-  inline Coordinate<T> operator*(Coordinate<T> v, U norm) {
+  template <typename T>
+  inline Coordinate<T> operator*(Coordinate<T> v, distance norm) {
     v.x *= norm;
     v.y *= norm;
     return v;

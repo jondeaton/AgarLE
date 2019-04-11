@@ -6,6 +6,10 @@
 
 namespace {
 
+  TEST(EntityTest, MakeMovingBall) {
+//    Agario::MovingBall mb(Agario::Location(4, 4), Agario::Velocity(2,2 ));
+  }
+
   TEST(EntityTest, MakeCell) {
     Agario::distance x = 100;
     Agario::distance y = 125;
@@ -19,7 +23,7 @@ namespace {
 
   TEST(PlayerTest, StartsEmpty) {
     Agario::Player<false> player(0, "TestPlayer");
-    EXPECT_EQ(player.cells.size(), 0);
+    EXPECT_EQ(player.cells.size(), 0ul);
   }
 
   TEST(PlayerTest, AddCell) {
@@ -31,7 +35,7 @@ namespace {
 
     player.add_cell(x, y, mass);
 
-    ASSERT_EQ(player.cells.size(), 1);
+    ASSERT_EQ(player.cells.size(), 1ul);
 
     EXPECT_EQ(player.cells[0].mass(), mass);
     EXPECT_EQ(player.cells[0].x, x);
@@ -41,7 +45,7 @@ namespace {
   TEST(PlayerTest, Location) {
     Agario::Player<false> player(0, "TestPlayer");
 
-    EXPECT_EQ(player.cells.size(), 1);
+    EXPECT_EQ(player.cells.size(), 1ul);
 
     Agario::distance x = 100;
     Agario::distance y = 100;
