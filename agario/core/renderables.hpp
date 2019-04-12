@@ -43,15 +43,19 @@ namespace agario {
       glm::mat4 scale_transform(1);
       scale_transform = glm::scale(scale_transform, glm::vec3(radius(), radius(), 0));
 
-      glm::mat4 model_matrix = position_transform * scale_transform;
-
-      GLint model_loc = glGetUniformLocation(shader.program, "model_transform");
-      glUniformMatrix4fv(model_loc, 1, GL_FALSE, &model_matrix[0][0]);
+      shader.setMat4("model_transform", position_transform * scale_transform);
 
       // draw them!
       glBindVertexArray(circle.vao);
       glDrawArrays(GL_TRIANGLE_FAN, 0, NVertices);
       glBindVertexArray(0);
+    }
+
+    ~RenderableBall() {
+      if (_initialized) {
+        glDeleteVertexArrays(1, &circle.vao);
+        glDeleteBuffers(1, &circle.vbo);
+      }
     }
 
   private:
@@ -61,6 +65,10 @@ namespace agario {
 
     void _initialize() {
       _create_vertices();
+
+      circle.color[0] = 0.5;
+      circle.color[1] = 0.5;
+      circle.color[2] = 0.5;
 
       glGenVertexArrays(1, &circle.vao);
       glGenBuffers(1, &circle.vbo);
@@ -102,17 +110,25 @@ namespace agario {
 
     void draw(Shader &shader) {
       if (!_initialized) _initialize();
+
       shader.setVec3("color", color[0], color[1], color[2]);
 
       glm::mat4 model_matrix(1);
       model_matrix = glm::scale(model_matrix, glm::vec3(arena_width, arena_height, 0));
 
-      GLint model_loc = glGetUniformLocation(shader.program, "model_transform");
-      glUniformMatrix4fv(model_loc, 1, GL_FALSE, &model_matrix[0][0]);
+      shader.setMat4("model_transform", model_matrix);
 
+      // do the actual drawing
       glBindVertexArray(vao);
       glDrawArrays(GL_LINES, 0, NumVertices);
       glBindVertexArray(0);
+    }
+
+    ~Grid() {
+      if (_initialized) {
+        glDeleteVertexArrays(1, &vao);
+        glDeleteBuffers(1, &vbo);
+      }
     }
 
   private:
@@ -121,7 +137,7 @@ namespace agario {
     distance arena_width;
     distance arena_height;
     GLfloat z;
-    float color[COLOR_LEN];
+    GLfloat color[COLOR_LEN];
 
     GLuint vao;
     GLuint vbo;
@@ -130,6 +146,10 @@ namespace agario {
 
     void _initialize() {
       _create_vertices();
+
+      color[0] = 0.5;
+      color[1] = 0.5;
+      color[2] = 0.5;
 
       glGenVertexArrays(1, &vao);
       glGenBuffers(1, &vbo);

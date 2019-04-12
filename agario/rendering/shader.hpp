@@ -93,9 +93,14 @@ public:
 		glUniform3f(glGetUniformLocation(program, name.c_str()), value1, value2, value3);
 	}
 
-	void print_version() {
-    std::cout << "Shader version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-  }
+	void setMat4(const std::string &name, const glm::mat4 &matrix) {
+    GLint location = glGetUniformLocation(program, name.c_str());
+    glUniformMatrix4fv(location, 1, GL_FALSE, &matrix[0][0]);
+	}
+
+	std::string version() {
+	  return std::string( (const char*) glGetString(GL_SHADING_LANGUAGE_VERSION));
+	}
 
 	~Shader() { glDeleteProgram(program); }
 

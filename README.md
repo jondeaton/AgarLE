@@ -3,10 +3,9 @@
 Reinforcement Learning environment for Agar.io
 
 # todo
-- Baseic game rendering
+- Basic game rendering
   - Entity colors
-  - Draw border (tbh, optional)
-- Get basic game mechamics
+- Get basic game mechanics
   - Handle player mouse/keyboard inputs
   - Player follow mouse
   - Entity interactions (several of these)
