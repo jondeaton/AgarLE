@@ -32,7 +32,7 @@ namespace agario {
     void draw(Shader &shader) {
       if (!_initialized) _initialize();
 
-      shader.setVec3("color", circle.color[0], circle.color[1], circle.color[2]);
+      shader.setVec4("color", circle.color[0], circle.color[1], circle.color[2], 1.0);
 
       // world location
       auto location = glm::vec3(x, y, 0);
@@ -66,9 +66,9 @@ namespace agario {
     void _initialize() {
       _create_vertices();
 
-      circle.color[0] = 0.5;
-      circle.color[1] = 0.5;
-      circle.color[2] = 0.5;
+      circle.color[0] = 1.0;
+      circle.color[1] = 0.0;
+      circle.color[2] = 0.0;
 
       glGenVertexArrays(1, &circle.vao);
       glGenBuffers(1, &circle.vbo);
@@ -111,7 +111,7 @@ namespace agario {
     void draw(Shader &shader) {
       if (!_initialized) _initialize();
 
-      shader.setVec3("color", color[0], color[1], color[2]);
+      shader.setVec4("color", color[0], color[1], color[2], 1.0);
 
       glm::mat4 model_matrix(1);
       model_matrix = glm::scale(model_matrix, glm::vec3(arena_width, arena_height, 0));
@@ -147,9 +147,9 @@ namespace agario {
     void _initialize() {
       _create_vertices();
 
-      color[0] = 0.5;
-      color[1] = 0.5;
-      color[2] = 0.5;
+      color[0] = 0.2;
+      color[1] = 0.2;
+      color[2] = 0.2;
 
       glGenVertexArrays(1, &vao);
       glGenBuffers(1, &vbo);

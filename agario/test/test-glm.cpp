@@ -62,7 +62,7 @@ public:
   }
 
   void draw(Shader &shader) {
-    shader.setVec3("color", color[0], color[1], color[2]);
+    shader.setVec4("color", color[0], color[1], color[2], 0.0);
 
     auto world_position = glm::vec3(_x, _y, 0);
 
@@ -118,7 +118,7 @@ public:
   }
 
   void draw(Shader &shader) {
-    shader.setVec3("color", color[0], color[1], color[2]);
+    shader.setVec4("color", color[0], color[1], color[2], 1.0);
 
     glm::mat4 model_matrix(1);
     model_matrix = glm::scale(model_matrix, glm::vec3(arena_width, arena_height, 0));
