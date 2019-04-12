@@ -41,8 +41,8 @@ public:
 
   float verts[3 * CIRCLE_VERTS];
   float color[COLOR_LEN] = {0.5, 0.5, 0.5};
-  unsigned int vao; // vertex attribute object
-  unsigned int vbo; // vertex buffer object (gpu memory)
+  GLuint vao; // vertex attribute object
+  GLuint vbo; // vertex buffer object (gpu memory)
 
   float x() const {
     return _x;
@@ -76,10 +76,9 @@ public:
     GLint model_loc = glGetUniformLocation(shader.program, "model_transform");
     glUniformMatrix4fv(model_loc, 1, GL_FALSE, &model_matrix[0][0]);
 
-    // draw them!
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, CIRCLE_VERTS);
-    glBindVertexArray(0);
+//    glBindVertexArray(0);
   }
 
 private:
@@ -255,7 +254,6 @@ int main(int argc, char *argv[]) {
     glfwPollEvents();
 
     double xpos, ypos;
-    //getting cursor position
     glfwGetCursorPos(window, &xpos, &ypos);
 
     glClear(GL_COLOR_BUFFER_BIT);
@@ -268,19 +266,22 @@ int main(int argc, char *argv[]) {
 
     circle.set_location(2 - time / 3, 2);
     circle.set_radius(0.1 * (1 + 0.5 * sin(time)));
-//    circle.draw(shader);
+    circle.draw(shader);
 
     c.set_location(0.5, 0.5);
     c.set_radius(0.1 * (1 + 0.5 * cos(time)));
-//    c.draw(shader);
+    c.draw(shader);
 
-    origin.set_radius(0.1);
+//    origin.set_radius(0.1);
 //    origin.draw(shader);
-    
+
+
+
     grid.draw(shader);
 
     glfwSwapBuffers(window);
   }
+
   glDeleteVertexArrays(1, &vao);
   glDeleteBuffers(1, &vbo);
   glfwTerminate();
