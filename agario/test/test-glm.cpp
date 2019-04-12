@@ -78,7 +78,7 @@ public:
 
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, CIRCLE_VERTS);
-//    glBindVertexArray(0);
+    glBindVertexArray(0);
   }
 
 private:
@@ -101,15 +101,23 @@ private:
 template <unsigned NLines>
 class Grid {
 public:
-  Grid(distance arena_width, distance arena_height) :
-    arena_width(arena_width), arena_height(arena_height),
-    vao_vertical(0), vao_horizontal(0) {
+  Grid(distance arena_width, distance arena_height, float z=0.0) :
+    arena_width(arena_width), arena_height(arena_height), z(z) {
     _create_vertices();
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(0);
   }
 
   void draw(Shader &shader) {
-    int num_vertices = 2 * NLines;
-
     shader.setVec3("color", color[0], color[1], color[2]);
 
     glm::mat4 model_matrix(1);
@@ -118,71 +126,50 @@ public:
     GLint model_loc = glGetUniformLocation(shader.program, "model_transform");
     glUniformMatrix4fv(model_loc, 1, GL_FALSE, &model_matrix[0][0]);
 
-
-    glGenBuffers(1, &vao_vertical);
-    glBindBuffer(GL_ARRAY_BUFFER, vao_vertical);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertical_verts), vertical_verts, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    _draw_verts(vao_vertical, num_vertices);
-
-    glGenBuffers(1, &vao_horizontal);
-    glBindBuffer(GL_ARRAY_BUFFER, vao_horizontal);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(horizontal_verts), horizontal_verts, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    _draw_verts(vao_horizontal, num_vertices);
+    glBindVertexArray(vao);
+    glDrawArrays(GL_LINES, 0, NumVertices);
+    glBindVertexArray(0);
   }
 
 private:
+  static constexpr unsigned NumVertices = 2 * 3 * 2 * NLines;
+
   distance arena_width;
   distance arena_height;
-
+  GLfloat z;
   float color[COLOR_LEN];
 
-  GLuint vao_vertical;
-  GLfloat vertical_verts[2 * 3 * NLines];
-
-  GLuint vao_horizontal;
-  GLfloat horizontal_verts[2 * 3 * NLines];
-
-  void _draw_verts(GLuint vao, int num_vertices) {
-    glBindVertexArray(vao);
-    glDrawArrays(GL_LINES, 0, num_vertices);
-//    glBindVertexArray(0);
-  }
+  GLuint vao;
+  GLuint vbo;
+  GLfloat vertices[NumVertices];
 
   void _create_vertices() {
-    _create_vertical_verts();
-    _create_horiz_verts();
+    _create_horiz_verts(&vertices[3 * 2 * NLines]);
+    _create_vertical_verts(&vertices[0]);
   }
 
-  void _create_vertical_verts() {
-    // vertical lines
+  void _create_vertical_verts(GLfloat verts[]) {
     for (unsigned i = 0; i < NLines; i++) {
-      vertical_verts[6 * i] = static_cast<GLfloat>(i) / NLines;
-      vertical_verts[6 * i + 1] = 0;
-      vertical_verts[6 * i + 2] = 0;
+      verts[6 * i] = static_cast<GLfloat>(i) / NLines;
+      verts[6 * i + 1] = 0;
+      verts[6 * i + 2] = z;
 
-      vertical_verts[6 * i + 3] = static_cast<GLfloat>(i) / NLines;
-      vertical_verts[6 * i + 4] = 1;
-      vertical_verts[6 * i + 5] = 0;
+      verts[6 * i + 3] = static_cast<GLfloat>(i) / NLines;
+      verts[6 * i + 4] = 1;
+      verts[6 * i + 5] = z;
     }
-
   }
 
-  void _create_horiz_verts() {
-    // horizontal lines
+  void _create_horiz_verts(GLfloat verts[]) {
     for (unsigned i = 0; i < NLines; i++) {
-      horizontal_verts[6 * i] = 0;
-      horizontal_verts[6 * i + 1] = static_cast<GLfloat>(i) / NLines;
-      horizontal_verts[6 * i + 2] = 0;
+      verts[6 * i] = 0;
+      verts[6 * i + 1] = static_cast<GLfloat>(i) / NLines;
+      verts[6 * i + 2] = 0;
 
-      horizontal_verts[6 * i + 3] = 1;
-      horizontal_verts[6 * i + 4] = static_cast<GLfloat>(i) / NLines;
-      horizontal_verts[6 * i + 5] = 0;
+      verts[6 * i + 3] = 1;
+      verts[6 * i + 4] = static_cast<GLfloat>(i) / NLines;
+      verts[6 * i + 5] = 0;
     }
-
   }
 };
 
