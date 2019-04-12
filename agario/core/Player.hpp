@@ -12,75 +12,84 @@
 #include <assert.h>
 #include <type_traits>
 
-namespace Agario {
+namespace agario {
 
-  template <bool renderable>
+  template<bool renderable>
   class Player {
 
   public:
 
-    typedef Cell<renderable> Cell;
+    typedef Cell <renderable> Cell;
 
     explicit Player(pid pid, std::string name) :
       action(none), target(0, 0),
-      _pid(pid), _name(std::move(name)), _score(0) { }
+      _pid(pid), _name(std::move(name)), _score(0) {}
 
     std::vector<Cell> cells;
-    Agario::action action;
+    agario::action action;
     Location target;
 
     template<typename... Args>
-    void add_cell(Args&&... args) {
+    void add_cell(Args &&... args) {
       cells.emplace_back(std::forward<Args>(args)...);
     }
 
     void set_score(score new_score) { _score = new_score; }
+
     void increment_score(score inc) { _score += inc; }
 
     // todo: cache this so that it doesn't have to be recomputed
-    Agario::distance x() const {
-      Agario::distance x = 0;
+    agario::distance x() const {
+      agario::distance x_ = 0;
       for (auto &cell : cells)
-        x += cell.x * cell.mass();
-      return x / mass();
+        x_ += cell.x * cell.mass();
+      return x_ / mass();
     }
 
-    Agario::distance y() const {
-      Agario::distance y = 0;
+    agario::distance y() const {
+      agario::distance y_ = 0;
       for (auto &cell : cells)
-        y += cell.y * cell.mass();
-      return y / mass();
+        y_ += cell.y * cell.mass();
+      return y_ / mass();
     }
 
-    Agario::Location location() const {
-      return Agario::Location(x(), y());
+    agario::Location location() const {
+      return agario::Location(x(), y());
     }
 
     // Total mass of the player (sum of masses of all cells)
-    Agario::mass mass() const {
-      Agario::mass total_mass = 0;
+    agario::mass mass() const {
+      agario::mass total_mass = 0;
       for (auto &cell : cells)
         total_mass += cell.mass();
       return total_mass;
     }
 
-    Agario::score score() const { return mass(); }
+    agario::score score() const { return mass(); }
 
-    bool operator <(const Player& other) const {
+    bool operator<(const Player &other) const {
       return score() < other.score();
     }
 
-    Agario::pid pid() const { return _pid; }
+    agario::pid pid() const { return _pid; }
+
     std::string name() const { return _name; }
 
     bool operator==(const Player &other) {
       return this->_pid == other.pid();
     }
 
+
+    std::enable_if<renderable, void>
+    draw(Shader &shader) {
+      for (auto &cell : cells)
+        cell.draw(shader);
+    }
+
   private:
-    Agario::pid _pid;
+    agario::pid _pid;
     std::string _name;
-    Agario::score _score;
+    agario::score _score;
   };
 
 }

@@ -7,25 +7,23 @@
 
 // todo: remove this
 #define GL_SILENCE_DEPRECATION
-
 #include <GLFW/glfw3.h>
-#include <OpenGL/gl3.h>
 
 class Shader {
 public:
-	unsigned int ID;
+	GLuint program;
 
-	Shader() = default;
+	Shader() { };
 
 	// generates the shader on the fly
-	Shader(const char* vertexPath, const char* fragmentPath) : ID(0) {
-		generate_shader(vertexPath, fragmentPath);
+	Shader(const char* vertex_path, const char* fragment_path) : program(0) {
+		generate_shader(vertex_path, fragment_path);
 	}
 
-	void generate_shader(const char* vertexPath, const char* fragmentPath) {
-		std::string vertexCode = get_file_contents(vertexPath);
-		std::string fragmentCode = get_file_contents(fragmentPath);
-		compile_shaders(vertexCode, fragmentCode);
+	void generate_shader(const char* vertex_path, const char* fragment_path) {
+		std::string vertex_code = get_file_contents(vertex_path);
+		std::string fragment_code = get_file_contents(fragment_path);
+		compile_shaders(vertex_code, fragment_code);
 	}
 
 	std::string get_file_contents(const char* path) {
@@ -40,14 +38,14 @@ public:
 			file.close();
 			return stream.str();
 		} catch (std::ifstream::failure &e) {
-			std::cerr << "SHDER FILE \"" << path << "\" not successfully read" << std::endl;
+			std::cerr << "SHADER FILE \"" << path << "\" not successfully read" << std::endl;
 		}
 		return std::string();
 	}
 
-	void compile_shaders(const std::string &vertexCode, const std::string &fragmentCode) {
-		const char* vShaderCode = vertexCode.c_str();
-		const char * fShaderCode = fragmentCode.c_str();
+	void compile_shaders(const std::string &vertex_code, const std::string &fragment_code) {
+		const char* vShaderCode = vertex_code.c_str();
+		const char* fShaderCode = fragment_code.c_str();
 
 		unsigned int vertex, fragment;
 
@@ -55,49 +53,56 @@ public:
 		vertex = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertex, 1, &vShaderCode, nullptr);
 		glCompileShader(vertex);
-		checkCompileErrors(vertex, "VERTEX");
+    check_compile_errors(vertex, "VERTEX");
 
 		// fragment Shader
 		fragment = glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fragment, 1, &fShaderCode, nullptr);
 		glCompileShader(fragment);
-		checkCompileErrors(fragment, "FRAGMENT");
+    check_compile_errors(fragment, "FRAGMENT");
 
 		// shader Program
-		ID = glCreateProgram();
-		glAttachShader(ID, vertex);
-		glAttachShader(ID, fragment);
-		glLinkProgram(ID);
-		checkCompileErrors(ID, "PROGRAM");
-		// delete the shaders as they're linked into our program now and no longer necessary
+		program = glCreateProgram();
+		glAttachShader(program, vertex);
+		glAttachShader(program, fragment);
+		glLinkProgram(program);
+    check_compile_errors(program, "PROGRAM");
+
+    // delete the shaders as they're linked into our program now and no longer necessary
 		glDeleteShader(vertex);
 		glDeleteShader(fragment);
 	}
 
 	void use() {
-		glUseProgram(ID);
+		glUseProgram(program);
 	}
 
 	void setBool(const std::string &name, bool value) const {
-		glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
+		glUniform1i(glGetUniformLocation(program, name.c_str()), (int)value);
 	}
 
 	void setInt(const std::string &name, int value) const {
-		glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+		glUniform1i(glGetUniformLocation(program, name.c_str()), value);
 	}
 
 	void setFloat(const std::string &name, float value) const {
-		glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+		glUniform1f(glGetUniformLocation(program, name.c_str()), value);
 	}
 
 	void setVec3(const std::string &name, float value1, float value2, float value3) const {
-		glUniform3f(glGetUniformLocation(ID, name.c_str()), value1, value2, value3);
+		glUniform3f(glGetUniformLocation(program, name.c_str()), value1, value2, value3);
 	}
+
+	void print_version() {
+    std::cout << "Shader version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+  }
+
+	~Shader() { glDeleteProgram(program); }
 
 private:
 
 	// utility function for checking shader compilation/linking errors.
-	void checkCompileErrors(unsigned int shader, const std::string &type) {
+	void check_compile_errors(unsigned int shader, const std::string &type) {
 		int success;
 		char infoLog[1024];
 		if (type != "PROGRAM") {

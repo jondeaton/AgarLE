@@ -4,19 +4,15 @@ Reinforcement Learning environment for Agar.io
 
 # todo
 - Baseic game rendering
-  - Fix x/y warping
-  - fix radius to screen dimension
-  - Draw pellets
-  - Draw viruses
-  - Draw food
-  - Player colors
-  - store circle vertices in entity objects
-  - View sizes that scales with player mass
+  - Entity colors
+  - Draw border (tbh, optional)
 - Get basic game mechamics
   - Handle player mouse/keyboard inputs
   - Player follow mouse
-  - player eat food
-  - player player split
+  - Entity interactions (several of these)
+- Refactoring
+  - restructure class structure to avoid Diamond problem
+  - better solution to NumberWrapper (or put in different file)
 - Client-Server connection
   - Write server I/O
   - Write client I/O

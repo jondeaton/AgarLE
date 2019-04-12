@@ -8,7 +8,7 @@
 #include "core/types.hpp"
 #include "core/Entities.hpp"
 
-namespace Agario {
+namespace agario {
 
   class Engine {
   public:
@@ -54,7 +54,7 @@ namespace Agario {
     distance arena_width;
     distance arena_height;
 
-    Agario::tick ticks;
+    agario::tick ticks;
 
     void add_pellets(int num_pellets);
     void add_virus(int num_virus);
@@ -75,7 +75,7 @@ namespace Agario {
     void check_virus_collisions(Cell &cell, std::vector<Cell> &created_cells);
     void disrupt(Cell &cell, std::vector<Cell> &created_cells);
 
-    Agario::Location random_location();
+    agario::Location random_location();
   };
 }
 

@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[]) {
 
-  Agario::Client client;
+  agario::Client client;
 
   return 0;
 }

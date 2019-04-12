@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <test/test-engine.hpp>
 
 namespace {
 
