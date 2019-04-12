@@ -104,16 +104,14 @@ namespace agario {
 
     void make_projections() {
       glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect_ratio(), 0.1f, 100.0f);
-      GLint proj_location = glGetUniformLocation(shader.program, "projection_transform");
-      glUniformMatrix4fv(proj_location, 1, GL_FALSE, &projection[0][0]);
+      shader.setMat4("projection_transform", projection);
 
       glm::mat4 view = glm::lookAt(
         glm::vec3(player->x(), player->y(), player->mass()), // Camera location in World Space
         glm::vec3(player->x(), player->y(), 0), // camera "looks at" location
         glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
       );
-      GLint view_location = glGetUniformLocation(shader.program, "view_transform");
-      glUniformMatrix4fv(view_location, 1, GL_FALSE, &view[0][0]);
+      shader.setMat4("view_transform", view);
     }
 
     void render_screen(std::vector<Player> &players, std::vector<Food> &foods,
