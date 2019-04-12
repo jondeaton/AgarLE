@@ -62,7 +62,7 @@ public:
   // overload the other operators (%, &, |, ^, <<, >>) in the same way if needed
 };
 
-namespace Agario {
+namespace agario {
   enum _type_id { _distance, _angle };
   using distance = numWrapper<float, _distance>;
   using angle = numWrapper<float, _angle>;
@@ -95,13 +95,13 @@ namespace Agario {
       return *this;
     }
 
-    Agario::distance norm_sqr() const {
+    agario::distance norm_sqr() const {
       auto dx = std::abs(x);
       auto dy = std::abs(y);
       return dx * dx + dy * dy;
     }
 
-    Agario::distance norm() const {
+    agario::distance norm() const {
       return std::sqrt(norm_sqr());
     }
 
@@ -140,24 +140,24 @@ namespace Agario {
     return v;
   }
 
-  typedef Coordinate<Agario::distance> Location;
+  typedef Coordinate<agario::distance> Location;
 
 
   class Velocity {
   public:
     explicit Velocity() : dx(0), dy(0) { }
-    explicit Velocity(Agario::Location dir) : dx(dir.x), dy(dir.y) {}
-    explicit Velocity(Agario::distance dx, Agario::distance dy) : dx(dx), dy(dy) { }
-    explicit Velocity(Agario::angle angle, Agario::distance speed) :
+    explicit Velocity(agario::Location dir) : dx(dir.x), dy(dir.y) {}
+    explicit Velocity(agario::distance dx, agario::distance dy) : dx(dx), dy(dy) { }
+    explicit Velocity(agario::angle angle, agario::distance speed) :
       dx(speed * std::cos(angle)), dy(speed * std::sin(angle)) { }
 
-    Agario::angle direction() const {
+    agario::angle direction() const {
       auto angle = std::atan(dx / dy);
       if (dx < 0) {
         if (dy > 0) angle += M_PI;
         else angle -= M_PI;
       }
-      return static_cast<Agario::angle>(angle);
+      return static_cast<agario::angle>(angle);
     }
 
     Velocity& operator +=(const Velocity &rhs) {

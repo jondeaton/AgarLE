@@ -6,7 +6,7 @@
 #include "core/utils.hpp"
 #include "engine/utils.hpp"
 
-namespace Agario {
+namespace agario {
 
   void Engine::tick() {
     std::cout << "tick: " << ticks << std::endl;
@@ -34,10 +34,10 @@ namespace Agario {
       // todo: change VIRUS_SIZE to static member of Virus?
       check_virus_collisions(cell, created_cells);
 
-      if (player.action == Agario::action::feed)
+      if (player.action == agario::action::feed)
         emit_foods(player);
 
-      if (player.action == Agario::action::split)
+      if (player.action == agario::action::split)
         player_split(player, created_cells);
 
     }
@@ -72,12 +72,12 @@ namespace Agario {
 
   void Engine::eat_others(Player &player, Cell &cell) {
 
-    Agario::mass gained_mass = 0;
+    agario::mass gained_mass = 0;
 
     for (Player &other_player : players) {
       if (other_player == player) continue;
       for (Cell &other_cell : other_player.cells) {
-        if (cell.collides_with(other_cell) &&  cell > other_cell)
+        if (cell.collides_with(other_cell) && cell > other_cell)
           gained_mass += other_cell.mass();
       }
 
@@ -85,7 +85,7 @@ namespace Agario {
       other_player.cells.erase(
         std::remove_if(other_player.cells.begin(), other_player.cells.end(),
                        [&](const Cell &other_cell) {
-                         return cell.collides_with(other_cell) &&  cell > other_cell;
+                         return cell.collides_with(other_cell) && cell > other_cell;
                        }),
         other_player.cells.end());
     }
@@ -95,7 +95,7 @@ namespace Agario {
 
   void Engine::recombine_cells(Player &player) {
     for (auto cell = player.cells.begin(); cell != player.cells.end(); ++cell) {
-      Agario::mass gained_mass = 0;
+      agario::mass gained_mass = 0;
       (void) gained_mass;
       for (auto other_cell = cell + 1; other_cell != player.cells.end(); ++other_cell) {
 //        if (cell->collides_with(*other_cell))
@@ -141,13 +141,13 @@ namespace Agario {
     }
   }
 
-  void Engine::player_split(Engine::Player &player, std::vector<Cell>& created_cells) {
+  void Engine::player_split(Engine::Player &player, std::vector<Cell> &created_cells) {
 
     for (Cell &cell : player.cells) {
 
       if (cell.mass() < CELL_MIN_SIZE * 2) continue;
 
-      Agario::mass split_mass = cell.mass() / 2;
+      agario::mass split_mass = cell.mass() / 2;
       auto remaining_mass = cell.mass() - split_mass;
 
       cell.set_mass(remaining_mass);
@@ -155,7 +155,7 @@ namespace Agario {
       auto dir = (player.target - cell.location()).normed();
       Location loc = cell.location() + dir * cell.radius();
 
-      Velocity vel(dir * 2 * Agario::max_speed(split_mass));
+      Velocity vel(dir * 2 * agario::max_speed(split_mass));
 
       created_cells.emplace_back(loc, vel, split_mass);
     }
@@ -202,39 +202,39 @@ namespace Agario {
   }
 
   void Engine::disrupt(Cell &cell, std::vector<Cell> &created_cells) {
-    Agario::mass total_mass = cell.mass(); // mass to conserve
+    agario::mass total_mass = cell.mass(); // mass to conserve
 
     // reduce the cell by roughly this ratio CELL_POP_REDUCTION, making sure the
     // amount removes is divisible by CELL_POP_SIZE
     cell.reduce_mass_by_factor(CELL_POP_REDUCTION);
     cell.increment_mass((total_mass - cell.mass()) % CELL_POP_SIZE);
 
-    Agario::mass pop_mass = total_mass - cell.mass(); // mass conservation
-    int num_new_cells = div_round_up<Agario::mass>(pop_mass, CELL_POP_SIZE);
+    agario::mass pop_mass = total_mass - cell.mass(); // mass conservation
+    int num_new_cells = div_round_up<agario::mass>(pop_mass, CELL_POP_SIZE);
 
-    Agario::mass remaining_mass = pop_mass;
+    agario::mass remaining_mass = pop_mass;
 
-    Agario::angle theta = cell.velocity.direction();
+    agario::angle theta = cell.velocity.direction();
     for (int c = 0; c < num_new_cells; c++) {
-      Agario::angle dvel_angle = cell.velocity.direction() + (2 * M_PI * c / num_new_cells);
-      Agario::Velocity vel = cell.velocity + Velocity(theta + dvel_angle, CELL_POP_SPEED);
+      agario::angle dvel_angle = cell.velocity.direction() + (2 * M_PI * c / num_new_cells);
+      agario::Velocity vel = cell.velocity + Velocity(theta + dvel_angle, CELL_POP_SPEED);
 
-      Agario::mass new_cell_mass = std::min<Agario::mass>(remaining_mass, CELL_POP_SIZE);
+      agario::mass new_cell_mass = std::min<agario::mass>(remaining_mass, CELL_POP_SIZE);
 
       created_cells.emplace_back(cell.location(), vel, new_cell_mass);
       remaining_mass -= new_cell_mass;
     }
   }
 
-  template <typename T>
+  template<typename T>
   T random(T min, T max) {
     return (max - min) * (static_cast<T>(rand()) / static_cast<T>(RAND_MAX)) + min;
   }
 
-  template <typename T>
+  template<typename T>
   T random(T max) { return random<T>(0, max); }
 
-  Agario::Location Engine::random_location() {
+  agario::Location Engine::random_location() {
     auto x = random<distance>(arena_width);
     auto y = random<distance>(arena_height);
     return Location(x, y);

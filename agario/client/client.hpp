@@ -9,7 +9,7 @@
 
 void process_input(GLFWwindow *window);
 
-namespace Agario {
+namespace agario {
 
   class Client {
   public:
@@ -19,31 +19,30 @@ namespace Agario {
     typedef Food<true> Food;
     typedef Virus<true> Virus;
 
-    explicit Client() : renderer(nullptr), g_PreviousTicks(0), g_CurrentTicks(0) { }
+    explicit Client() : renderer(nullptr), g_PreviousTicks(0), g_CurrentTicks(0) {}
 
-    void connect() { }
+    void connect() {}
 
     template<typename... Args>
-    void set_player(Args&&... args) {
+    void set_player(Args &&... args) {
       player = std::make_shared<Player>(std::forward<Args>(args)...);
       if (renderer != nullptr)
         renderer->player = player;
     }
 
     template<typename... Args>
-    void add_player(Args&&... args) {
+    void add_player(Args &&... args) {
       players.emplace_back(std::forward<Args>(args)...);
     }
 
     void initialize_renderer() {
-      Agario::distance arena_width = 1000;
-      Agario::distance arena_height = 1000;
-      // todo: get arena dimensions from
-      renderer = std::make_unique<Agario::Renderer>(arena_width, arena_height);
+      agario::distance arena_width = 1000;
+      agario::distance arena_height = 1000;
+      renderer = std::make_unique<agario::Renderer>(arena_width, arena_height);
       renderer->player = player;
     }
 
-    void game_loop(std::optional<int> num_iterations=std::nullopt) {
+    void game_loop(std::optional<int> num_iterations = std::nullopt) {
       if (renderer == nullptr) initialize_renderer();
 
       while ((!num_iterations || num_iterations > 0) && renderer->ready()) {
@@ -69,7 +68,7 @@ namespace Agario {
     }
 
   private:
-    std::unique_ptr<Agario::Renderer> renderer;
+    std::unique_ptr<agario::Renderer> renderer;
 
     std::clock_t g_PreviousTicks;
     std::clock_t g_CurrentTicks;

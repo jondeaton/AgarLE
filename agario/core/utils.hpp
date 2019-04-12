@@ -2,7 +2,7 @@
 
 #include "core/types.hpp"
 
-namespace Agario {
+namespace agario {
 
   distance radius_conversion(mass mass);
   mass mass_conversion(distance radius);
@@ -12,5 +12,5 @@ namespace Agario {
   }
 
   // todo: new type speed?
-  float max_speed(Agario::mass mass);
+  float max_speed(agario::mass mass);
 }

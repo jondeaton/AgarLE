@@ -11,27 +11,27 @@ namespace {
   }
 
   TEST(EntityTest, MakeCell) {
-    Agario::distance x = 100;
-    Agario::distance y = 125;
-    Agario::mass mass = 25;
+    agario::distance x = 100;
+    agario::distance y = 125;
+    agario::mass mass = 25;
 
-    Agario::Cell<false> cell(x, y, mass);
+    agario::Cell<false> cell(x, y, mass);
     EXPECT_EQ(cell.x, x);
     EXPECT_EQ(cell.y, y);
     EXPECT_EQ(cell.mass(), mass);
   }
 
   TEST(PlayerTest, StartsEmpty) {
-    Agario::Player<false> player(0, "TestPlayer");
+    agario::Player<false> player(0, "TestPlayer");
     EXPECT_EQ(player.cells.size(), 0ul);
   }
 
   TEST(PlayerTest, AddCell) {
-    Agario::Player<false> player(0, "TestPlayer");
+    agario::Player<false> player(0, "TestPlayer");
 
-    Agario::distance x = 100;
-    Agario::distance y = 125;
-    Agario::mass mass = 25;
+    agario::distance x = 100;
+    agario::distance y = 125;
+    agario::mass mass = 25;
 
     player.add_cell(x, y, mass);
 
@@ -43,13 +43,13 @@ namespace {
   }
 
   TEST(PlayerTest, SimpleLocation) {
-    Agario::Player<false> player(0, "TestPlayer");
+    agario::Player<false> player(0, "TestPlayer");
 
     EXPECT_EQ(player.cells.size(), 0ul);
 
-    Agario::distance x = 100;
-    Agario::distance y = 100;
-    Agario::mass mass = 25;
+    agario::distance x = 100;
+    agario::distance y = 100;
+    agario::mass mass = 25;
 
     player.add_cell(x, y, mass);
     EXPECT_EQ(player.x(), x);
@@ -57,13 +57,13 @@ namespace {
   }
 
   TEST(PlayerTest, Location) {
-    Agario::Player<false> player(0, "TestPlayer");
+    agario::Player<false> player(0, "TestPlayer");
 
     EXPECT_EQ(player.cells.size(), 0ul);
 
-    Agario::distance x = 100;
-    Agario::distance y = 100;
-    Agario::mass mass = 25;
+    agario::distance x = 100;
+    agario::distance y = 100;
+    agario::mass mass = 25;
 
     player.add_cell(x, y, mass);
     player.add_cell(x + 2, y + 2, mass);
@@ -78,7 +78,7 @@ namespace {
     void SetUp() { }
     void TestDown() { }
 
-    Agario::Engine engine;
+    agario::Engine engine;
   };
 
   TEST_F(EngineTest, create_engine) {

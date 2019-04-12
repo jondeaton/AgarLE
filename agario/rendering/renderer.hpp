@@ -1,6 +1,7 @@
 #pragma once
 
 #define GL_SILENCE_DEPRECATION
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <OpenGL/OpenGL.h>
@@ -19,7 +20,7 @@
 #include <core/Entities.hpp>
 #include <core/Player.hpp>
 
-#define CIRCLE_SIDES 50
+#define CIRCLE_SIDES 100
 #define CIRCLE_VERTS (CIRCLE_SIDES + 2)
 #define COLOR_LEN 3
 
@@ -36,7 +37,7 @@
 
 #define WINDOW_NAME "AgarIO"
 
-namespace Agario {
+namespace agario {
 
   class Renderer {
   public:
@@ -49,12 +50,12 @@ namespace Agario {
 
     std::shared_ptr<Player> player;
 
-    explicit Renderer(Agario::distance arena_width, Agario::distance arena_height,
+    explicit Renderer(agario::distance arena_width, agario::distance arena_height,
                       bool draw = true) : player(nullptr),
                                           arena_width(arena_width), arena_height(arena_height),
                                           screen_width(DEFAULT_SCREEN_WIDTH), screen_height(DEFAULT_SCREEN_HEIGHT),
                                           window(nullptr), shader(), draw(draw),
-                                          grid(arena_width, arena_height){
+                                          grid(arena_width, arena_height) {
       if (draw)
         window = initialize_window();
       shader.generate_shader("../rendering/vertex.glsl", "../rendering/fragment.glsl");
@@ -158,16 +159,16 @@ namespace Agario {
     }
 
   private:
+    agario::distance arena_width;
+    agario::distance arena_height;
+
     int screen_width;
     int screen_height;
     GLFWwindow *window;
     Shader shader;
     bool draw;
 
-    Agario::distance arena_width;
-    Agario::distance arena_height;
-
-    Grid<NUM_GRID_LINES> grid;
+    agario::Grid<NUM_GRID_LINES> grid;
 
     template<unsigned NSides>
     void set_color(Circle<NSides> &circle, GLfloat color[3]) {
