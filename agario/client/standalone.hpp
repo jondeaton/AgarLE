@@ -1,4 +1,3 @@
-#pragma once
 
 #include "rendering/renderer.hpp"
 #include "core/renderables.hpp"
@@ -19,13 +18,7 @@ namespace agario {
     typedef Food<true> Food;
     typedef Virus<true> Virus;
 
-    explicit Client(std::string server, int port) :
-      server(server), port(port),
-      renderer(nullptr), g_PreviousTicks(0), g_CurrentTicks(0) {
-      std::cout << "Connecting to: " << server << ":" << port << "..." << std::endl;
-
-      std::cout << "remote server connection not implemented yet." << std::endl;
-    }
+    explicit Client() : renderer(nullptr), g_PreviousTicks(0), g_CurrentTicks(0) {}
 
     void connect() {}
 
@@ -81,10 +74,6 @@ namespace agario {
     }
 
   private:
-
-    std::string server;
-    int port;
-
     std::unique_ptr<agario::Renderer> renderer;
 
     std::clock_t g_PreviousTicks;

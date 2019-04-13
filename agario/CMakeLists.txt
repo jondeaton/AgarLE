@@ -69,7 +69,7 @@ add_executable(test-client ${AGARIO_CLIENT_SRC} test/test-client.cpp)
 target_link_libraries(test-client agario gtest glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
 
 add_executable(client ${AGARIO_CLIENT_SRC} client/main.cpp)
-target_link_libraries(client agario glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
+target_link_libraries(client agario gtest glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
 
 include_directories(server)
 set(AGARIO_SERVER_SRC

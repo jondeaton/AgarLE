@@ -180,9 +180,9 @@ namespace agario {
     void _initialize() {
       _create_vertices();
 
-      color[0] = 0.2;
-      color[1] = 0.2;
-      color[2] = 0.2;
+      color[0] = 0.1;
+      color[1] = 0.1;
+      color[2] = 0.1;
 
       glGenVertexArrays(1, &vao);
       glGenBuffers(1, &vbo);
