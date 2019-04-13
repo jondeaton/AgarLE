@@ -21,9 +21,9 @@ namespace agario {
 
     typedef Cell <renderable> Cell;
 
-    explicit Player(pid pid, std::string name) :
+    explicit Player(pid pid, std::string name, agario::color color) :
       action(none), target(0, 0),
-      _pid(pid), _name(std::move(name)), _score(0) {}
+      _pid(pid), _name(std::move(name)), _score(0), _color(color) { }
 
     std::vector<Cell> cells;
     agario::action action;
@@ -32,13 +32,13 @@ namespace agario {
     template<typename... Args>
     void add_cell(Args &&... args) {
       cells.emplace_back(std::forward<Args>(args)...);
+      cells.back().color = _color;
     }
 
     void set_score(score new_score) { _score = new_score; }
 
     void increment_score(score inc) { _score += inc; }
 
-    // todo: cache this so that it doesn't have to be recomputed
     agario::distance x() const {
       agario::distance x_ = 0;
       for (auto &cell : cells)
@@ -90,6 +90,7 @@ namespace agario {
     agario::pid _pid;
     std::string _name;
     agario::score _score;
+    agario::color _color;
   };
 
 }

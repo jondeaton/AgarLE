@@ -20,8 +20,6 @@
 #include <core/Entities.hpp>
 #include <core/Player.hpp>
 
-#define CIRCLE_SIDES 100
-#define CIRCLE_VERTS (CIRCLE_SIDES + 2)
 #define COLOR_LEN 3
 
 #define PELLET_RADIUS 10
@@ -123,8 +121,6 @@ namespace agario {
       glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
       glClear(GL_COLOR_BUFFER_BIT);
 
-      make_projections();
-
       grid.draw(shader);
 
       for (auto &food : foods)
@@ -167,10 +163,5 @@ namespace agario {
     bool draw;
 
     agario::Grid<NUM_GRID_LINES> grid;
-
-    template<unsigned NSides>
-    void set_color(Circle<NSides> &circle, GLfloat color[3]) {
-      memcpy(circle.color, color, 3 * sizeof(GLfloat));
-    }
   };
 }

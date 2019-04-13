@@ -5,16 +5,14 @@
 #include <sstream>
 #include <iostream>
 
-// todo: remove this
 #define GL_SILENCE_DEPRECATION
-
 #include <GLFW/glfw3.h>
 
 class Shader {
 public:
   GLuint program;
 
-  Shader() : program(0) = default;
+  Shader() : program(0) {};
 
   Shader(const char *vertex_path, const char *fragment_path) : program(0) {
     generate_shader(vertex_path, fragment_path);

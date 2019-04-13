@@ -16,12 +16,47 @@
 
 namespace agario {
 
+  GLfloat red_color[] = {1.0, 0.0, 0.0};
+  GLfloat blue_color[] = {0.0, 0.0, 1.0};
+  GLfloat green_color[] = {0.0, 1.0, 0.0};
+  GLfloat orange_color[] = {1.0, 0.65, 0.0};
+  GLfloat purple_color[] = {0.6, 0.2, 0.8};
+  GLfloat yellow_color[] = {1.0, 1.0, 0.0};
+
   template<unsigned NSides>
-  struct Circle {
-    float verts[3 * (NSides + 2)];
-    float color[COLOR_LEN];
-    unsigned int vao; // vertex attribute object
-    unsigned int vbo; // vertex buffer object (gpu memory)
+  class Circle {
+  public:
+    GLfloat verts[3 * (NSides + 2)];
+    GLfloat color[COLOR_LEN];
+    GLuint vao; // vertex attribute object
+    GLuint vbo; // vertex buffer object (gpu memory)
+
+    void set_color(agario::color c) {
+      GLfloat *color_array;
+      switch (c) {
+        case agario::color::red:
+          color_array = red_color;
+          break;
+        case agario::color::blue:
+          color_array = blue_color;
+          break;
+        case agario::color::green:
+          color_array = green_color;
+          break;
+        case agario::color::orange:
+          color_array = orange_color;
+          break;
+        case agario::color::purple:
+          color_array = purple_color;
+          break;
+        case agario::color::yellow:
+          color_array = yellow_color;
+          break;
+        default:
+          throw std::exception();
+      }
+      std::copy(color_array, color_array + COLOR_LEN, color);
+    }
   };
 
   template<unsigned NSides>
@@ -66,9 +101,7 @@ namespace agario {
     void _initialize() {
       _create_vertices();
 
-      circle.color[0] = 1.0;
-      circle.color[1] = 0.0;
-      circle.color[2] = 0.0;
+      circle.set_color(color);
 
       glGenVertexArrays(1, &circle.vao);
       glGenBuffers(1, &circle.vbo);

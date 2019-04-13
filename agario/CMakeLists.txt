@@ -28,6 +28,8 @@ set(AGARIO_CORE_SRC
         core/Player.hpp
         core/utils.hpp          core/utils.cpp
         core/Ball.hpp
+        core/types.hpp
+        core/num_wrapper.hpp
         core/Entities.hpp)
 
 set(AGARIO_ENGINE_SRC
