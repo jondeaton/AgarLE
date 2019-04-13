@@ -2,6 +2,9 @@
 
 #include "rendering/renderer.hpp"
 #include "core/renderables.hpp"
+#include "engine/Engine.hpp"
+
+#include <chrono>
 
 #include <string>
 #include <ctime>
@@ -19,15 +22,17 @@ namespace agario {
     typedef Food<true> Food;
     typedef Virus<true> Virus;
 
-    explicit Client(std::string server, int port) :
-      server(server), port(port),
-      renderer(nullptr), g_PreviousTicks(0), g_CurrentTicks(0) {
-      std::cout << "Connecting to: " << server << ":" << port << "..." << std::endl;
+    Client() :
+      server(), port(), renderer(nullptr) {}
 
+    Client(std::string server, int port) :
+      server(std::move(server)), port(port), renderer(nullptr) {}
+
+    void connect() {
+      std::cout << "Connecting to: " << server << ":" << port << "..." << std::endl;
+      // todo
       std::cout << "remote server connection not implemented yet." << std::endl;
     }
-
-    void connect() {}
 
     template<typename... Args>
     void set_player(Args &&... args) {
@@ -51,33 +56,19 @@ namespace agario {
     void game_loop(std::optional<int> num_iterations = std::nullopt) {
       if (renderer == nullptr) initialize_renderer();
 
+      auto before = std::chrono::system_clock::now();
       while ((!num_iterations || num_iterations > 0) && renderer->ready()) {
-
 //      process_input(window);
         renderer->render_screen(players, foods, pellets, viruses);
 
-        int i = 1;
-        for (auto &cell : renderer->player->cells) {
-          cell.x += 0.2 * i;
-          cell.y += 0.2 * i;
-          i++;
-        }
+        auto now = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = now - before;
+        engine.tick(elapsed_seconds);
+        before = std::chrono::system_clock::now();
 
-        // todo: emit "heartbeat" signal to server
         if (num_iterations) (*num_iterations)--;
       }
       renderer->terminate();
-    }
-
-    // todo: change these over to
-    void init_player(unsigned int pid, unsigned int mass) {
-//    _player.assign_pid(pid);
-//    _player.set_mass(mass)
-    }
-
-    // socket.on('serverTellPlayerMove', function (userData, foodsList, massList, virusList) {
-    void server_tell_player_move() {
-      // todo: yeah... gotta figure this one out
     }
 
   private:
@@ -85,11 +76,8 @@ namespace agario {
     std::string server;
     int port;
 
+    agario::Engine<true> engine;
     std::unique_ptr<agario::Renderer> renderer;
-
-    std::clock_t g_PreviousTicks;
-    std::clock_t g_CurrentTicks;
-
     std::shared_ptr<Player> player;
 
     std::vector<Player> players;

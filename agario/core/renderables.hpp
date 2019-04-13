@@ -64,6 +64,9 @@ namespace agario {
   public:
     using Ball::Ball;
 
+//    explicit RenderableBall(const Location &loc) : Ball(loc) {}
+//    RenderableBall(distance x, distance y) : Ball(Location(x, y)) {}
+
     void draw(Shader &shader) {
       if (!_initialized) _initialize();
 
@@ -121,7 +124,7 @@ namespace agario {
       circle.verts[0] = 0;
       circle.verts[1] = 0;
       circle.verts[2] = 0;
-      for (int i = 1; i < NVertices; i++) {
+      for (unsigned i = 1; i < NVertices; i++) {
         circle.verts[i * 3] = static_cast<float> (0 + (1 * cos(i * 2 * M_PI / NSides)));
         circle.verts[i * 3 + 1] = static_cast<float> (0 + (1 * sin(i * 2 * M_PI / NSides)));
         circle.verts[i * 3 + 2] = 0;
@@ -133,6 +136,15 @@ namespace agario {
   class RenderableMovingBall : public RenderableBall<NSides>, public MovingBall {
     using RenderableBall<NSides>::RenderableBall;
     using MovingBall::MovingBall;
+  public:
+    RenderableMovingBall(distance x, distance y) : Ball(x, y),
+                                                   MovingBall(x, y) {}
+
+    RenderableMovingBall(Location &&loc, Velocity &vel) : Ball(loc),
+                                                          MovingBall(loc, vel) {}
+
+    RenderableMovingBall(Location &loc, Velocity &vel) : Ball(loc),
+                                                         MovingBall(loc, vel) {}
   };
 
   template<unsigned NLines>

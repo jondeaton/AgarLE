@@ -52,9 +52,9 @@ namespace agario {
                       bool draw = true) : player(nullptr),
                                           arena_width(arena_width), arena_height(arena_height),
                                           screen_width(DEFAULT_SCREEN_WIDTH), screen_height(DEFAULT_SCREEN_HEIGHT),
-                                          window(nullptr), shader(), draw(draw),
+                                          window(nullptr), shader(), _draw(draw),
                                           grid(arena_width, arena_height) {
-      if (draw)
+      if (_draw)
         window = initialize_window();
       shader.generate_shader("../rendering/vertex.glsl", "../rendering/fragment.glsl");
       shader.use();
@@ -160,7 +160,7 @@ namespace agario {
     int screen_height;
     GLFWwindow *window;
     Shader shader;
-    bool draw;
+    bool _draw;
 
     agario::Grid<NUM_GRID_LINES> grid;
   };

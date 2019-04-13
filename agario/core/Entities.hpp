@@ -34,9 +34,9 @@ namespace agario {
     // constructors explicitly put here because of virtual inheritance rules...
     Pellet(distance x, distance y) : Ball(x, y), Super(x, y) {}
 
-    explicit Pellet(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    Pellet(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
 
-    explicit Pellet(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    Pellet(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
 
     agario::distance radius() const override { return PELLET_SIZE; }
 
@@ -56,9 +56,9 @@ namespace agario {
 
     Food(distance x, distance y) : Ball(x, y), Super(x, y) {}
 
-    explicit Food(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    Food(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
 
-    explicit Food(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    Food(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
 
     agario::distance radius() const override { return FOOD_SIZE; }
 
@@ -78,9 +78,9 @@ namespace agario {
 
     Virus(distance x, distance y) : Ball(x, y), Super(x, y) {}
 
-    explicit Virus(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    Virus(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
 
-    explicit Virus(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    Virus(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
 
     // todo: viruses have variable mass and size
     agario::distance radius() const override { return VIRUS_SIZE; }
@@ -94,16 +94,17 @@ namespace agario {
   class Cell : public std::conditional<renderable, RenderableMovingBall<CELL_SIDES>, MovingBall>::type {
   public:
     typedef typename std::conditional<renderable, RenderableMovingBall<CELL_SIDES>, MovingBall>::type Super;
+    using Super::Super;
 
     // because of virtual inheritance, must call virtual class constructor from most derived
     Cell(distance x, distance y, agario::mass mass) : Ball(x, y),
                                                       Super(x, y), _mass(mass) { set_mass(mass); }
 
-    explicit Cell(Location &&loc, Velocity &vel, agario::mass mass) : Ball(loc),
-                                                                      Super(loc, vel), _mass(mass) {}
+    Cell(Location &&loc, Velocity &vel, agario::mass mass) : Ball(loc),
+                                                             Super(loc, vel), _mass(mass) {}
 
-    explicit Cell(Location &loc, Velocity &vel, agario::mass mass) : Ball(loc),
-                                                                     Super(loc, vel), _mass(mass) {}
+    Cell(Location &loc, Velocity &vel, agario::mass mass) : Ball(loc),
+                                                            Super(loc, vel), _mass(mass) {}
 
     agario::mass mass() const override { return _mass; }
 

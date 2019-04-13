@@ -33,7 +33,7 @@ set(AGARIO_CORE_SRC
         core/Entities.hpp)
 
 set(AGARIO_ENGINE_SRC
-        engine/Engine.hpp       engine/Engine.cpp
+        engine/Engine.hpp
         engine/utils.hpp
         engine/settings.hpp)
 
