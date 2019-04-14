@@ -37,6 +37,11 @@ int main(int argc, char *argv[]) {
 
   if (standalone) {
     std::cout << "Standalone mode." << std::endl;
+
+    agario::Client client;
+    client.set_player(0, "Player1");
+    client.game_loop();
+
   } else {
     std::string server = args["server"].as<std::string>();
     int port = args["port"].as<int>();
@@ -45,6 +50,8 @@ int main(int argc, char *argv[]) {
     std::cout << "Port: " << port << std::endl;
 
     agario::Client client(server, port);
+    client.connect();
+    client.game_loop();
   }
 
   return 0;

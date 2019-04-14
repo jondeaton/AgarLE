@@ -12,19 +12,14 @@
 namespace agario {
 
   template<bool renderable>
-  class GameState {
-  public:
-    std::vector<agario::Player<renderable>> players;
-    std::vector<agario::Pellet<renderable>> pellets;
-    std::vector<agario::Food<renderable>> foods;
-    std::vector<agario::Virus<renderable>> viruses;
-
-    // todo: serialization and deserialization
-  };
-
-  template<bool renderable>
   class Engine {
   public:
+
+    typedef Player <renderable> Player;
+    typedef Cell <renderable> Cell;
+    typedef Food <renderable> Food;
+    typedef Pellet <renderable> Pellet;
+    typedef Virus <renderable> Virus;
 
     Engine() :
       arena_width(DEFAULT_ARENA_WIDTH), arena_height(DEFAULT_ARENA_HEIGHT),
@@ -36,13 +31,6 @@ namespace agario {
       arena_width(arena_width), arena_height(arena_height), ticks(0) {
       std::srand(std::chrono::system_clock::now().time_since_epoch().count());
     }
-
-    // set all entities to their un-renderable versions
-    typedef Player <renderable> Player;
-    typedef Cell <renderable> Cell;
-    typedef Food <renderable> Food;
-    typedef Pellet <renderable> Pellet;
-    typedef Virus <renderable> Virus;
 
     const std::vector<Player> &players() const { return state.players; }
 
@@ -57,6 +45,10 @@ namespace agario {
       return players;
     }
 
+    agario::GameState<renderable> &game_state() {
+      return state;
+    }
+
     void tick(std::chrono::duration<double> elapsed_seconds) {
       (void) elapsed_seconds;
 
@@ -64,6 +56,12 @@ namespace agario {
       for (Player &player : state.players)
         tick_player(player);
       ticks++;
+    }
+
+    void move_entities(std::chrono::duration<double> elapsed_seconds) {
+      for (auto &player : state.players)
+        move_player(player, elapsed_seconds);
+      // todo: move other entities
     }
 
     int total_players() { return state.players.size(); }
@@ -105,8 +103,8 @@ namespace agario {
       }
     }
 
-    void tick_player(Player &player) {
-      move_player(player);
+    void tick_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
+      move_player(player, elapsed_seconds);
 
       std::vector<Cell> created_cells;
       for (Cell &cell : player.cells) {
@@ -140,14 +138,13 @@ namespace agario {
       // todo: player dead if has zero cells remaining
     }
 
-    void move_entities() {
-      for (auto &player : state.players)
-        move_player(player);
-      // todo: move other entities
-    }
-
-    void move_player(Player &player) {
+    void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
       (void) player;
+
+      for (auto &cell : player.cells) {
+        cell.x += cell.velocity.dx * elapsed_seconds.count();
+        cell.y += cell.velocity.dy * elapsed_seconds.count();
+      }
 
       // make sure not to move two of players cells into one another
       // make sure not to move player past border
@@ -210,7 +207,7 @@ namespace agario {
         auto dir = (player.target - cell.location()).normed();
         Location loc = cell.location() + dir * cell.radius();
 
-        Velocity vel(dir * 2 * agario::max_speed(split_mass));
+        Velocity vel(dir * 2 * max_speed(split_mass));
 
         created_cells.emplace_back(loc, vel, split_mass);
       }
@@ -300,9 +297,13 @@ namespace agario {
       }
     }
 
+    float max_speed(agario::mass mass) {
+      return CELL_MAX_SPEED * CELL_MIN_SIZE / (float) mass;
+    }
+
     agario::Location random_location() {
-      auto x = random<distance>(arena_width);
-      auto y = random<distance>(arena_height);
+      auto x = random < distance > (arena_width);
+      auto y = random < distance > (arena_height);
       return Location(x, y);
     }
 

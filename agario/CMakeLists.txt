@@ -34,6 +34,7 @@ set(AGARIO_CORE_SRC
 
 set(AGARIO_ENGINE_SRC
         engine/Engine.hpp
+        engine/GameState.hpp
         engine/utils.hpp
         engine/settings.hpp)
 

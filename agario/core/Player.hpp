@@ -21,9 +21,19 @@ namespace agario {
 
     typedef Cell <renderable> Cell;
 
-    explicit Player(pid pid, std::string name, agario::color color) :
+    Player(pid pid, std::string name) :
       action(none), target(0, 0),
-      _pid(pid), _name(std::move(name)), _score(0), _color(color) { }
+      _pid(pid), _name(std::move(name)), _score(0),
+      _color(agario::color::black) {
+
+      add_cell(0, 0, CELL_MIN_SIZE);
+    }
+
+    Player(pid pid, std::string name, agario::color color) :
+      action(none), target(0, 0),
+      _pid(pid), _name(std::move(name)), _score(0), _color(color) {
+      add_cell(0, 0, CELL_MIN_SIZE);
+    }
 
     std::vector<Cell> cells;
     agario::action action;

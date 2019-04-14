@@ -100,9 +100,6 @@ namespace agario {
     Cell(distance x, distance y, agario::mass mass) : Ball(x, y),
                                                       Super(x, y), _mass(mass) { set_mass(mass); }
 
-    Cell(Location &&loc, Velocity &vel, agario::mass mass) : Ball(loc),
-                                                             Super(loc, vel), _mass(mass) {}
-
     Cell(Location &loc, Velocity &vel, agario::mass mass) : Ball(loc),
                                                             Super(loc, vel), _mass(mass) {}
 

@@ -1,11 +1,14 @@
 #pragma once
+
 #include <cmath>
 
 #include "core/num_wrapper.hpp"
 
 namespace agario {
 
-  enum _type_id { _distance, _angle };
+  enum _type_id {
+    _distance, _angle
+  };
   using distance = numWrapper<float, _distance>;
   using angle = numWrapper<float, _angle>;
 
@@ -15,23 +18,29 @@ namespace agario {
   typedef unsigned short pid;
   typedef unsigned long tick;
 
-  enum action { none = 0, feed = 1, split = 2 };
-  enum color { red = 0, orange = 1, yellow = 2, green = 3, blue = 4, purple = 5 };
+  enum action {
+    none = 0, feed = 1, split = 2
+  };
+  enum color {
+    red = 0, orange = 1, yellow = 2, green = 3, blue = 4, purple = 5,
+    black = 6
+  };
 
   template<typename T>
   class Coordinate {
   public:
-    explicit Coordinate(T x, T y) : x(x), y(y) { }
+    explicit Coordinate(T x, T y) : x(x), y(y) {}
+
     T x;
     T y;
 
-    Coordinate& operator +=(const Coordinate &rhs) {
+    Coordinate &operator+=(const Coordinate &rhs) {
       x += rhs.x;
       y += rhs.y;
       return *this;
     }
 
-    Coordinate& operator -=(const Coordinate &rhs) {
+    Coordinate &operator-=(const Coordinate &rhs) {
       x -= rhs.x;
       y -= rhs.y;
       return *this;
@@ -56,26 +65,26 @@ namespace agario {
     }
   };
 
-  template <typename T>
-  inline Coordinate<T> operator+(Coordinate<T> lhs, const Coordinate<T>& rhs) {
+  template<typename T>
+  inline Coordinate<T> operator+(Coordinate<T> lhs, const Coordinate<T> &rhs) {
     lhs += rhs;
     return lhs;
   }
 
-  template <typename T>
-  inline Coordinate<T> operator-(Coordinate<T> lhs, const Coordinate<T>& rhs) {
+  template<typename T>
+  inline Coordinate<T> operator-(Coordinate<T> lhs, const Coordinate<T> &rhs) {
     lhs -= rhs;
     return lhs;
   }
 
-  template <typename T>
+  template<typename T>
   inline Coordinate<T> operator/(Coordinate<T> v, distance norm) {
     v.x /= norm;
     v.y /= norm;
     return v;
   }
 
-  template <typename T>
+  template<typename T>
   inline Coordinate<T> operator*(Coordinate<T> v, distance norm) {
     v.x *= norm;
     v.y *= norm;
@@ -87,11 +96,14 @@ namespace agario {
 
   class Velocity {
   public:
-    explicit Velocity() : dx(0), dy(0) { }
+    explicit Velocity() : dx(0), dy(0) {}
+
     explicit Velocity(agario::Location dir) : dx(dir.x), dy(dir.y) {}
-    explicit Velocity(agario::distance dx, agario::distance dy) : dx(dx), dy(dy) { }
+
+    explicit Velocity(agario::distance dx, agario::distance dy) : dx(dx), dy(dy) {}
+
     explicit Velocity(agario::angle angle, agario::distance speed) :
-      dx(speed * std::cos(angle)), dy(speed * std::sin(angle)) { }
+      dx(speed * std::cos(angle)), dy(speed * std::sin(angle)) {}
 
     agario::angle direction() const {
       auto angle = std::atan(dx / dy);
@@ -102,13 +114,13 @@ namespace agario {
       return static_cast<agario::angle>(angle);
     }
 
-    Velocity& operator +=(const Velocity &rhs) {
+    Velocity &operator+=(const Velocity &rhs) {
       dx += rhs.dx;
       dy += rhs.dy;
       return *this;
     }
 
-    Velocity& operator -=(const Velocity &rhs) {
+    Velocity &operator-=(const Velocity &rhs) {
       dx -= rhs.dx;
       dy -= rhs.dy;
       return *this;
@@ -118,12 +130,12 @@ namespace agario {
     distance dy;
   };
 
-  inline Velocity operator+(Velocity lhs, const Velocity& rhs) {
+  inline Velocity operator+(Velocity lhs, const Velocity &rhs) {
     lhs += rhs;
     return lhs;
   }
 
-  inline Velocity operator-(Velocity lhs, const Velocity& rhs) {
+  inline Velocity operator-(Velocity lhs, const Velocity &rhs) {
     lhs -= rhs;
     return lhs;
   }

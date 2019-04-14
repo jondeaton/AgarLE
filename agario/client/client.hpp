@@ -43,7 +43,7 @@ namespace agario {
 
     template<typename... Args>
     void add_player(Args &&... args) {
-      players.emplace_back(std::forward<Args>(args)...);
+      engine.game_state().players.emplace_back(std::forward<Args>(args)...);
     }
 
     void initialize_renderer() {
@@ -59,11 +59,11 @@ namespace agario {
       auto before = std::chrono::system_clock::now();
       while ((!num_iterations || num_iterations > 0) && renderer->ready()) {
 //      process_input(window);
-        renderer->render_screen(players, foods, pellets, viruses);
+        renderer->render_screen(engine.game_state());
 
         auto now = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = now - before;
-        engine.tick(elapsed_seconds);
+        engine.move_entities(elapsed_seconds);
         before = std::chrono::system_clock::now();
 
         if (num_iterations) (*num_iterations)--;
@@ -79,11 +79,6 @@ namespace agario {
     agario::Engine<true> engine;
     std::unique_ptr<agario::Renderer> renderer;
     std::shared_ptr<Player> player;
-
-    std::vector<Player> players;
-    std::vector<Food> foods;
-    std::vector<Pellet> pellets;
-    std::vector<Virus> viruses;
   };
 
 // Handle key input

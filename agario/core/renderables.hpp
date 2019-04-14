@@ -22,6 +22,7 @@ namespace agario {
   GLfloat orange_color[] = {1.0, 0.65, 0.0};
   GLfloat purple_color[] = {0.6, 0.2, 0.8};
   GLfloat yellow_color[] = {1.0, 1.0, 0.0};
+  GLfloat black_color[] = {0.0, 0.0, 0.0};
 
   template<unsigned NSides>
   class Circle {
@@ -52,6 +53,9 @@ namespace agario {
         case agario::color::yellow:
           color_array = yellow_color;
           break;
+        case agario::color::black:
+          color_array = black_color;
+          break;
         default:
           throw std::exception();
       }
@@ -64,8 +68,9 @@ namespace agario {
   public:
     using Ball::Ball;
 
-//    explicit RenderableBall(const Location &loc) : Ball(loc) {}
-//    RenderableBall(distance x, distance y) : Ball(Location(x, y)) {}
+    explicit RenderableBall(const Location &loc) : Ball(loc) {}
+
+    RenderableBall(distance x, distance y) : Ball(Location(x, y)) {}
 
     void draw(Shader &shader) {
       if (!_initialized) _initialize();
@@ -134,17 +139,14 @@ namespace agario {
 
   template<unsigned NSides>
   class RenderableMovingBall : public RenderableBall<NSides>, public MovingBall {
-    using RenderableBall<NSides>::RenderableBall;
-    using MovingBall::MovingBall;
   public:
     RenderableMovingBall(distance x, distance y) : Ball(x, y),
+                                                   RenderableBall<NSides>(x, y),
                                                    MovingBall(x, y) {}
 
-    RenderableMovingBall(Location &&loc, Velocity &vel) : Ball(loc),
-                                                          MovingBall(loc, vel) {}
-
-    RenderableMovingBall(Location &loc, Velocity &vel) : Ball(loc),
-                                                         MovingBall(loc, vel) {}
+    explicit RenderableMovingBall(Location &loc, Velocity &vel) : Ball(loc),
+                                                                  RenderableBall<NSides>(loc),
+                                                                  MovingBall(loc, vel) {}
   };
 
   template<unsigned NLines>
