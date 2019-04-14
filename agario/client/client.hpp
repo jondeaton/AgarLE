@@ -38,12 +38,17 @@ namespace agario {
     }
 
     agario::pid add_player(const std::string &name) {
-      return engine.add_player(name);
+      auto pid = engine.add_player(name);
+
+      // todo: remove this... just for testing purposes
+      engine.player(pid).add_cell(3, 3, CELL_MIN_SIZE + 1);
+//      engine.player(pid).add_cell(4, 4, CELL_MIN_SIZE + 5);
+      return pid;
     }
 
     void initialize_renderer() {
-      agario::distance arena_width = 1000;
-      agario::distance arena_height = 1000;
+      agario::distance arena_width = 100;
+      agario::distance arena_height = 100;
       renderer = std::make_unique<agario::Renderer>(arena_width, arena_height);
     }
 

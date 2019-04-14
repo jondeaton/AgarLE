@@ -84,8 +84,8 @@ namespace agario {
 
     void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
       for (auto &cell : player.cells) {
-        cell.velocity.dx = player.target.x * 10;
-        cell.velocity.dy = player.target.y * 10;
+        cell.velocity.dx = std::min<agario::distance>(CELL_MAX_SPEED, player.target.x * 100 / cell.mass());
+        cell.velocity.dy = std::min<agario::distance>(CELL_MAX_SPEED, player.target.y * 100 / cell.mass());
 
         cell.x += cell.velocity.dx * elapsed_seconds.count();
         cell.y += cell.velocity.dy * elapsed_seconds.count();
