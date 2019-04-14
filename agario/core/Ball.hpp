@@ -11,8 +11,7 @@ namespace agario {
   public:
     Ball() = delete;
 
-    explicit Ball(const Location &loc) : x(loc.x), y(loc.y),
-                                         color(agario::color::blue) {}
+    explicit Ball(const Location &loc) : x(loc.x), y(loc.y) {}
 
     Ball(distance x, distance y) : Ball(Location(x, y)) {}
 
@@ -45,7 +44,6 @@ namespace agario {
 
     distance x;
     distance y;
-    agario::color color;
 
     virtual ~Ball() = default;
 

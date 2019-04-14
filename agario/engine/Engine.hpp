@@ -11,6 +11,11 @@
 
 namespace agario {
 
+  class EngineException : public std::runtime_error {
+    using runtime_error::runtime_error;
+  };
+
+
   template<bool renderable>
   class Engine {
   public:
@@ -23,13 +28,34 @@ namespace agario {
 
     Engine() :
       arena_width(DEFAULT_ARENA_WIDTH), arena_height(DEFAULT_ARENA_HEIGHT),
-      ticks(0) {
+      ticks(0), next_pid(0) {
       std::srand(std::chrono::system_clock::now().time_since_epoch().count());
     }
 
     explicit Engine(distance arena_width, distance arena_height) :
-      arena_width(arena_width), arena_height(arena_height), ticks(0) {
+      arena_width(arena_width), arena_height(arena_height),
+      ticks(0), next_pid(0) {
       std::srand(std::chrono::system_clock::now().time_since_epoch().count());
+    }
+
+    agario::pid add_player(const std::string &name) {
+      std::pair<typename std::unordered_map<agario::pid, Player>::iterator, bool> p;
+      p = state.players.emplace(std::piecewise_construct,
+                                std::forward_as_tuple(next_pid),
+                                std::forward_as_tuple(next_pid, name, random_color()));
+
+      if (!p.second) {
+        std::stringstream ss;
+        ss << "Could not insert player named " << name << "at pid " << next_pid;
+        throw EngineException(ss.str().c_str());
+      }
+
+      next_pid++;
+      return p.first->second.pid();
+    }
+
+    Player &player(agario::pid pid) {
+      return state.players.at(pid);
     }
 
     const std::vector<Player> &players() const { return state.players; }
@@ -40,33 +66,23 @@ namespace agario {
 
     const std::vector<Virus> &viruses() const { return state.viruses; }
 
-    const std::vector<Player> &leaderboard() {
-      std::sort(std::begin(state.players), std::end(state.players));
-      return players;
-    }
-
     agario::GameState<renderable> &game_state() {
       return state;
     }
 
     void tick(std::chrono::duration<double> elapsed_seconds) {
-      (void) elapsed_seconds;
-
-      std::vector<Food> created_masses;
       for (Player &player : state.players)
-        tick_player(player);
+        tick_player(player, elapsed_seconds);
       ticks++;
     }
 
     void move_entities(std::chrono::duration<double> elapsed_seconds) {
-      for (auto &player : state.players)
-        move_player(player, elapsed_seconds);
+      for (auto &pair : state.players)
+        move_player(pair.second, elapsed_seconds);
       // todo: move other entities
     }
 
     void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
-      (void) player;
-
       for (auto &cell : player.cells) {
         cell.velocity.dx = player.target.x * 10;
         cell.velocity.dy = player.target.y * 10;
@@ -78,10 +94,10 @@ namespace agario {
         if (cell.x < 0) cell.x = 0;
         if (cell.x > arena_width) cell.x = arena_width;
         if (cell.y < 0) cell.y = 0;
-        if (cell.x > arena_height) cell.y = arena_height;
+        if (cell.y > arena_height) cell.y = arena_height;
       }
 
-      // make sure not to move two of players own cells into one another
+      // make sure not to move two of players own cells into one another!
     }
 
     int total_players() { return state.players.size(); }
@@ -105,6 +121,7 @@ namespace agario {
     distance arena_height;
 
     agario::tick ticks;
+    agario::pid next_pid;
 
     void add_pellets(int num_pellets) {
       while (num_pellets > 0) {
@@ -324,5 +341,6 @@ namespace agario {
     T random(T max) { return random<T>(0, max); }
 
   };
+
 }
 

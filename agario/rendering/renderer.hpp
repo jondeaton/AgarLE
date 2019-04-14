@@ -47,11 +47,10 @@ namespace agario {
     typedef Food<true> Food;
     typedef Virus<true> Virus;
 
-    std::shared_ptr<Player> player;
     GLFWwindow *window;
 
     explicit Renderer(agario::distance arena_width, agario::distance arena_height,
-                      bool draw = true) : player(nullptr), window(nullptr),
+                      bool draw = true) : window(nullptr),
                                           arena_width(arena_width), arena_height(arena_height),
                                           screen_width(DEFAULT_SCREEN_WIDTH), screen_height(DEFAULT_SCREEN_HEIGHT),
                                           shader(), _draw(draw),
@@ -104,46 +103,39 @@ namespace agario {
       return agario::Location(dx, dy);
     }
 
-    void make_projections() {
+    void make_projections(Player &player) {
       glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect_ratio(), 0.1f, 100.0f);
       shader.setMat4("projection_transform", projection);
 
       glm::mat4 view = glm::lookAt(
-        glm::vec3(player->x(), player->y(), 3 * player->mass()), // Camera location in World Space
-        glm::vec3(player->x(), player->y(), 0), // camera "looks at" location
+        glm::vec3(player.x(), player.y(), 3 * player.mass()), // Camera location in World Space
+        glm::vec3(player.x(), player.y(), 0), // camera "looks at" location
         glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
       );
       shader.setMat4("view_transform", view);
     }
 
-    void render_screen(agario::GameState<true> &state) {
-
-      auto &players = state.players;
-      auto &foods = state.foods;
-      auto &pellets = state.pellets;
-      auto &viruses = state.viruses;
-
+    void render_screen(Player &player, agario::GameState<true> &state) {
       shader.use();
-      make_projections();
+
+      make_projections(player);
 
       glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
       glClear(GL_COLOR_BUFFER_BIT);
 
       grid.draw(shader);
 
-      for (auto &food : foods)
+      for (auto &food : state.foods)
         food.draw(shader);
 
-      for (auto &virus : viruses)
+      for (auto &virus : state.viruses)
         virus.draw(shader);
 
-      for (auto &pellet : pellets)
+      for (auto &pellet : state.pellets)
         pellet.draw(shader);
 
-      for (auto &plyr : players)
-        plyr.draw(shader);
-
-      player->draw(shader);
+      for (auto &pair : state.players)
+        pair.second.draw(shader);
 
       glfwSwapBuffers(window);
       glfwPollEvents();

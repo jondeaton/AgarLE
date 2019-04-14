@@ -14,8 +14,9 @@ cxxopts::Options options() {
 
     options.add_options()
       ("s,standalone", "standalone mode", cxxopts::value<bool>()->default_value("false"))
-      ("i,server", "Server", cxxopts::value<std::string>()->default_value("localhost"))
+      ("server", "Server", cxxopts::value<std::string>()->default_value("localhost"))
       ("port", "Port", cxxopts::value<int>()->default_value("80"))
+      ("name", "Player Name", cxxopts::value<std::string>()->default_value(""))
       ("help", "Print help");
 
 
@@ -34,12 +35,15 @@ int main(int argc, char *argv[]) {
   auto args = opts.parse(argc, argv);
 
   bool standalone = args["standalone"].as<bool>();
+  std::string name = args["name"].as<std::string>();
 
   if (standalone) {
     std::cout << "Standalone mode." << std::endl;
 
     agario::Client client;
-    client.set_player(0, "Player1");
+    agario::pid pid = client.add_player(name);
+    client.set_player(pid);
+
     client.game_loop();
 
   } else {

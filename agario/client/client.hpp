@@ -33,42 +33,47 @@ namespace agario {
     }
 
     template<typename... Args>
-    void set_player(Args &&... args) {
-      player = std::make_shared<Player>(std::forward<Args>(args)...);
-      if (renderer != nullptr)
-        renderer->player = player;
+    void set_player(agario::pid pid) {
+      player_pid = pid;
     }
 
-    template<typename... Args>
-    void add_player(Args &&... args) {
-      engine.game_state().players.emplace_back(std::forward<Args>(args)...);
+    agario::pid add_player(const std::string &name) {
+      return engine.add_player(name);
     }
 
     void initialize_renderer() {
       agario::distance arena_width = 1000;
       agario::distance arena_height = 1000;
       renderer = std::make_unique<agario::Renderer>(arena_width, arena_height);
-      renderer->player = player;
     }
 
     void game_loop(std::optional<int> num_iterations = std::nullopt) {
       if (renderer == nullptr) initialize_renderer();
 
+      double fps = 0;
+      int count = 0;
+
       auto before = std::chrono::system_clock::now();
       while ((!num_iterations || num_iterations > 0) && renderer->ready()) {
-        process_input(renderer->window);
-        renderer->render_screen(engine.game_state());
+
+        auto &player = engine.player(player_pid);
+
+        process_input(renderer->window, player);
+        renderer->render_screen(player, engine.game_state());
 
         auto now = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = now - before;
 
+        fps += 1 / elapsed_seconds.count();
+        count += 1;
+
         engine.move_entities(elapsed_seconds);
-        engine.move_player(*player, elapsed_seconds);
 
         before = std::chrono::system_clock::now();
-
         if (num_iterations) (*num_iterations)--;
       }
+      std::cout << "Average FPS: " << (fps / count) << std::endl;
+
       renderer->terminate();
     }
 
@@ -77,17 +82,16 @@ namespace agario {
     std::string server;
     int port;
 
+    agario::pid player_pid; // pid of the player we're tracking
+
     agario::Engine<true> engine;
     std::unique_ptr<agario::Renderer> renderer;
-    std::shared_ptr<Player> player;
 
-
-    void process_input(GLFWwindow *window) {
+    void process_input(GLFWwindow *window, Player &player) {
 
       double xpos, ypos;
       glfwGetCursorPos(window, &xpos, &ypos);
-
-      player->target = renderer->to_target(xpos, ypos);
+      player.target = renderer->to_target(xpos, ypos);
 
       if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);

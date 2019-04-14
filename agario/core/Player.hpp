@@ -21,14 +21,16 @@ namespace agario {
 
     typedef Cell <renderable> Cell;
 
-    Player(pid pid, std::string name) :
+    Player() = delete;
+
+    Player(agario::pid pid, std::string name) :
       action(none), target(0, 0),
       _pid(pid), _name(std::move(name)), _score(0),
       _color(agario::color::black) {
       add_cell(0, 0, CELL_MIN_SIZE);
     }
 
-    Player(pid pid, std::string name, agario::color color) :
+    Player(agario::pid pid, std::string name, agario::color color) :
       action(none), target(0, 0),
       _pid(pid), _name(std::move(name)), _score(0), _color(color) {
       add_cell(0, 0, CELL_MIN_SIZE);
@@ -41,7 +43,8 @@ namespace agario {
     template<typename... Args>
     void add_cell(Args &&... args) {
       cells.emplace_back(std::forward<Args>(args)...);
-      cells.back().color = _color;
+      if constexpr (renderable)
+        cells.back().color = _color;
     }
 
     void set_score(score new_score) { _score = new_score; }

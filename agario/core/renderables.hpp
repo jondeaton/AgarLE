@@ -16,6 +16,10 @@
 
 namespace agario {
 
+  enum color {
+    red, orange, yellow, green, blue, purple, black, last
+  };
+
   GLfloat red_color[] = {1.0, 0.0, 0.0};
   GLfloat blue_color[] = {0.0, 0.0, 1.0};
   GLfloat green_color[] = {0.0, 1.0, 0.0};
@@ -23,6 +27,10 @@ namespace agario {
   GLfloat purple_color[] = {0.6, 0.2, 0.8};
   GLfloat yellow_color[] = {1.0, 1.0, 0.0};
   GLfloat black_color[] = {0.0, 0.0, 0.0};
+
+  agario::color random_color() {
+    return static_cast<enum color>(rand() % agario::color::last);
+  }
 
   template<unsigned NSides>
   class Circle {
@@ -67,10 +75,11 @@ namespace agario {
   class RenderableBall : virtual public Ball {
   public:
     using Ball::Ball;
+    agario::color color;
 
-    explicit RenderableBall(const Location &loc) : Ball(loc) {}
+    explicit RenderableBall(const Location &loc) : Ball(loc), color(agario::color::blue) {}
 
-    RenderableBall(distance x, distance y) : Ball(Location(x, y)) {}
+    RenderableBall(distance x, distance y) : Ball(Location(x, y)), color(agario::color::blue) {}
 
     void draw(Shader &shader) {
       if (!_initialized) _initialize();

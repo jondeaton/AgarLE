@@ -22,10 +22,6 @@ namespace agario {
   enum action {
     none = 0, feed = 1, split = 2
   };
-  enum color {
-    red = 0, orange = 1, yellow = 2, green = 3, blue = 4, purple = 5,
-    black = 6
-  };
 
   template<typename T>
   class Coordinate {
