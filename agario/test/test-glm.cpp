@@ -62,7 +62,7 @@ public:
   }
 
   void draw(Shader &shader) {
-    shader.setVec3("color", color[0], color[1], color[2]);
+    shader.setVec4("color", color[0], color[1], color[2], 0.0);
 
     auto world_position = glm::vec3(_x, _y, 0);
 
@@ -118,7 +118,7 @@ public:
   }
 
   void draw(Shader &shader) {
-    shader.setVec3("color", color[0], color[1], color[2]);
+    shader.setVec4("color", color[0], color[1], color[2], 1.0);
 
     glm::mat4 model_matrix(1);
     model_matrix = glm::scale(model_matrix, glm::vec3(arena_width, arena_height, 0));
@@ -137,7 +137,7 @@ private:
   distance arena_width;
   distance arena_height;
   GLfloat z;
-  float color[COLOR_LEN];
+  GLfloat color[COLOR_LEN];
 
   GLuint vao;
   GLuint vbo;
@@ -175,25 +175,22 @@ private:
 
 void set_view_projection(Shader &shader, float x, float y, float camera_z) {
   glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float) WIDTH / (float) HEIGHT, 0.1f, 100.0f);
-  GLint proj_location = glGetUniformLocation(shader.program, "projection_transform");
-  glUniformMatrix4fv(proj_location, 1, GL_FALSE, &Projection[0][0]);
+  shader.setMat4("projection_transform", Projection);
 
   glm::mat4 View = glm::lookAt(
     glm::vec3(x, y, camera_z), // Camera location in World Space
     glm::vec3(x, y, 0), // camera "looks at" location
     glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
   );
-  GLint view_location = glGetUniformLocation(shader.program, "view_transform");
-  glUniformMatrix4fv(view_location, 1, GL_FALSE, &View[0][0]);
+  shader.setMat4("view_transform", View);
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
   (void) mods;
   if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
     double xpos, ypos;
-    //getting cursor position
     glfwGetCursorPos(window, &xpos, &ypos);
-    std::cout << "Cursor Position at (" << xpos << " : " << ypos << std::endl;
+    std::cout << "Cursor Position: (" << xpos << ", " << ypos << ")" << std::endl;
   }
 }
 

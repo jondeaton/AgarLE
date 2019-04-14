@@ -44,6 +44,7 @@ namespace agario {
 
     distance x;
     distance y;
+    agario::color color;
 
     virtual ~Ball() = default;
 

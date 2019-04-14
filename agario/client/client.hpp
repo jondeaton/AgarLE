@@ -50,6 +50,13 @@ namespace agario {
 //      process_input(window);
         renderer->render_screen(players, foods, pellets, viruses);
 
+        int i = 1;
+        for (auto &cell : renderer->player->cells) {
+          cell.x += 0.2 * i;
+          cell.y += 0.2 * i;
+          i++;
+        }
+
         // todo: emit "heartbeat" signal to server
         if (num_iterations) (*num_iterations)--;
       }

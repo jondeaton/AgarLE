@@ -16,12 +16,47 @@
 
 namespace agario {
 
+  GLfloat red_color[] = {1.0, 0.0, 0.0};
+  GLfloat blue_color[] = {0.0, 0.0, 1.0};
+  GLfloat green_color[] = {0.0, 1.0, 0.0};
+  GLfloat orange_color[] = {1.0, 0.65, 0.0};
+  GLfloat purple_color[] = {0.6, 0.2, 0.8};
+  GLfloat yellow_color[] = {1.0, 1.0, 0.0};
+
   template<unsigned NSides>
-  struct Circle {
-    float verts[3 * (NSides + 2)];
-    float color[COLOR_LEN];
-    unsigned int vao; // vertex attribute object
-    unsigned int vbo; // vertex buffer object (gpu memory)
+  class Circle {
+  public:
+    GLfloat verts[3 * (NSides + 2)];
+    GLfloat color[COLOR_LEN];
+    GLuint vao; // vertex attribute object
+    GLuint vbo; // vertex buffer object (gpu memory)
+
+    void set_color(agario::color c) {
+      GLfloat *color_array;
+      switch (c) {
+        case agario::color::red:
+          color_array = red_color;
+          break;
+        case agario::color::blue:
+          color_array = blue_color;
+          break;
+        case agario::color::green:
+          color_array = green_color;
+          break;
+        case agario::color::orange:
+          color_array = orange_color;
+          break;
+        case agario::color::purple:
+          color_array = purple_color;
+          break;
+        case agario::color::yellow:
+          color_array = yellow_color;
+          break;
+        default:
+          throw std::exception();
+      }
+      std::copy(color_array, color_array + COLOR_LEN, color);
+    }
   };
 
   template<unsigned NSides>
@@ -32,7 +67,7 @@ namespace agario {
     void draw(Shader &shader) {
       if (!_initialized) _initialize();
 
-      shader.setVec3("color", circle.color[0], circle.color[1], circle.color[2]);
+      shader.setVec4("color", circle.color[0], circle.color[1], circle.color[2], 1.0);
 
       // world location
       auto location = glm::vec3(x, y, 0);
@@ -43,15 +78,19 @@ namespace agario {
       glm::mat4 scale_transform(1);
       scale_transform = glm::scale(scale_transform, glm::vec3(radius(), radius(), 0));
 
-      glm::mat4 model_matrix = position_transform * scale_transform;
-
-      GLint model_loc = glGetUniformLocation(shader.program, "model_transform");
-      glUniformMatrix4fv(model_loc, 1, GL_FALSE, &model_matrix[0][0]);
+      shader.setMat4("model_transform", position_transform * scale_transform);
 
       // draw them!
       glBindVertexArray(circle.vao);
       glDrawArrays(GL_TRIANGLE_FAN, 0, NVertices);
       glBindVertexArray(0);
+    }
+
+    ~RenderableBall() {
+      if (_initialized) {
+        glDeleteVertexArrays(1, &circle.vao);
+        glDeleteBuffers(1, &circle.vbo);
+      }
     }
 
   private:
@@ -61,6 +100,8 @@ namespace agario {
 
     void _initialize() {
       _create_vertices();
+
+      circle.set_color(color);
 
       glGenVertexArrays(1, &circle.vao);
       glGenBuffers(1, &circle.vbo);
@@ -102,17 +143,25 @@ namespace agario {
 
     void draw(Shader &shader) {
       if (!_initialized) _initialize();
-      shader.setVec3("color", color[0], color[1], color[2]);
+
+      shader.setVec4("color", color[0], color[1], color[2], 1.0);
 
       glm::mat4 model_matrix(1);
       model_matrix = glm::scale(model_matrix, glm::vec3(arena_width, arena_height, 0));
 
-      GLint model_loc = glGetUniformLocation(shader.program, "model_transform");
-      glUniformMatrix4fv(model_loc, 1, GL_FALSE, &model_matrix[0][0]);
+      shader.setMat4("model_transform", model_matrix);
 
+      // do the actual drawing
       glBindVertexArray(vao);
       glDrawArrays(GL_LINES, 0, NumVertices);
       glBindVertexArray(0);
+    }
+
+    ~Grid() {
+      if (_initialized) {
+        glDeleteVertexArrays(1, &vao);
+        glDeleteBuffers(1, &vbo);
+      }
     }
 
   private:
@@ -121,7 +170,7 @@ namespace agario {
     distance arena_width;
     distance arena_height;
     GLfloat z;
-    float color[COLOR_LEN];
+    GLfloat color[COLOR_LEN];
 
     GLuint vao;
     GLuint vbo;
@@ -130,6 +179,10 @@ namespace agario {
 
     void _initialize() {
       _create_vertices();
+
+      color[0] = 0.2;
+      color[1] = 0.2;
+      color[2] = 0.2;
 
       glGenVertexArrays(1, &vao);
       glGenBuffers(1, &vbo);
