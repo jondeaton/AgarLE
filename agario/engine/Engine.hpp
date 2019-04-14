@@ -64,6 +64,26 @@ namespace agario {
       // todo: move other entities
     }
 
+    void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
+      (void) player;
+
+      for (auto &cell : player.cells) {
+        cell.velocity.dx = player.target.x * 10;
+        cell.velocity.dy = player.target.y * 10;
+
+        cell.x += cell.velocity.dx * elapsed_seconds.count();
+        cell.y += cell.velocity.dy * elapsed_seconds.count();
+
+        // stay inside arena
+        if (cell.x < 0) cell.x = 0;
+        if (cell.x > arena_width) cell.x = arena_width;
+        if (cell.y < 0) cell.y = 0;
+        if (cell.x > arena_height) cell.y = arena_height;
+      }
+
+      // make sure not to move two of players own cells into one another
+    }
+
     int total_players() { return state.players.size(); }
 
     int total_pellets() { return state.pellets.size(); }
@@ -136,18 +156,6 @@ namespace agario {
       // todo: increment or decrement entity speeds
       // todo: reset player action?
       // todo: player dead if has zero cells remaining
-    }
-
-    void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
-      (void) player;
-
-      for (auto &cell : player.cells) {
-        cell.x += cell.velocity.dx * elapsed_seconds.count();
-        cell.y += cell.velocity.dy * elapsed_seconds.count();
-      }
-
-      // make sure not to move two of players cells into one another
-      // make sure not to move player past border
     }
 
     void eat_pellets(Cell &cell) {

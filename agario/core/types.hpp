@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <iostream>
 
 #include "core/num_wrapper.hpp"
 
@@ -64,6 +65,11 @@ namespace agario {
       return *this / this->norm();
     }
   };
+
+  template<typename T>
+  std::ostream& operator<<(std::ostream& os, Coordinate<T>& c) {
+    return os << "Coordinate(" << c.x << ", " << c.y << ")";
+  }
 
   template<typename T>
   inline Coordinate<T> operator+(Coordinate<T> lhs, const Coordinate<T> &rhs) {

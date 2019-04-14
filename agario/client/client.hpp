@@ -10,8 +10,6 @@
 #include <ctime>
 #include <memory>
 
-void process_input(GLFWwindow *window);
-
 namespace agario {
 
   class Client {
@@ -58,12 +56,15 @@ namespace agario {
 
       auto before = std::chrono::system_clock::now();
       while ((!num_iterations || num_iterations > 0) && renderer->ready()) {
-//      process_input(window);
+        process_input(renderer->window);
         renderer->render_screen(engine.game_state());
 
         auto now = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = now - before;
+
         engine.move_entities(elapsed_seconds);
+        engine.move_player(*player, elapsed_seconds);
+
         before = std::chrono::system_clock::now();
 
         if (num_iterations) (*num_iterations)--;
@@ -79,15 +80,22 @@ namespace agario {
     agario::Engine<true> engine;
     std::unique_ptr<agario::Renderer> renderer;
     std::shared_ptr<Player> player;
+
+
+    void process_input(GLFWwindow *window) {
+
+      double xpos, ypos;
+      glfwGetCursorPos(window, &xpos, &ypos);
+
+      player->target = renderer->to_target(xpos, ypos);
+
+      if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+      if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        std::cout << "Space bar pressed!" << std::endl;
+    }
+
   };
-
-// Handle key input
-  void process_input(GLFWwindow *window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-      glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-      std::cout << "Space bar pressed!" << std::endl;
-  }
 
 }

@@ -48,12 +48,13 @@ namespace agario {
     typedef Virus<true> Virus;
 
     std::shared_ptr<Player> player;
+    GLFWwindow *window;
 
     explicit Renderer(agario::distance arena_width, agario::distance arena_height,
-                      bool draw = true) : player(nullptr),
+                      bool draw = true) : player(nullptr), window(nullptr),
                                           arena_width(arena_width), arena_height(arena_height),
                                           screen_width(DEFAULT_SCREEN_WIDTH), screen_height(DEFAULT_SCREEN_HEIGHT),
-                                          window(nullptr), shader(), _draw(draw),
+                                          shader(), _draw(draw),
                                           grid(arena_width, arena_height) {
       if (_draw)
         window = initialize_window();
@@ -93,12 +94,14 @@ namespace agario {
       return window;
     }
 
-    void draw_border() {
-
-    }
-
     float aspect_ratio() const {
       return (float) screen_width / (float) screen_height;
+    }
+
+    agario::Location to_target(float xpos, float ypos) {
+      auto dx = 2 * (xpos - ((float) screen_width / 2)) / screen_width;
+      auto dy = - 2 * (ypos - ((float) screen_height / 2)) / screen_height;
+      return agario::Location(dx, dy);
     }
 
     void make_projections() {
@@ -137,8 +140,6 @@ namespace agario {
       for (auto &pellet : pellets)
         pellet.draw(shader);
 
-      draw_border();
-
       for (auto &plyr : players)
         plyr.draw(shader);
 
@@ -163,7 +164,6 @@ namespace agario {
 
     int screen_width;
     int screen_height;
-    GLFWwindow *window;
     Shader shader;
     bool _draw;
 

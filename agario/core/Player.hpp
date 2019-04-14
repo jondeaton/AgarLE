@@ -25,7 +25,6 @@ namespace agario {
       action(none), target(0, 0),
       _pid(pid), _name(std::move(name)), _score(0),
       _color(agario::color::black) {
-
       add_cell(0, 0, CELL_MIN_SIZE);
     }
 
