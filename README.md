@@ -3,16 +3,16 @@
 Reinforcement Learning environment for Agar.io
 
 # todo
-- Basic game rendering
-  - Entity colors
 - Get basic game mechanics
-  - Handle player mouse/keyboard inputs
-  - Player follow mouse
+  - max speed as a function of mass
+  - target in game world
+  - Handle player keyboard inputs (split/feed)
   - Entity interactions (several of these)
 - Refactoring
-  - restructure class structure to avoid Diamond problem
-  - better solution to NumberWrapper (or put in different file)
+  - restructure class structure to avoid Diamond problem (worth it?)
+  - better solution to NumberWrapper (is there one?)
 - Client-Server connection
+  - GameState serialization
   - Write server I/O
   - Write client I/O
 - Bind engine to AgarLE with PyBind
