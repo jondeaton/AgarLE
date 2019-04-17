@@ -87,13 +87,7 @@ namespace agario {
 
     void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
       for (auto &cell : player.cells) {
-
-//        auto before = std::chrono::system_clock::now();
-//        if (before.time_since_epoch().count() % 60 == 0) {
-//          std::cout << "Arena dims: (" << _arena_width << ", " << _arena_height << ")" << std::endl;
-//          std::cout << "Cell loc: " << cell.x << ", " << cell.y << std::endl;
-//        }
-
+        
         cell.velocity.dx = std::min<agario::distance>(CELL_MAX_SPEED, player.target.x * 100 / cell.mass());
         cell.velocity.dy = std::min<agario::distance>(CELL_MAX_SPEED, player.target.y * 100 / cell.mass());
 
