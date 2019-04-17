@@ -27,13 +27,13 @@ namespace agario {
     typedef Virus <renderable> Virus;
 
     Engine() :
-      arena_width(DEFAULT_ARENA_WIDTH), arena_height(DEFAULT_ARENA_HEIGHT),
+      _arena_width(DEFAULT_ARENA_WIDTH), _arena_height(DEFAULT_ARENA_HEIGHT),
       ticks(0), next_pid(0) {
       std::srand(std::chrono::system_clock::now().time_since_epoch().count());
     }
 
     explicit Engine(distance arena_width, distance arena_height) :
-      arena_width(arena_width), arena_height(arena_height),
+      _arena_width(arena_width), _arena_height(arena_height),
       ticks(0), next_pid(0) {
       std::srand(std::chrono::system_clock::now().time_since_epoch().count());
     }
@@ -70,6 +70,9 @@ namespace agario {
       return state;
     }
 
+    agario::distance arena_height() const { return _arena_height; }
+    agario::distance arena_width() const { return _arena_width; }
+
     void tick(std::chrono::duration<double> elapsed_seconds) {
       for (Player &player : state.players)
         tick_player(player, elapsed_seconds);
@@ -84,6 +87,13 @@ namespace agario {
 
     void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
       for (auto &cell : player.cells) {
+
+//        auto before = std::chrono::system_clock::now();
+//        if (before.time_since_epoch().count() % 60 == 0) {
+//          std::cout << "Arena dims: (" << _arena_width << ", " << _arena_height << ")" << std::endl;
+//          std::cout << "Cell loc: " << cell.x << ", " << cell.y << std::endl;
+//        }
+
         cell.velocity.dx = std::min<agario::distance>(CELL_MAX_SPEED, player.target.x * 100 / cell.mass());
         cell.velocity.dy = std::min<agario::distance>(CELL_MAX_SPEED, player.target.y * 100 / cell.mass());
 
@@ -92,9 +102,9 @@ namespace agario {
 
         // stay inside arena
         if (cell.x < 0) cell.x = 0;
-        if (cell.x > arena_width) cell.x = arena_width;
+        if (cell.x > _arena_width) cell.x = _arena_width;
         if (cell.y < 0) cell.y = 0;
-        if (cell.y > arena_height) cell.y = arena_height;
+        if (cell.y > _arena_height) cell.y = _arena_height;
       }
 
       // make sure not to move two of players own cells into one another!
@@ -117,8 +127,8 @@ namespace agario {
 
     agario::GameState<renderable> state;
 
-    distance arena_width;
-    distance arena_height;
+    distance _arena_width;
+    distance _arena_height;
 
     agario::tick ticks;
     agario::pid next_pid;
@@ -327,8 +337,8 @@ namespace agario {
     }
 
     agario::Location random_location() {
-      auto x = random < distance > (arena_width);
-      auto y = random < distance > (arena_height);
+      auto x = random < distance > (_arena_width);
+      auto y = random < distance > (_arena_height);
       return Location(x, y);
     }
 

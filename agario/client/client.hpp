@@ -21,15 +21,18 @@ namespace agario {
     typedef Virus<true> Virus;
 
     Client() :
-      server(), port(), renderer(nullptr) {}
+      server(), port(),
+      engine(DEFAULT_ARENA_WIDTH, DEFAULT_ARENA_HEIGHT),
+      renderer(nullptr) { }
 
     Client(std::string server, int port) :
       server(std::move(server)), port(port), renderer(nullptr) {}
 
     void connect() {
       std::cout << "Connecting to: " << server << ":" << port << "..." << std::endl;
-      // todo
+      // todo: set arena_height and width form server (among other things)
       std::cout << "remote server connection not implemented yet." << std::endl;
+
     }
 
     template<typename... Args>
@@ -47,9 +50,8 @@ namespace agario {
     }
 
     void initialize_renderer() {
-      agario::distance arena_width = 100;
-      agario::distance arena_height = 100;
-      renderer = std::make_unique<agario::Renderer>(arena_width, arena_height);
+      renderer = std::make_unique<agario::Renderer>(engine.arena_width(),
+        engine.arena_height());
     }
 
     void game_loop(std::optional<int> num_iterations = std::nullopt) {

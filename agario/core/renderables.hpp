@@ -139,8 +139,8 @@ namespace agario {
       circle.verts[1] = 0;
       circle.verts[2] = 0;
       for (unsigned i = 1; i < NVertices; i++) {
-        circle.verts[i * 3] = static_cast<float> (0 + (1 * cos(i * 2 * M_PI / NSides)));
-        circle.verts[i * 3 + 1] = static_cast<float> (0 + (1 * sin(i * 2 * M_PI / NSides)));
+        circle.verts[i * 3] = cos(i * 2 * M_PI / NSides);
+        circle.verts[i * 3 + 1] = sin(i * 2 * M_PI / NSides);
         circle.verts[i * 3 + 2] = 0;
       }
     }
@@ -227,26 +227,30 @@ namespace agario {
     }
 
     void _create_vertical_verts(GLfloat verts[]) {
+      GLfloat spacing = 1.0 / (NLines - 1);
       for (unsigned i = 0; i < NLines; i++) {
-        verts[6 * i] = static_cast<GLfloat>(i) / NLines;
+        GLfloat x = i * spacing;
+        verts[6 * i] = x;
         verts[6 * i + 1] = 0;
         verts[6 * i + 2] = z;
 
-        verts[6 * i + 3] = static_cast<GLfloat>(i) / NLines;
+        verts[6 * i + 3] = x;
         verts[6 * i + 4] = 1;
         verts[6 * i + 5] = z;
       }
     }
 
     void _create_horiz_verts(GLfloat verts[]) {
+      GLfloat spacing = 1.0 / (NLines - 1);
       for (unsigned i = 0; i < NLines; i++) {
+        GLfloat y = i * spacing;
         verts[6 * i] = 0;
-        verts[6 * i + 1] = static_cast<GLfloat>(i) / NLines;
-        verts[6 * i + 2] = 0;
+        verts[6 * i + 1] = y;
+        verts[6 * i + 2] = z;
 
         verts[6 * i + 3] = 1;
-        verts[6 * i + 4] = static_cast<GLfloat>(i) / NLines;
-        verts[6 * i + 5] = 0;
+        verts[6 * i + 4] = y;
+        verts[6 * i + 5] = z;
       }
     }
   };
