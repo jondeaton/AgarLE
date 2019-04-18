@@ -63,8 +63,8 @@ namespace agario {
   };
 
   template<typename T>
-  std::ostream& operator<<(std::ostream& os, Coordinate<T>& c) {
-    return os << "Coordinate(" << c.x << ", " << c.y << ")";
+  std::ostream& operator<<(std::ostream& os, const Coordinate<T>& c) {
+    return os << "(" << c.x << ", " << c.y << ")";
   }
 
   template<typename T>

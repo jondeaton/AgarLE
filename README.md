@@ -4,8 +4,8 @@ Reinforcement Learning environment for Agar.io
 
 # todo
 - Get basic game mechanics
-  - max speed as a function of mass
   - target in game world
+  - max speed as a function of mass
   - Handle player keyboard inputs (split/feed)
   - Entity interactions (several of these)
 - Refactoring

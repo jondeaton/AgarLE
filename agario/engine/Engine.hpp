@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdlib>
 #include <chrono>
+#include <algorithm>
 
 #include "core/Player.hpp"
 #include "settings.hpp"
@@ -71,6 +72,7 @@ namespace agario {
     }
 
     agario::distance arena_height() const { return _arena_height; }
+
     agario::distance arena_width() const { return _arena_width; }
 
     void tick(std::chrono::duration<double> elapsed_seconds) {
@@ -83,16 +85,32 @@ namespace agario {
       for (auto &pair : state.players)
         move_player(pair.second, elapsed_seconds);
       // todo: move other entities
+      ticks++;
     }
 
     void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
-      for (auto &cell : player.cells) {
-        
-        cell.velocity.dx = std::min<agario::distance>(CELL_MAX_SPEED, player.target.x * 100 / cell.mass());
-        cell.velocity.dy = std::min<agario::distance>(CELL_MAX_SPEED, player.target.y * 100 / cell.mass());
+      (void) elapsed_seconds;
 
-        cell.x += cell.velocity.dx * elapsed_seconds.count();
-        cell.y += cell.velocity.dy * elapsed_seconds.count();
+      for (auto &cell : player.cells) {
+
+        auto dx = static_cast<float>(player.target.x - cell.x);
+        auto dy = static_cast<float>(player.target.y - cell.y);
+
+        cell.velocity.dx = std::clamp<float>(dx, -CELL_MAX_SPEED, CELL_MAX_SPEED) / cell.mass();
+        cell.velocity.dy = std::clamp<float>(dy, -CELL_MAX_SPEED, CELL_MAX_SPEED) / cell.mass();
+
+//        auto now = std::chrono::system_clock::now();
+
+        if (ticks % 60 == 0) {
+          std::cout << "Cell location: " << cell.location() << std::endl;
+          std::cout << "Target: " << player.target << std::endl;
+        }
+
+        //        cell.velocity.dx = std::min<agario::distance>(CELL_MAX_SPEED, player.target.x * 100 / cell.mass());
+//        cell.velocity.dy = std::min<agario::distance>(CELL_MAX_SPEED, player.target.y * 100 / cell.mass());
+
+//        cell.x += cell.velocity.dx * elapsed_seconds.count();
+//        cell.y += cell.velocity.dy * elapsed_seconds.count();
 
         // stay inside arena
         if (cell.x < 0) cell.x = 0;
