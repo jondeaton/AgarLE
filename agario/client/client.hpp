@@ -44,8 +44,8 @@ namespace agario {
       auto pid = engine.add_player(name);
 
       // todo: remove this... just for testing purposes
-      engine.player(pid).add_cell(15, 20, CELL_MIN_SIZE + 1);
-//      engine.player(pid).add_cell(4, 4, CELL_MIN_SIZE + 5);
+      engine.player(pid).add_cell(15, 20, CELL_MIN_SIZE + 10);
+      engine.player(pid).add_cell(4, 4, CELL_MIN_SIZE + 1);
       return pid;
     }
 

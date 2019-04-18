@@ -93,24 +93,14 @@ namespace agario {
 
       for (auto &cell : player.cells) {
 
-        auto dx = static_cast<float>(player.target.x - cell.x);
-        auto dy = static_cast<float>(player.target.y - cell.y);
+        auto dx = 10 * static_cast<float>(player.target.x - cell.x);
+        auto dy = 10 * static_cast<float>(player.target.y - cell.y);
 
         cell.velocity.dx = std::clamp<float>(dx, -CELL_MAX_SPEED, CELL_MAX_SPEED) / cell.mass();
         cell.velocity.dy = std::clamp<float>(dy, -CELL_MAX_SPEED, CELL_MAX_SPEED) / cell.mass();
 
-//        auto now = std::chrono::system_clock::now();
-
-        if (ticks % 60 == 0) {
-          std::cout << "Cell location: " << cell.location() << std::endl;
-          std::cout << "Target: " << player.target << std::endl;
-        }
-
-        //        cell.velocity.dx = std::min<agario::distance>(CELL_MAX_SPEED, player.target.x * 100 / cell.mass());
-//        cell.velocity.dy = std::min<agario::distance>(CELL_MAX_SPEED, player.target.y * 100 / cell.mass());
-
-//        cell.x += cell.velocity.dx * elapsed_seconds.count();
-//        cell.y += cell.velocity.dy * elapsed_seconds.count();
+        cell.x += cell.velocity.dx * elapsed_seconds.count();
+        cell.y += cell.velocity.dy * elapsed_seconds.count();
 
         // stay inside arena
         if (cell.x < 0) cell.x = 0;
