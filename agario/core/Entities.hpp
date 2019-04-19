@@ -13,7 +13,7 @@
 #define FOOD_MASS 10
 #define FOOD_SPEED 10
 
-#define VIRUS_SIZE 75
+#define VIRUS_SIZE 15
 #define VIRUS_MASS 0
 
 #define PELLET_SIDES 5
@@ -32,11 +32,11 @@ namespace agario {
     using Super::Super;
 
     // constructors explicitly put here because of virtual inheritance rules...
-    Pellet(distance x, distance y) : Ball(x, y), Super(x, y) {}
-
-    Pellet(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
-
-    Pellet(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    Pellet(distance x, distance y) : Ball(x, y), Super(x, y) { }
+    explicit Pellet(Location &&loc) : Ball(loc), Super(loc) { }
+    explicit Pellet(Location &loc) : Ball(loc), Super(loc) { }
+    Pellet(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) { }
+    Pellet(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) { }
 
     agario::distance radius() const override { return PELLET_SIZE; }
 
@@ -76,11 +76,22 @@ namespace agario {
     typedef typename std::conditional<renderable, RenderableMovingBall<VIRUS_SIDES>, MovingBall>::type Super;
     using Super::Super;
 
-    Virus(distance x, distance y) : Ball(x, y), Super(x, y) {}
+    Virus(distance x, distance y) : Ball(x, y), Super(x, y) {
+      if constexpr (renderable) this->color = agario::color::green;
+    }
+    explicit Virus(Location &&loc) : Ball(loc), Super(loc) {
+      if constexpr (renderable) this->color = agario::color::green;
+    }
+    explicit Virus(Location &loc) : Ball(loc), Super(loc) {
+      if constexpr (renderable) this->color = agario::color::green;
+    }
+    Virus(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {
+      if constexpr (renderable) this->color = agario::color::green;
+    }
 
-    Virus(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
-
-    Virus(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    Virus(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {
+      if constexpr (renderable) this->color = agario::color::green;
+    }
 
     // todo: viruses have variable mass and size
     agario::distance radius() const override { return VIRUS_SIZE; }

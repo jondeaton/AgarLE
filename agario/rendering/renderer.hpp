@@ -35,6 +35,8 @@
 
 namespace agario {
 
+  void window_size_callback(GLFWwindow *window, int width, int height);
+
   class Renderer {
   public:
 
@@ -87,29 +89,19 @@ namespace agario {
       if (err != GLEW_OK)
         throw std::exception();
 
+      glfwSetWindowUserPointer(window, this);
+      glfwSetWindowSizeCallback(window, window_size_callback);
+
       return window;
+    }
+
+    void update_window_size(int width, int height) {
+      screen_width = width;
+      screen_height = height;
     }
 
     float aspect_ratio() const {
       return (float) screen_width / (float) screen_height;
-    }
-
-    template<typename T>
-    inline glm::tmat4x4<T, glm::defaultp> inv_perspective(T const &fovy, T const &aspect,
-                                                          T const &zNear, T const &zFar) {
-      // from https://gist.github.com/tristanpenman/c45dcc5ef959e0d1f33a
-      glm::tmat4x4<T, glm::defaultp> m(static_cast<T>(0));
-
-      const T tanHalfFovy = tan(fovy / static_cast<T>(2));
-      m[0][0] = tanHalfFovy * aspect;
-      m[1][1] = tanHalfFovy * aspect;
-      m[3][2] = static_cast<T>(-1);
-
-      const T d = static_cast<T>(2) * zFar * zNear;
-      m[2][3] = (zNear - zFar) / d;
-      m[3][3] = (zFar + zNear) / d;
-
-      return m;
     }
 
     /// converts a screen position to a world position
@@ -140,7 +132,7 @@ namespace agario {
     }
 
     GLfloat camera_z(const Player &player) {
-      return 3 * player.mass();
+      return player.mass();
     }
 
     glm::mat4 perspective_projection(const Player &player) {
@@ -201,4 +193,10 @@ namespace agario {
 
     agario::Grid<NUM_GRID_LINES> grid;
   };
+
+  void window_size_callback(GLFWwindow *window, int width, int height) {
+    agario::Renderer *renderer = static_cast<Renderer *>(glfwGetWindowUserPointer(window));
+    renderer->update_window_size(width, height);
+  }
+
 }

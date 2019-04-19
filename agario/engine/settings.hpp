@@ -3,7 +3,7 @@
 #define SEED 42
 
 #define CELL_MIN_SIZE 10
-#define CELL_MAX_SPEED 100
+#define CELL_MAX_SPEED 300
 
 // must be `CELL_EAT_MARGIN` times larger
 // than another cell in order to eat it
@@ -18,5 +18,5 @@
 #define CELL_POP_SPEED 25
 
 
-#define DEFAULT_ARENA_WIDTH 50
-#define DEFAULT_ARENA_HEIGHT 50
+#define DEFAULT_ARENA_WIDTH 500
+#define DEFAULT_ARENA_HEIGHT 500

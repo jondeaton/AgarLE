@@ -59,6 +59,11 @@ namespace agario {
       return state.players.at(pid);
     }
 
+    void initialize_game() {
+      add_pellets(500);
+      add_virus(25);
+    }
+
     const std::vector<Player> &players() const { return state.players; }
 
     const std::vector<Pellet> &pellets() const { return state.pellets; }
@@ -85,7 +90,6 @@ namespace agario {
       for (auto &pair : state.players)
         move_player(pair.second, elapsed_seconds);
       // todo: move other entities
-      ticks++;
     }
 
     void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
@@ -136,20 +140,13 @@ namespace agario {
     agario::pid next_pid;
 
     void add_pellets(int num_pellets) {
-      while (num_pellets > 0) {
-//      Agario::Location loc = random_location();
-//      Agario::Pellet pellet(loc);
-
+      for (int p = 0; p < num_pellets; p++)
         state.pellets.emplace_back(random_location());
-        num_pellets--;
-      }
     }
 
     void add_virus(int num_virus) {
-      while (num_virus > 0) {
+      for (int v = 0; v < num_virus; v++)
         state.viruses.emplace_back(random_location());
-        num_virus--;
-      }
     }
 
     void tick_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
@@ -250,7 +247,6 @@ namespace agario {
       }
     }
 
-
     void check_player_collisions(Player &player) {
       for (Cell &cell : player.cells)
         eat_others(player, cell);
@@ -339,8 +335,8 @@ namespace agario {
     }
 
     agario::Location random_location() {
-      auto x = random < distance > (_arena_width);
-      auto y = random < distance > (_arena_height);
+      auto x = random<agario::distance>(_arena_width);
+      auto y = random<agario::distance>(_arena_height);
       return Location(x, y);
     }
 

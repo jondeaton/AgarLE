@@ -77,9 +77,9 @@ namespace agario {
     using Ball::Ball;
     agario::color color;
 
-    explicit RenderableBall(const Location &loc) : Ball(loc), color(agario::color::blue) {}
+    explicit RenderableBall(const Location &loc) : Ball(loc), color(agario::random_color()) {}
 
-    RenderableBall(distance x, distance y) : Ball(Location(x, y)), color(agario::color::blue) {}
+    RenderableBall(distance x, distance y) : Ball(Location(x, y)), color(agario::random_color()) {}
 
     void draw(Shader &shader) {
       if (!_initialized) _initialize();
@@ -153,9 +153,21 @@ namespace agario {
                                                    RenderableBall<NSides>(x, y),
                                                    MovingBall(x, y) {}
 
-    explicit RenderableMovingBall(Location &loc, Velocity &vel) : Ball(loc),
-                                                                  RenderableBall<NSides>(loc),
-                                                                  MovingBall(loc, vel) {}
+    explicit RenderableMovingBall(Location &&loc) : Ball(loc),
+                                                    RenderableBall<NSides>(loc),
+                                                    MovingBall(loc) {}
+
+    explicit RenderableMovingBall(Location &loc) : Ball(loc),
+                                                   RenderableBall<NSides>(loc),
+                                                   MovingBall(loc) {}
+
+    RenderableMovingBall(Location &loc, Velocity &vel) : Ball(loc),
+                                                         RenderableBall<NSides>(loc),
+                                                         MovingBall(loc, vel) {}
+
+    RenderableMovingBall(Location &&loc, Velocity &vel) : Ball(loc),
+                                                          RenderableBall<NSides>(loc),
+                                                          MovingBall(loc, vel) {}
   };
 
   template<unsigned NLines>

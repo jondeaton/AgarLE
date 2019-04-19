@@ -23,7 +23,9 @@ namespace agario {
     Client() :
       server(), port(),
       engine(DEFAULT_ARENA_WIDTH, DEFAULT_ARENA_HEIGHT),
-      renderer(nullptr) { }
+      renderer(nullptr) {
+      engine.initialize_game();
+    }
 
     Client(std::string server, int port) :
       server(std::move(server)), port(port), renderer(nullptr) {}
@@ -45,7 +47,8 @@ namespace agario {
 
       // todo: remove this... just for testing purposes
       engine.player(pid).add_cell(15, 20, CELL_MIN_SIZE + 10);
-      engine.player(pid).add_cell(4, 4, CELL_MIN_SIZE + 1);
+      for (int i = 0; i < 5; i++)
+        engine.player(pid).add_cell(i, i, CELL_MIN_SIZE + i);
       return pid;
     }
 
@@ -58,7 +61,7 @@ namespace agario {
       if (renderer == nullptr) initialize_renderer();
 
       double fps = 0;
-      int count = 0;
+      int fps_count = 0;
 
       auto before = std::chrono::system_clock::now();
       while ((!num_iterations || num_iterations > 0) && renderer->ready()) {
@@ -72,14 +75,14 @@ namespace agario {
         std::chrono::duration<double> elapsed_seconds = now - before;
 
         fps += 1 / elapsed_seconds.count();
-        count += 1;
+        fps_count += 1;
 
         engine.move_entities(elapsed_seconds);
 
         before = std::chrono::system_clock::now();
         if (num_iterations) (*num_iterations)--;
       }
-      std::cout << "Average FPS: " << (fps / count) << std::endl;
+      std::cout << "Average FPS: " << (fps / fps_count) << std::endl;
 
       renderer->terminate();
     }
@@ -95,7 +98,6 @@ namespace agario {
     std::unique_ptr<agario::Renderer> renderer;
 
     void process_input(GLFWwindow *window, Player &player) {
-
       double xpos, ypos;
       glfwGetCursorPos(window, &xpos, &ypos);
       player.target = renderer->to_target(player, xpos, ypos);
@@ -104,7 +106,10 @@ namespace agario {
         glfwSetWindowShouldClose(window, true);
 
       if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        std::cout << "Space bar pressed!" << std::endl;
+        player.action = agario::action::split;
+
+      if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        player.action = agario::action::feed;
     }
 
   };
