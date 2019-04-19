@@ -1,6 +1,8 @@
 #pragma once
 
 #include "rendering/renderer.hpp"
+#include "rendering/window.hpp"
+
 #include "core/renderables.hpp"
 #include "engine/Engine.hpp"
 
@@ -53,8 +55,10 @@ namespace agario {
     }
 
     void initialize_renderer() {
-      renderer = std::make_unique<agario::Renderer>(engine.arena_width(),
-        engine.arena_height());
+      window = std::make_shared<agario::Window>();
+      renderer = std::make_unique<agario::Renderer>(window,
+                                                    engine.arena_width(),
+                                                    engine.arena_height());
     }
 
     void game_loop(std::optional<int> num_iterations = std::nullopt) {
@@ -64,11 +68,11 @@ namespace agario {
       int fps_count = 0;
 
       auto before = std::chrono::system_clock::now();
-      while ((!num_iterations || num_iterations > 0) && renderer->ready()) {
+      while ((!num_iterations || num_iterations > 0) && !window->should_close()) {
 
         auto &player = engine.player(player_pid);
 
-        process_input(renderer->window, player);
+        process_input();
         renderer->render_screen(player, engine.game_state());
 
         auto now = std::chrono::system_clock::now();
@@ -95,20 +99,26 @@ namespace agario {
     agario::pid player_pid; // pid of the player we're tracking
 
     agario::Engine<true> engine;
-    std::unique_ptr<agario::Renderer> renderer;
 
-    void process_input(GLFWwindow *window, Player &player) {
+    // todo: change these into regular pointers?
+    std::unique_ptr<agario::Renderer> renderer;
+    std::shared_ptr<agario::Window> window;
+
+    void process_input() {
+      GLFWwindow *win = window->pointer();
+      auto &player = engine.player(player_pid);
+
       double xpos, ypos;
-      glfwGetCursorPos(window, &xpos, &ypos);
+      glfwGetCursorPos(win, &xpos, &ypos);
       player.target = renderer->to_target(player, xpos, ypos);
 
-      if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+      if (glfwGetKey(win, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(win, true);
 
-      if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+      if (glfwGetKey(win, GLFW_KEY_SPACE) == GLFW_PRESS)
         player.action = agario::action::split;
 
-      if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+      if (glfwGetKey(win, GLFW_KEY_W) == GLFW_PRESS)
         player.action = agario::action::feed;
     }
 

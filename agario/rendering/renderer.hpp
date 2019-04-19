@@ -18,6 +18,7 @@
 
 #include "shader.hpp"
 #include "engine/GameState.hpp"
+#include "rendering/window.hpp"
 #include <core/Entities.hpp>
 #include <core/Player.hpp>
 
@@ -27,15 +28,9 @@
 #define FOOD_RADIUS 50
 #define VIRUS_RADIUS 100
 
-#define DEFAULT_SCREEN_WIDTH 640
-#define DEFAULT_SCREEN_HEIGHT 480
 #define NUM_GRID_LINES 11
 
-#define WINDOW_NAME "AgarIO"
-
 namespace agario {
-
-  void window_size_callback(GLFWwindow *window, int width, int height);
 
   class Renderer {
   public:
@@ -46,63 +41,17 @@ namespace agario {
     typedef Food<true> Food;
     typedef Virus<true> Virus;
 
-    GLFWwindow *window;
-
-    explicit Renderer(agario::distance arena_width, agario::distance arena_height,
-                      bool draw = true) : window(nullptr),
-                                          arena_width(arena_width), arena_height(arena_height),
-                                          screen_width(DEFAULT_SCREEN_WIDTH), screen_height(DEFAULT_SCREEN_HEIGHT),
-                                          shader(), _draw(draw),
-                                          grid(arena_width, arena_height) {
-      if (_draw)
-        window = initialize_window();
+    explicit Renderer(std::shared_ptr<agario::Window> window,
+                      agario::distance arena_width, agario::distance arena_height) :
+      window(window),
+      arena_width(arena_width), arena_height(arena_height),
+      shader(), grid(arena_width, arena_height) {
       shader.generate_shader("../rendering/vertex.glsl", "../rendering/fragment.glsl");
       shader.use();
     }
 
-    GLFWwindow *initialize_window() {
-      // Initialize the library
-      if (!glfwInit())
-        throw std::exception();
-
-
-      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-      glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-      glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-      glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
-#endif
-
-      // Create a windowed mode window and its OpenGL context
-      window = glfwCreateWindow(screen_width, screen_height, WINDOW_NAME, nullptr, nullptr);
-
-      if (window == nullptr) {
-        glfwTerminate();
-        std::cerr << "window create failed" << std::endl;
-        throw std::exception();
-      }
-
-      glfwMakeContextCurrent(window);
-      glewExperimental = GL_TRUE;
-
-      GLenum err = glewInit();
-      if (err != GLEW_OK)
-        throw std::exception();
-
-      glfwSetWindowUserPointer(window, this);
-      glfwSetWindowSizeCallback(window, window_size_callback);
-
-      return window;
-    }
-
-    void update_window_size(int width, int height) {
-      screen_width = width;
-      screen_height = height;
-    }
-
-    float aspect_ratio() const {
-      return (float) screen_width / (float) screen_height;
-    }
+    explicit Renderer(agario::distance arena_width, agario::distance arena_height) :
+      Renderer(nullptr, arena_width, arena_height) {}
 
     /// converts a screen position to a world position
     /// \param xpos screen horizontal position
@@ -111,8 +60,8 @@ namespace agario {
     agario::Location to_target(Player &player, float xpos, float ypos) {
 
       // normalized device coordinates (from -1 to 1)
-      auto ndc_x = 2 * (xpos / screen_width) - 1;
-      auto ndc_y = 1 - 2 * (ypos / screen_height);
+      auto ndc_x = 2 * (xpos / window->width()) - 1;
+      auto ndc_y = 1 - 2 * (ypos / window->height());
       auto loc = glm::vec4(ndc_x, ndc_y, 1.0, 1);
 
       auto perspective = perspective_projection(player);
@@ -136,7 +85,7 @@ namespace agario {
     }
 
     glm::mat4 perspective_projection(const Player &player) {
-      return glm::perspective(glm::radians(45.0f), aspect_ratio(), 0.1f, camera_z(player));
+      return glm::perspective(glm::radians(45.0f), window->aspect_ratio(), 0.1f, camera_z(player));
     }
 
     glm::mat4 view_projection(const Player &player) {
@@ -157,25 +106,20 @@ namespace agario {
 
       grid.draw(shader);
 
-      for (auto &food : state.foods)
-        food.draw(shader);
-
-      for (auto &virus : state.viruses)
-        virus.draw(shader);
-
       for (auto &pellet : state.pellets)
         pellet.draw(shader);
+
+      for (auto &food : state.foods)
+        food.draw(shader);
 
       for (auto &pair : state.players)
         pair.second.draw(shader);
 
-      glfwSwapBuffers(window);
-      glfwPollEvents();
-    }
+      for (auto &virus : state.viruses)
+        virus.draw(shader);
 
-    bool ready() {
-      if (window == nullptr) return false;
-      return !glfwWindowShouldClose(window);
+      window->swap_buffers();
+      glfwPollEvents();
     }
 
     void terminate() {
@@ -183,20 +127,13 @@ namespace agario {
     }
 
   private:
+    std::shared_ptr<agario::Window> window;
+
     agario::distance arena_width;
     agario::distance arena_height;
 
-    int screen_width;
-    int screen_height;
     Shader shader;
-    bool _draw;
-
     agario::Grid<NUM_GRID_LINES> grid;
   };
-
-  void window_size_callback(GLFWwindow *window, int width, int height) {
-    agario::Renderer *renderer = static_cast<Renderer *>(glfwGetWindowUserPointer(window));
-    renderer->update_window_size(width, height);
-  }
 
 }

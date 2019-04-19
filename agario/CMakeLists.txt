@@ -40,7 +40,8 @@ set(AGARIO_ENGINE_SRC
 
 set(AGARIO_RENDERING_SRC
         rendering/renderer.hpp
-        rendering/shader.hpp)
+        rendering/shader.hpp
+        rendering/window.hpp)
 
 set(AGARIO_SRC ${AGARIO_CORE_SRC} ${AGARIO_ENGINE_SRC})
 
