@@ -22,12 +22,6 @@
 #include <core/Entities.hpp>
 #include <core/Player.hpp>
 
-#define COLOR_LEN 3
-
-#define PELLET_RADIUS 10
-#define FOOD_RADIUS 50
-#define VIRUS_RADIUS 100
-
 #define NUM_GRID_LINES 11
 
 namespace agario {

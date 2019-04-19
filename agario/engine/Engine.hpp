@@ -16,7 +16,6 @@ namespace agario {
     using runtime_error::runtime_error;
   };
 
-
   template<bool renderable>
   class Engine {
   public:
@@ -27,17 +26,13 @@ namespace agario {
     typedef Pellet <renderable> Pellet;
     typedef Virus <renderable> Virus;
 
-    Engine() :
-      _arena_width(DEFAULT_ARENA_WIDTH), _arena_height(DEFAULT_ARENA_HEIGHT),
-      ticks(0), next_pid(0) {
-      std::srand(std::chrono::system_clock::now().time_since_epoch().count());
-    }
-
     explicit Engine(distance arena_width, distance arena_height) :
       _arena_width(arena_width), _arena_height(arena_height),
       ticks(0), next_pid(0) {
       std::srand(std::chrono::system_clock::now().time_since_epoch().count());
     }
+
+    Engine() : Engine(DEFAULT_ARENA_WIDTH, DEFAULT_ARENA_HEIGHT) { }
 
     agario::pid add_player(const std::string &name) {
       std::pair<typename std::unordered_map<agario::pid, Player>::iterator, bool> p;
