@@ -7,7 +7,7 @@
 #include <core/renderables.hpp>
 
 #define PELLET_SIZE 1
-#define PELLET_MASS 1
+#define PELLET_MASS 5
 
 #define FOOD_SIZE 10
 #define FOOD_MASS 10
@@ -32,11 +32,15 @@ namespace agario {
     using Super::Super;
 
     // constructors explicitly put here because of virtual inheritance rules...
-    Pellet(distance x, distance y) : Ball(x, y), Super(x, y) { }
-    explicit Pellet(Location &&loc) : Ball(loc), Super(loc) { }
-    explicit Pellet(Location &loc) : Ball(loc), Super(loc) { }
-    Pellet(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) { }
-    Pellet(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) { }
+    Pellet(distance x, distance y) : Ball(x, y), Super(x, y) {}
+
+    explicit Pellet(Location &&loc) : Ball(loc), Super(loc) {}
+
+    explicit Pellet(Location &loc) : Ball(loc), Super(loc) {}
+
+    Pellet(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+
+    Pellet(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
 
     agario::distance radius() const override { return PELLET_SIZE; }
 
@@ -79,12 +83,15 @@ namespace agario {
     Virus(distance x, distance y) : Ball(x, y), Super(x, y) {
       if constexpr (renderable) this->color = agario::color::green;
     }
+
     explicit Virus(Location &&loc) : Ball(loc), Super(loc) {
       if constexpr (renderable) this->color = agario::color::green;
     }
+
     explicit Virus(Location &loc) : Ball(loc), Super(loc) {
       if constexpr (renderable) this->color = agario::color::green;
     }
+
     Virus(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {
       if constexpr (renderable) this->color = agario::color::green;
     }
@@ -124,10 +131,14 @@ namespace agario {
       _mass = std::max<agario::mass>(new_mass, CELL_MIN_SIZE);
     }
 
-    void increment_mass(int inc) { set_mass(mass() + inc); }
+    void increment_mass(int inc) {
+      if (inc == 0) return;
+      set_mass(mass() + inc);
+    }
 
     void reduce_mass_by_factor(float factor) { set_mass(mass() / factor); }
 
+    // todo: change VIRUS_SIZE to static member of Virus?
   private:
     agario::mass _mass;
   };

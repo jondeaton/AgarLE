@@ -25,7 +25,7 @@ namespace agario {
 
     bool collides_with(const Ball &other) {
       auto sqr_rads = pow(radius() + other.radius(), 2);
-      return sqr_rads <= sqr_distance_to(other);
+      return sqr_rads >= sqr_distance_to(other);
     }
 
     Location location() const { return Location(x, y); }

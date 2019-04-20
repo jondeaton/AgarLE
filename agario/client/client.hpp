@@ -81,7 +81,7 @@ namespace agario {
         fps += 1 / elapsed_seconds.count();
         fps_count += 1;
 
-        engine.move_entities(elapsed_seconds);
+        engine.tick(elapsed_seconds);
 
         before = std::chrono::system_clock::now();
         if (num_iterations) (*num_iterations)--;

@@ -6,6 +6,7 @@ Reinforcement Learning environment for Agar.io
 - Get basic game mechanics
   - Handle player keyboard inputs (split/feed)
   - Entity interactions (several of these)
+    - Player's cells don't overlap
 - Refactoring
   - restructure class structure to avoid Diamond problem (worth it?)
   - better solution to NumberWrapper (is there one?)

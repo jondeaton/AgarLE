@@ -32,7 +32,7 @@ namespace agario {
       std::srand(std::chrono::system_clock::now().time_since_epoch().count());
     }
 
-    Engine() : Engine(DEFAULT_ARENA_WIDTH, DEFAULT_ARENA_HEIGHT) { }
+    Engine() : Engine(DEFAULT_ARENA_WIDTH, DEFAULT_ARENA_HEIGHT) {}
 
     agario::pid add_player(const std::string &name) {
       std::pair<typename std::unordered_map<agario::pid, Player>::iterator, bool> p;
@@ -76,8 +76,8 @@ namespace agario {
     agario::distance arena_width() const { return _arena_width; }
 
     void tick(std::chrono::duration<double> elapsed_seconds) {
-      for (Player &player : state.players)
-        tick_player(player, elapsed_seconds);
+      for (auto &pair : state.players)
+        tick_player(pair.second, elapsed_seconds);
       ticks++;
     }
 
@@ -95,8 +95,8 @@ namespace agario {
         auto dx = 10 * static_cast<float>(player.target.x - cell.x);
         auto dy = 10 * static_cast<float>(player.target.y - cell.y);
 
-        cell.velocity.dx = std::clamp<float>(dx, -CELL_MAX_SPEED, CELL_MAX_SPEED) / cell.mass();
-        cell.velocity.dy = std::clamp<float>(dy, -CELL_MAX_SPEED, CELL_MAX_SPEED) / cell.mass();
+        cell.velocity.dx = std::clamp<float>(dx, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt(cell.mass());
+        cell.velocity.dy = std::clamp<float>(dy, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt(cell.mass());
 
         cell.x += cell.velocity.dx * elapsed_seconds.count();
         cell.y += cell.velocity.dy * elapsed_seconds.count();
@@ -151,28 +151,26 @@ namespace agario {
       for (Cell &cell : player.cells) {
         eat_pellets(cell);
         eat_food(cell);
-
-        // todo: change VIRUS_SIZE to static member of Virus?
-        check_virus_collisions(cell, created_cells);
-
-        if (player.action == agario::action::feed)
-          emit_foods(player);
-
-        if (player.action == agario::action::split)
-          player_split(player, created_cells);
+//
+//        check_virus_collisions(cell, created_cells);
+//
+//        if (player.action == agario::action::feed)
+//          emit_foods(player);
+//
+//        if (player.action == agario::action::split)
+//          player_split(player, created_cells);
 
       }
 
       // add any cells that were created
-      player.cells.insert(std::end(player.cells),
-                          std::begin(created_cells),
-                          std::end(created_cells));
+//      player.cells.insert(std::end(player.cells),
+//                          std::begin(created_cells),
+//                          std::end(created_cells));
 
       // player collisions
-      check_player_collisions(player);
+//      check_player_collisions(player);
 
-      recombine_cells(player);
-      // todo: recombine cells
+//      recombine_cells(player);
       // todo: decrement recombine timers
       // todo: increment or decrement entity speeds
       // todo: reset player action?
@@ -182,12 +180,13 @@ namespace agario {
     void eat_pellets(Cell &cell) {
       auto prev_size = total_pellets();
 
-      // todo: fix remove_if
-      std::remove_if(state.pellets.begin(), state.pellets.end(),
-                     [&](const Pellet &pellet) {
-                       return cell > pellet && cell.collides_with(pellet);
-                     });
-      auto num_eaten = total_pellets() - prev_size;
+      state.pellets.erase(
+        std::remove_if(state.pellets.begin(), state.pellets.end(),
+                       [&](const Pellet &pellet) {
+                         return cell > pellet && cell.collides_with(pellet);
+                       }),
+        state.pellets.end());
+      auto num_eaten = prev_size - total_pellets();
       cell.increment_mass(num_eaten * PELLET_MASS);
     }
 
@@ -195,12 +194,13 @@ namespace agario {
       if (cell.mass() < FOOD_MASS) return;
       auto prev_size = total_foods();
 
-      // todo: fix remove_if
-      std::remove_if(state.foods.begin(), state.foods.end(),
-                     [&](const Food &food) {
-                       return cell > food && cell.collides_with(food);
-                     });
-      auto num_eaten = total_foods() - prev_size;
+      state.foods.erase(
+        std::remove_if(state.foods.begin(), state.foods.end(),
+                       [&](const Food &pellet) {
+                         return cell > pellet && cell.collides_with(pellet);
+                       }),
+        state.foods.end());
+      auto num_eaten = prev_size - total_foods();
       cell.increment_mass(num_eaten * FOOD_MASS);
     }
 
@@ -251,8 +251,10 @@ namespace agario {
 
       agario::mass gained_mass = 0;
 
-      for (Player &other_player : state.players) {
+      for (auto &pair : state.players) {
+        auto &other_player = pair.second;
         if (other_player == player) continue;
+
         for (Cell &other_cell : other_player.cells) {
           if (cell.collides_with(other_cell) && cell > other_cell)
             gained_mass += other_cell.mass();

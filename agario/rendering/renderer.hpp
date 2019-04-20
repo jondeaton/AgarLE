@@ -79,7 +79,7 @@ namespace agario {
     }
 
     glm::mat4 perspective_projection(const Player &player) {
-      return glm::perspective(glm::radians(45.0f), window->aspect_ratio(), 0.1f, camera_z(player));
+      return glm::perspective(glm::radians(45.0f), window->aspect_ratio(), 0.1f, 1 + camera_z(player));
     }
 
     glm::mat4 view_projection(const Player &player) {
