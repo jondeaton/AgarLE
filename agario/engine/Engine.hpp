@@ -87,24 +87,42 @@ namespace agario {
       // todo: move other entities
     }
 
+    template<typename T>
+    int sign(T val) {
+      if (val == T(0)) return 0;
+      return val > 0 ? 1 : -1;
+    }
+
+#define FRICTION_MU 1.0
+#define CELL_MAX_SPEED 200
+#define CELL_MAX_ACC 5000
+
     void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
       auto dt = elapsed_seconds.count();
 
       for (auto &cell : player.cells) {
+        auto dx = player.target.x - cell.x;
+        auto dy = player.target.y - cell.y;
+
+        auto friction_x = -sign(cell.velocity.dx) * FRICTION_MU * cell.mass();
+        auto friction_y = -sign(cell.velocity.dy) * FRICTION_MU * cell.mass();
+
+        auto ddx = std::clamp<float>(50 * dx, -CELL_MAX_ACC, CELL_MAX_ACC);
+        auto ddy = std::clamp<float>(50 * dy, -CELL_MAX_ACC, CELL_MAX_ACC);
+
+        auto acc_x = friction_x + ddx;
+        auto acc_y = friction_y + ddy;
+
+        cell.velocity.dx += acc_x * dt;
+        cell.velocity.dy += acc_y * dt;
 
         auto speed_limit = max_speed(cell.mass());
-        if (cell.speed() > speed_limit) {
-          cell.velocity *= 0.98;
-        } else {
-//          auto ddx = std::clamp<float>(10 * (), -CELL_MAX_ACC, CELL_MAX_ACC);
-//          auto ddy = std::clamp<float>(10 * (), -CELL_MAX_ACC, CELL_MAX_ACC);
 
-//          cell.velocity.dx += ddx * dt;
-//          cell.velocity.dy += ddy * dt;
 
-          cell.velocity.dx = std::clamp<float>(player.target.x - cell.x, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt((float) cell.mass());
-          cell.velocity.dy = std::clamp<float>(player.target.y - cell.y, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt((float) cell.mass());
-        }
+        cell.velocity.dx =
+          std::clamp<float>(cell.velocity.dx, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt((float) cell.mass());
+        cell.velocity.dy =
+          std::clamp<float>(cell.velocity.dy, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt((float) cell.mass());
 
         cell.x += cell.velocity.dx * dt;
         cell.y += cell.velocity.dy * dt;
@@ -257,7 +275,7 @@ namespace agario {
 
       for (Cell &cell : player.cells) {
 
-        if (cell.mass() < CELL_MIN_SIZE * 2) continue;
+        if (cell.mass() < CELL_SPLIT_MINIMUM) continue;
 
         agario::mass split_mass = cell.mass() / 2;
         auto remaining_mass = cell.mass() - split_mass;
@@ -378,7 +396,7 @@ namespace agario {
     }
 
     template<typename T>
-    T random(T max) { return random<T>(0, max); }
+    T random(T max) { return random < T > (0, max); }
 
   };
 

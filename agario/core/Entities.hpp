@@ -7,13 +7,13 @@
 #include <core/renderables.hpp>
 
 #define PELLET_SIZE 1
-#define PELLET_MASS 5
+#define PELLET_MASS 1
 
 #define FOOD_SIZE 10
 #define FOOD_MASS 10
 #define FOOD_SPEED 10
 
-#define VIRUS_SIZE 15
+#define VIRUS_SIZE 10
 #define VIRUS_MASS 0
 
 #define PELLET_SIDES 5
@@ -138,6 +138,7 @@ namespace agario {
     // todo: change VIRUS_SIZE to static member of Virus?
   private:
     agario::mass _mass;
+//    agario::Velocity splitting_velocity;
   };
 
 }
