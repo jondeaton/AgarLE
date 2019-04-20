@@ -93,8 +93,6 @@ namespace agario {
       return val > 0 ? 1 : -1;
     }
 
-#define CELL_MAX_SPEED 200
-
     void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
       auto dt = elapsed_seconds.count();
 
@@ -272,7 +270,7 @@ namespace agario {
         Location loc = cell.location() + dir * cell.radius();
         Velocity vel(dir * split_speed(split_mass));
 
-        // todo: add constructor that takes splitting velocity
+        // todo: add constructor that takes splitting velocity (and color)
         Cell new_cell(loc, vel, split_mass);
         new_cell.set_color(player.color());
         new_cell.splitting_velocity = vel;

@@ -16,6 +16,11 @@
 
 namespace agario {
 
+
+  class RenderingException : public std::runtime_error {
+    using runtime_error::runtime_error;
+  };
+
   enum color {
     red, orange, yellow, green, blue, purple, last
   };
@@ -62,7 +67,7 @@ namespace agario {
           color_array = yellow_color;
           break;
         default:
-          throw std::exception();
+          throw RenderingException("Not a color");
       }
       std::copy(color_array, color_array + COLOR_LEN, color);
     }
@@ -110,6 +115,7 @@ namespace agario {
     RenderableBall &operator=(const RenderableBall &rmb) = delete;
 
     void set_color(agario::color c) {
+      color = c;
       circle.set_color(c);
     }
 
