@@ -136,10 +136,23 @@ namespace agario {
 
     void reduce_mass_by_factor(float factor) { set_mass(mass() / factor); }
 
+    bool can_recombine() {
+      if (_can_recombine) return true;
+      _can_recombine = std::chrono::steady_clock::now() >= _recombine_timer;
+      return _can_recombine;
+    }
+
+    void reset_recombine_timer() {
+      _recombine_timer = std::chrono::steady_clock::now() +
+                         std::chrono::seconds(30);
+    }
+
     agario::Velocity splitting_velocity;
+    agario::time _recombine_timer;
 
   private:
     agario::mass _mass;
+    bool _can_recombine;
   };
 
 }

@@ -114,7 +114,8 @@ namespace agario {
         check_boundary_collisions(cell);
       }
 
-      // make sure not to move two of players own cells into one another!
+      // make sure not to move two of players own cells into one another
+      check_player_self_collisions(player);
     }
 
     int total_players() { return state.players.size(); }
@@ -210,6 +211,29 @@ namespace agario {
       }
     }
 
+    void check_player_self_collisions(Player &player) {
+      for (auto it = player.cells.begin(); it != player.cells.end(); ++it) {
+        if (it->can_recombine()) continue;
+        for (auto it2 = std::next(it); it2 != player.cells.end(); it2++) {
+          Cell &cell_a = *it;
+          Cell &cell_b = *it2;
+          if (cell_a.collides_with(cell_b))
+            prevent_overlap(cell_a, cell_b);
+        }
+      }
+    }
+
+    void prevent_overlap(Cell &cell_a, Cell &cell_b) {
+      auto x = (cell_a.x + cell_b.x) / 2;
+      auto y = (cell_a.y + cell_b.y) / 2;
+
+      auto dx = cell_a.x - x;
+      auto dy = cell_a.y - y;
+      (void) dx;
+      (void) dy;
+      // todo: finish this file
+    }
+
     void eat_pellets(Cell &cell) {
       auto prev_size = total_pellets();
 
@@ -274,6 +298,9 @@ namespace agario {
         Cell new_cell(loc, vel, split_mass);
         new_cell.set_color(player.color());
         new_cell.splitting_velocity = vel;
+
+        cell.reset_recombine_timer();
+        new_cell.reset_recombine_timer();
 
         created_cells.emplace_back(std::move(new_cell));
       }

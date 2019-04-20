@@ -19,6 +19,8 @@ namespace agario {
   typedef unsigned short pid;
   typedef unsigned long tick;
 
+  typedef std::chrono::steady_clock::time_point time;
+
   enum action {
     none = 0, feed = 1, split = 2
   };
