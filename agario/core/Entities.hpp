@@ -100,6 +100,7 @@ namespace agario {
       if constexpr (renderable) this->color = agario::color::green;
     }
 
+    // todo: change VIRUS_SIZE to static member of Virus?
     // todo: viruses have variable mass and size
     agario::distance radius() const override { return VIRUS_SIZE; }
 
@@ -135,10 +136,10 @@ namespace agario {
 
     void reduce_mass_by_factor(float factor) { set_mass(mass() / factor); }
 
-    // todo: change VIRUS_SIZE to static member of Virus?
+    agario::Velocity splitting_velocity;
+
   private:
     agario::mass _mass;
-//    agario::Velocity splitting_velocity;
   };
 
 }

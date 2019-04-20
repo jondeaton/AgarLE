@@ -63,7 +63,7 @@ namespace agario {
   };
 
   template<typename T>
-  std::ostream& operator<<(std::ostream& os, const Coordinate<T>& c) {
+  std::ostream &operator<<(std::ostream &os, const Coordinate<T> &c) {
     return os << "(" << c.x << ", " << c.y << ")";
   }
 
@@ -107,6 +107,12 @@ namespace agario {
     explicit Velocity(agario::angle angle, agario::distance speed) :
       dx(speed * std::cos(angle)), dy(speed * std::sin(angle)) {}
 
+    void set_speed(float new_speed) {
+      // sets the speed without changing direction
+      dx *= new_speed / speed();
+      dy *= new_speed / speed();
+    }
+
     agario::angle direction() const {
       auto angle = std::atan(dx / dy);
       if (dx < 0) {
@@ -132,15 +138,15 @@ namespace agario {
       return *this;
     }
 
-    template <typename T>
-    Velocity &operator*=(const T& a) {
+    template<typename T>
+    Velocity &operator*=(const T &a) {
       this->dx *= a;
       this->dy *= a;
       return *this;
     }
 
-    template <typename T>
-    Velocity &operator/=(const T& a) {
+    template<typename T>
+    Velocity &operator/=(const T &a) {
       this->dx /= a;
       this->dy /= a;
       return *this;

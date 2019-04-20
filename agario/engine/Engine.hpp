@@ -93,39 +93,25 @@ namespace agario {
       return val > 0 ? 1 : -1;
     }
 
-#define FRICTION_MU 1.0
 #define CELL_MAX_SPEED 200
-#define CELL_MAX_ACC 5000
 
     void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
       auto dt = elapsed_seconds.count();
 
       for (auto &cell : player.cells) {
-        auto dx = player.target.x - cell.x;
-        auto dy = player.target.y - cell.y;
+        cell.velocity.dx = 3 * (player.target.x - cell.x);
+        cell.velocity.dy = 3 * (player.target.y - cell.y);
 
-        auto friction_x = -sign(cell.velocity.dx) * FRICTION_MU * cell.mass();
-        auto friction_y = -sign(cell.velocity.dy) * FRICTION_MU * cell.mass();
-
-        auto ddx = std::clamp<float>(50 * dx, -CELL_MAX_ACC, CELL_MAX_ACC);
-        auto ddy = std::clamp<float>(50 * dy, -CELL_MAX_ACC, CELL_MAX_ACC);
-
-        auto acc_x = friction_x + ddx;
-        auto acc_y = friction_y + ddy;
-
-        cell.velocity.dx += acc_x * dt;
-        cell.velocity.dy += acc_y * dt;
-
+        // clip speed
         auto speed_limit = max_speed(cell.mass());
+        if (cell.speed() > speed_limit)
+          cell.velocity.set_speed(speed_limit);
 
+        cell.x += (cell.velocity.dx + cell.splitting_velocity.dx) * dt;
+        cell.y += (cell.velocity.dy + cell.splitting_velocity.dy) * dt;
 
-        cell.velocity.dx =
-          std::clamp<float>(cell.velocity.dx, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt((float) cell.mass());
-        cell.velocity.dy =
-          std::clamp<float>(cell.velocity.dy, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt((float) cell.mass());
-
-        cell.x += cell.velocity.dx * dt;
-        cell.y += cell.velocity.dy * dt;
+        cell.splitting_velocity.dx *= 0.95;
+        cell.splitting_velocity.dy *= 0.95;
 
         check_boundary_collisions(cell);
       }
@@ -286,8 +272,12 @@ namespace agario {
         Location loc = cell.location() + dir * cell.radius();
         Velocity vel(dir * split_speed(split_mass));
 
-        created_cells.emplace_back(loc, vel, split_mass);
-        created_cells.back().set_color(player.color());
+        // todo: add constructor that takes splitting velocity
+        Cell new_cell(loc, vel, split_mass);
+        new_cell.set_color(player.color());
+        new_cell.splitting_velocity = vel;
+
+        created_cells.emplace_back(std::move(new_cell));
       }
     }
 
@@ -377,7 +367,7 @@ namespace agario {
     }
 
     float split_speed(agario::mass mass) {
-      return 2.5 * max_speed(mass);
+      return 3 * max_speed(mass);
     }
 
     float max_speed(agario::mass mass) {
