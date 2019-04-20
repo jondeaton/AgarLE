@@ -3,7 +3,7 @@
 #define SEED 42
 
 #define CELL_MIN_SIZE 10
-#define CELL_MAX_SPEED 300
+#define CELL_MAX_SPEED 1000
 
 // must be `CELL_EAT_MARGIN` times larger
 // than another cell in order to eat it

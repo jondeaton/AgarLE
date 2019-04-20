@@ -92,11 +92,14 @@ namespace agario {
 
       for (auto &cell : player.cells) {
 
-        auto dx = 10 * static_cast<float>(player.target.x - cell.x);
-        auto dy = 10 * static_cast<float>(player.target.y - cell.y);
+        auto dx = static_cast<float>(player.target.x - cell.x);
+        auto dy = static_cast<float>(player.target.y - cell.y);
 
-        cell.velocity.dx = std::clamp<float>(dx, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt(cell.mass());
-        cell.velocity.dy = std::clamp<float>(dy, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt(cell.mass());
+        cell.velocity.dx += dx;
+        cell.velocity.dy += dy;
+
+        cell.velocity.dx = std::clamp<float>(cell.velocity.dx, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt(cell.mass());
+        cell.velocity.dy = std::clamp<float>(cell.velocity.dy, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt(cell.mass());
 
         cell.x += cell.velocity.dx * elapsed_seconds.count();
         cell.y += cell.velocity.dy * elapsed_seconds.count();
@@ -151,21 +154,30 @@ namespace agario {
       for (Cell &cell : player.cells) {
         eat_pellets(cell);
         eat_food(cell);
-//
+
 //        check_virus_collisions(cell, created_cells);
-//
+
 //        if (player.action == agario::action::feed)
 //          emit_foods(player);
-//
-//        if (player.action == agario::action::split)
-//          player_split(player, created_cells);
 
       }
 
+      if (player.split_cooldown > 0)
+        player.split_cooldown -= 1;
+
+//      if (player.action == agario::action::split) {
+//        std::cout << "Split with cooldown: " << player.split_cooldown << std::endl;
+//      }
+
+      if (player.action == agario::action::split && player.split_cooldown == 0) {
+        player_split(player, created_cells);
+        player.split_cooldown = 30;
+      }
+
       // add any cells that were created
-//      player.cells.insert(std::end(player.cells),
-//                          std::begin(created_cells),
-//                          std::end(created_cells));
+      player.cells.insert(std::end(player.cells),
+                          std::begin(created_cells),
+                          std::end(created_cells));
 
       // player collisions
 //      check_player_collisions(player);
@@ -239,6 +251,7 @@ namespace agario {
         Velocity vel(dir * 2 * max_speed(split_mass));
 
         created_cells.emplace_back(loc, vel, split_mass);
+        created_cells.back().set_color(player.color());
       }
     }
 

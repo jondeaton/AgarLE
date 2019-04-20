@@ -48,9 +48,9 @@ namespace agario {
       auto pid = engine.add_player(name);
 
       // todo: remove this... just for testing purposes
-      engine.player(pid).add_cell(15, 20, CELL_MIN_SIZE + 10);
-      for (int i = 0; i < 5; i++)
-        engine.player(pid).add_cell(i, i, CELL_MIN_SIZE + i);
+//      engine.player(pid).add_cell(15, 20, CELL_MIN_SIZE + 50);
+//      for (int i = 0; i < 5; i++)
+//        engine.player(pid).add_cell(i, i, CELL_MIN_SIZE + i);
       return pid;
     }
 
@@ -111,6 +111,7 @@ namespace agario {
       double xpos, ypos;
       glfwGetCursorPos(win, &xpos, &ypos);
       player.target = renderer->to_target(player, xpos, ypos);
+      player.action = agario::action::none;
 
       if (glfwGetKey(win, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(win, true);

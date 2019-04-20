@@ -17,7 +17,7 @@
 namespace agario {
 
   enum color {
-    red, orange, yellow, green, blue, purple, black, last
+    red, orange, yellow, green, blue, purple, last
   };
 
   GLfloat red_color[] = {1.0, 0.0, 0.0};
@@ -61,9 +61,6 @@ namespace agario {
         case agario::color::yellow:
           color_array = yellow_color;
           break;
-        case agario::color::black:
-          color_array = black_color;
-          break;
         default:
           throw std::exception();
       }
@@ -80,6 +77,10 @@ namespace agario {
     explicit RenderableBall(const Location &loc) : Ball(loc), color(agario::random_color()) {}
 
     RenderableBall(distance x, distance y) : Ball(Location(x, y)), color(agario::random_color()) {}
+
+    void set_color(agario::color c) {
+      circle.set_color(c);
+    }
 
     void draw(Shader &shader) {
       if (!_initialized) _initialize();
@@ -105,8 +106,9 @@ namespace agario {
 
     ~RenderableBall() {
       if (_initialized) {
-        glDeleteVertexArrays(1, &circle.vao);
-        glDeleteBuffers(1, &circle.vbo);
+        // todo: modify move constructor so that these don't get called when copying
+//        glDeleteVertexArrays(1, &circle.vao);
+//        glDeleteBuffers(1, &circle.vbo);
       }
     }
 

@@ -131,10 +131,7 @@ namespace agario {
       _mass = std::max<agario::mass>(new_mass, CELL_MIN_SIZE);
     }
 
-    void increment_mass(int inc) {
-      if (inc == 0) return;
-      set_mass(mass() + inc);
-    }
+    void increment_mass(agario::mass inc) { set_mass(mass() + inc); }
 
     void reduce_mass_by_factor(float factor) { set_mass(mass() / factor); }
 

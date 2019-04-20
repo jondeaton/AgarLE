@@ -23,22 +23,27 @@ namespace agario {
 
     Player() = delete;
 
-    Player(agario::pid pid, std::string name) :
-      action(none), target(0, 0),
-      _pid(pid), _name(std::move(name)), _score(0),
-      _color(agario::color::black) {
-      add_cell(0, 0, CELL_MIN_SIZE);
-    }
 
     Player(agario::pid pid, std::string name, agario::color color) :
       action(none), target(0, 0),
-      _pid(pid), _name(std::move(name)), _score(0), _color(color) {
+      split_cooldown(0), feed_cooldown(0),
+      _pid(pid), _name(std::move(name)), _score(0),
+      _color(color) {
       add_cell(0, 0, CELL_MIN_SIZE);
     }
+
+    Player(agario::pid pid, std::string name) :
+      Player(pid, name, agario::color::blue) {}
 
     std::vector<Cell> cells;
     agario::action action;
     Location target;
+    agario::tick split_cooldown;
+    agario::tick feed_cooldown;
+
+    agario::color color() const {
+      return _color;
+    }
 
     template<typename... Args>
     void add_cell(Args &&... args) {
