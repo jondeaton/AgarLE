@@ -74,9 +74,40 @@ namespace agario {
     using Ball::Ball;
     agario::color color;
 
-    explicit RenderableBall(const Location &loc) : Ball(loc), color(agario::random_color()) {}
+    explicit RenderableBall(const Location &loc) : Ball(loc),
+                                                   color(agario::random_color()),
+                                                   _initialized(false) {}
 
-    RenderableBall(distance x, distance y) : Ball(Location(x, y)), color(agario::random_color()) {}
+    RenderableBall(agario::distance x, agario::distance y) :
+      RenderableBall(Location(x, y)) {}
+
+    // move constructor
+    RenderableBall(RenderableBall &&rb) noexcept : RenderableBall(rb.location()) {
+      if (rb._initialized) {
+        _initialized = true;
+        circle = rb.circle;
+      }
+      color = rb.color;
+      rb._initialized = false;
+    }
+
+    // move assignment
+    RenderableBall &operator=(RenderableBall &&rb) noexcept {
+      x = rb.x;
+      y = rb.y;
+      if (rb._initialized) {
+        _initialized = true;
+        circle = rb.circle;
+      }
+      color = rb.color;
+      rb._initialized = false;
+      return *this;
+    }
+
+    // copy constructor and assignment operator
+    RenderableBall(const RenderableBall &rbm) = delete;
+
+    RenderableBall &operator=(const RenderableBall &rmb) = delete;
 
     void set_color(agario::color c) {
       circle.set_color(c);
@@ -106,16 +137,15 @@ namespace agario {
 
     ~RenderableBall() {
       if (_initialized) {
-        // todo: modify move constructor so that these don't get called when copying
-//        glDeleteVertexArrays(1, &circle.vao);
-//        glDeleteBuffers(1, &circle.vbo);
+        glDeleteVertexArrays(1, &circle.vao);
+        glDeleteBuffers(1, &circle.vbo);
       }
     }
 
-  private:
+  protected:
     static constexpr unsigned NVertices = NSides + 2;
     Circle<NSides> circle;
-    bool _initialized = false;
+    bool _initialized;
 
     void _initialize() {
       _create_vertices();
@@ -151,6 +181,10 @@ namespace agario {
   template<unsigned NSides>
   class RenderableMovingBall : public RenderableBall<NSides>, public MovingBall {
   public:
+
+    // inherit move constructor from renderable ball
+    using RenderableBall<NSides>::RenderableBall;
+
     RenderableMovingBall(distance x, distance y) : Ball(x, y),
                                                    RenderableBall<NSides>(x, y),
                                                    MovingBall(x, y) {}
@@ -170,6 +204,32 @@ namespace agario {
     RenderableMovingBall(Location &&loc, Velocity &vel) : Ball(loc),
                                                           RenderableBall<NSides>(loc),
                                                           MovingBall(loc, vel) {}
+
+    // move constructor
+    RenderableMovingBall(RenderableMovingBall &&rmb) noexcept :
+      RenderableMovingBall(rmb.location(), rmb.velocity) {
+      if (rmb._initialized) {
+        this->_initialized = true;
+        this->circle = rmb.circle;
+      }
+      this->color = rmb.color;
+      rmb._initialized = false;
+    }
+
+    // move assignment
+    RenderableMovingBall &operator=(RenderableMovingBall &&rmb) noexcept {
+      x = rmb.x;
+      y = rmb.y;
+      velocity = rmb.velocity;
+      if (rmb._initialized) {
+        this->_initialized = true;
+        this->circle = rmb.circle;
+      }
+      this->color = rmb.color;
+      rmb._initialized = false;
+      return *this;
+    }
+
   };
 
   template<unsigned NLines>

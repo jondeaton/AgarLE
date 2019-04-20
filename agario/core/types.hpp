@@ -116,6 +116,10 @@ namespace agario {
       return static_cast<agario::angle>(angle);
     }
 
+    float speed() const {
+      return sqrt(dx * dx + dy * dy);
+    }
+
     Velocity &operator+=(const Velocity &rhs) {
       dx += rhs.dx;
       dy += rhs.dy;
@@ -125,6 +129,20 @@ namespace agario {
     Velocity &operator-=(const Velocity &rhs) {
       dx -= rhs.dx;
       dy -= rhs.dy;
+      return *this;
+    }
+
+    template <typename T>
+    Velocity &operator*=(const T& a) {
+      this->dx *= a;
+      this->dy *= a;
+      return *this;
+    }
+
+    template <typename T>
+    Velocity &operator/=(const T& a) {
+      this->dx /= a;
+      this->dy /= a;
       return *this;
     }
 

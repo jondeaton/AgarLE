@@ -55,8 +55,8 @@ namespace agario {
     }
 
     void initialize_game() {
-      add_pellets(500);
-      add_virus(25);
+      add_pellets(1000);
+      add_viruses(25);
     }
 
     const std::vector<Player> &players() const { return state.players; }
@@ -88,27 +88,28 @@ namespace agario {
     }
 
     void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
-      (void) elapsed_seconds;
+      auto dt = elapsed_seconds.count();
 
       for (auto &cell : player.cells) {
 
-        auto dx = static_cast<float>(player.target.x - cell.x);
-        auto dy = static_cast<float>(player.target.y - cell.y);
+        auto speed_limit = max_speed(cell.mass());
+        if (cell.speed() > speed_limit) {
+          cell.velocity *= 0.98;
+        } else {
+//          auto ddx = std::clamp<float>(10 * (), -CELL_MAX_ACC, CELL_MAX_ACC);
+//          auto ddy = std::clamp<float>(10 * (), -CELL_MAX_ACC, CELL_MAX_ACC);
 
-        cell.velocity.dx += dx;
-        cell.velocity.dy += dy;
+//          cell.velocity.dx += ddx * dt;
+//          cell.velocity.dy += ddy * dt;
 
-        cell.velocity.dx = std::clamp<float>(cell.velocity.dx, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt(cell.mass());
-        cell.velocity.dy = std::clamp<float>(cell.velocity.dy, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt(cell.mass());
+          cell.velocity.dx = std::clamp<float>(player.target.x - cell.x, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt((float) cell.mass());
+          cell.velocity.dy = std::clamp<float>(player.target.y - cell.y, -CELL_MAX_SPEED, CELL_MAX_SPEED) / sqrt((float) cell.mass());
+        }
 
-        cell.x += cell.velocity.dx * elapsed_seconds.count();
-        cell.y += cell.velocity.dy * elapsed_seconds.count();
+        cell.x += cell.velocity.dx * dt;
+        cell.y += cell.velocity.dy * dt;
 
-        // stay inside arena
-        if (cell.x < 0) cell.x = 0;
-        if (cell.x > _arena_width) cell.x = _arena_width;
-        if (cell.y < 0) cell.y = 0;
-        if (cell.y > _arena_height) cell.y = _arena_height;
+        check_boundary_collisions(cell);
       }
 
       // make sure not to move two of players own cells into one another!
@@ -142,7 +143,7 @@ namespace agario {
         state.pellets.emplace_back(random_location());
     }
 
-    void add_virus(int num_virus) {
+    void add_viruses(int num_virus) {
       for (int v = 0; v < num_virus; v++)
         state.viruses.emplace_back(random_location());
     }
@@ -154,20 +155,16 @@ namespace agario {
       for (Cell &cell : player.cells) {
         eat_pellets(cell);
         eat_food(cell);
-
 //        check_virus_collisions(cell, created_cells);
-
-//        if (player.action == agario::action::feed)
-//          emit_foods(player);
-
       }
 
+      // handle emitting food
+//      if (player.action == agario::action::feed)
+//        emit_foods(player);
+
+      // handle splitting
       if (player.split_cooldown > 0)
         player.split_cooldown -= 1;
-
-//      if (player.action == agario::action::split) {
-//        std::cout << "Split with cooldown: " << player.split_cooldown << std::endl;
-//      }
 
       if (player.action == agario::action::split && player.split_cooldown == 0) {
         player_split(player, created_cells);
@@ -176,8 +173,9 @@ namespace agario {
 
       // add any cells that were created
       player.cells.insert(std::end(player.cells),
-                          std::begin(created_cells),
-                          std::end(created_cells));
+                          std::make_move_iterator(created_cells.begin()),
+                          std::make_move_iterator(created_cells.end()));
+      created_cells.erase(created_cells.begin(), created_cells.end());
 
       // player collisions
 //      check_player_collisions(player);
@@ -187,6 +185,27 @@ namespace agario {
       // todo: increment or decrement entity speeds
       // todo: reset player action?
       // todo: player dead if has zero cells remaining
+    }
+
+    void check_boundary_collisions(Cell &cell) {
+      // stay inside arena
+      if (cell.x < 0) {
+        cell.x = 0;
+        cell.velocity.dx = 0;
+      }
+      if (cell.x > _arena_width) {
+        cell.x = _arena_width;
+        cell.velocity.dx = 0;
+      }
+
+      if (cell.y < 0) {
+        cell.y = 0;
+        cell.velocity.dy = 0;
+      }
+      if (cell.y > _arena_height) {
+        cell.y = _arena_height;
+        cell.velocity.dy = 0;
+      }
     }
 
     void eat_pellets(Cell &cell) {
@@ -247,8 +266,7 @@ namespace agario {
 
         auto dir = (player.target - cell.location()).normed();
         Location loc = cell.location() + dir * cell.radius();
-
-        Velocity vel(dir * 2 * max_speed(split_mass));
+        Velocity vel(dir * split_speed(split_mass));
 
         created_cells.emplace_back(loc, vel, split_mass);
         created_cells.back().set_color(player.color());
@@ -340,13 +358,17 @@ namespace agario {
       }
     }
 
+    float split_speed(agario::mass mass) {
+      return 2.5 * max_speed(mass);
+    }
+
     float max_speed(agario::mass mass) {
-      return CELL_MAX_SPEED * CELL_MIN_SIZE / (float) mass;
+      return CELL_MAX_SPEED / sqrt((float) mass);
     }
 
     agario::Location random_location() {
-      auto x = random<agario::distance>(_arena_width);
-      auto y = random<agario::distance>(_arena_height);
+      auto x = random < agario::distance > (_arena_width);
+      auto y = random < agario::distance > (_arena_height);
       return Location(x, y);
     }
 

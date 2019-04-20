@@ -63,6 +63,8 @@ namespace agario {
 
     MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) {}
 
+    float speed() const { return velocity.speed(); }
+
     agario::Velocity velocity;
   };
 

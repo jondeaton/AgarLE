@@ -75,7 +75,7 @@ namespace agario {
     }
 
     GLfloat camera_z(const Player &player) {
-      return 25 + player.mass();
+      return 150 + player.mass() / 10.0;
     }
 
     glm::mat4 perspective_projection(const Player &player) {
