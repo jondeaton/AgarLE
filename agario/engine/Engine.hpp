@@ -183,7 +183,7 @@ namespace agario {
       // player collisions
 //      check_player_collisions(player);
 
-//      recombine_cells(player);
+      recombine_cells(player);
       // todo: decrement recombine timers
       // todo: increment or decrement entity speeds
       // todo: reset player action?
@@ -340,17 +340,21 @@ namespace agario {
     }
 
     void recombine_cells(Player &player) {
-      for (auto cell = player.cells.begin(); cell != player.cells.end(); ++cell) {
-        agario::mass gained_mass = 0;
-        (void) gained_mass;
-        for (auto other_cell = cell + 1; other_cell != player.cells.end(); ++other_cell) {
-//        if (cell->collides_with(*other_cell))
-//          gained_mass += other_cell->mass();
+      for (auto it = player.cells.begin(); it != player.cells.end(); ++it) {
+        if (!it->can_recombine()) continue;
 
-// todo: uhh this is more complicated than anticipated...
+        Cell &cell = *it;
+
+        for (auto it2 = std::next(it); it2 != player.cells.end();) {
+          Cell &other = *it2;
+          if (other.can_recombine() && cell.collides_with(other)) {
+            cell.increment_mass(other.mass());
+            it2 = player.cells.erase(it2);
+          } else {
+            ++it2;
+          }
         }
       }
-
     }
 
     void check_virus_collisions(Cell &cell, std::vector<Cell> &created_cells) {
