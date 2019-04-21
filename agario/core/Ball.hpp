@@ -23,7 +23,12 @@ namespace agario {
 
     distance width() const { return 2 * radius(); }
 
-    bool collides_with(const Ball &other) {
+    bool collides_with(const Ball &other) const {
+      auto sqr_rads = pow(std::max(radius(), other.radius()), 2);
+      return sqr_rads >= sqr_distance_to(other);
+    }
+
+    bool touches(const Ball& other) const {
       auto sqr_rads = pow(radius() + other.radius(), 2);
       return sqr_rads >= sqr_distance_to(other);
     }
@@ -49,7 +54,7 @@ namespace agario {
 
   private:
 
-    distance sqr_distance_to(const Ball &other) {
+    distance sqr_distance_to(const Ball &other) const {
       return (location() - other.location()).norm_sqr();
     }
   };

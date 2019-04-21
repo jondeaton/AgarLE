@@ -29,7 +29,7 @@ namespace agario {
       _pid(pid), _name(std::move(name)), _score(0),
       _color(color) {
       // todo: make this min size again
-      add_cell(0, 0, 3 * CELL_MIN_SIZE);
+      add_cell(0, 0, 20 * CELL_MIN_SIZE);
     }
 
     Player(agario::pid pid, std::string name) :

@@ -6,6 +6,8 @@
 #define CELL_MAX_SPEED 200
 #define CELL_SPLIT_MINIMUM 35
 
+#define RECOMBINE_TIMER_SEC 30
+
 // must be `CELL_EAT_MARGIN` times larger
 // than another cell in order to eat it
 #define CELL_EAT_MARGIN 1.1

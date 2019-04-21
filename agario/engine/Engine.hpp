@@ -192,23 +192,11 @@ namespace agario {
 
     void check_boundary_collisions(Cell &cell) {
       // stay inside arena
-      if (cell.x < 0) {
-        cell.x = 0;
-        cell.velocity.dx = 0;
-      }
-      if (cell.x > _arena_width) {
-        cell.x = _arena_width;
-        cell.velocity.dx = 0;
-      }
+      if (cell.x < 0) cell.x = 0;
+      if (cell.x > _arena_width) cell.x = _arena_width;
+      if (cell.y < 0) cell.y = 0;
+      if (cell.y > _arena_height) cell.y = _arena_height;
 
-      if (cell.y < 0) {
-        cell.y = 0;
-        cell.velocity.dy = 0;
-      }
-      if (cell.y > _arena_height) {
-        cell.y = _arena_height;
-        cell.velocity.dy = 0;
-      }
     }
 
     void check_player_self_collisions(Player &player) {
@@ -217,21 +205,36 @@ namespace agario {
         for (auto it2 = std::next(it); it2 != player.cells.end(); it2++) {
           Cell &cell_a = *it;
           Cell &cell_b = *it2;
-          if (cell_a.collides_with(cell_b))
+          if (cell_a.touches(cell_b))
             prevent_overlap(cell_a, cell_b);
         }
       }
     }
 
+    /**
+     * moves `cell_a` and `cell_b` appart slightly
+     * such that they cannot be overlapping
+     * @param cell_a first cell to move apart
+     * @param cell_b second cell to move appart
+     */
     void prevent_overlap(Cell &cell_a, Cell &cell_b) {
-      auto x = (cell_a.x + cell_b.x) / 2;
-      auto y = (cell_a.y + cell_b.y) / 2;
 
-      auto dx = cell_a.x - x;
-      auto dy = cell_a.y - y;
-      (void) dx;
-      (void) dy;
-      // todo: finish this file
+      auto dx = cell_b.x - cell_a.x;
+      auto dy = cell_b.y - cell_a.y;
+
+      auto dist = sqrt(dx * dx + dy * dy);
+      auto target_dist = cell_a.radius() + cell_b.radius();
+
+      if (dist > target_dist) return; // aren't overlapping
+
+      auto x_ratio = dx / (std::abs(dx) + std::abs(dy));
+      auto y_ratio = dy / (std::abs(dx) + std::abs(dy));
+
+      cell_b.x += (target_dist - dist) * x_ratio / 2;
+      cell_b.y += (target_dist - dist) * y_ratio / 2;
+
+      cell_a.x -= (target_dist - dist) * x_ratio / 2;
+      cell_a.y -= (target_dist - dist) * y_ratio / 2;
     }
 
     void eat_pellets(Cell &cell) {
@@ -411,7 +414,7 @@ namespace agario {
     }
 
     template<typename T>
-    T random(T max) { return random < T > (0, max); }
+    T random(T max) { return random<T>(0, max); }
 
   };
 

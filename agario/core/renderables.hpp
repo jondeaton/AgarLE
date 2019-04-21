@@ -172,7 +172,7 @@ namespace agario {
       _initialized = true;
     }
 
-    void _create_vertices() {
+    virtual void _create_vertices() {
       circle.verts[0] = 0;
       circle.verts[1] = 0;
       circle.verts[2] = 0;

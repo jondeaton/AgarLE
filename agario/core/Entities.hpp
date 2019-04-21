@@ -17,7 +17,7 @@
 #define VIRUS_MASS 0
 
 #define PELLET_SIDES 5
-#define VIRUS_SIDES 50
+#define VIRUS_SIDES 150
 #define FOOD_SIDES 20
 #define CELL_SIDES 50
 
@@ -100,6 +100,20 @@ namespace agario {
       if constexpr (renderable) this->color = agario::color::green;
     }
 
+    typename std::enable_if<renderable, void>::type
+    _create_vertices() override {
+      auto num_verts = RenderableMovingBall<VIRUS_SIDES>::NVertices;
+      this->circle.verts[0] = 0;
+      this->circle.verts[1] = 0;
+      this->circle.verts[2] = 0;
+      for (unsigned i = 1; i < num_verts; i++) {
+        auto radius = 1 + sin(30 * M_PI * i / VIRUS_SIDES) / 15;
+        this->circle.verts[i * 3] = radius * cos(i * 2 * M_PI / VIRUS_SIDES);
+        this->circle.verts[i * 3 + 1] = radius * sin(i * 2 * M_PI / VIRUS_SIDES);
+        this->circle.verts[i * 3 + 2] = 0;
+      }
+    }
+
     // todo: change VIRUS_SIZE to static member of Virus?
     // todo: viruses have variable mass and size
     agario::distance radius() const override { return VIRUS_SIZE; }
@@ -117,10 +131,16 @@ namespace agario {
 
     // because of virtual inheritance, must call virtual class constructor from most derived
     Cell(distance x, distance y, agario::mass mass) : Ball(x, y),
-                                                      Super(x, y), _mass(mass) { set_mass(mass); }
+                                                      Super(x, y), _mass(mass) {
+      set_mass(mass);
+      _recombine_timer = std::chrono::steady_clock::now();
+    }
 
     Cell(Location &loc, Velocity &vel, agario::mass mass) : Ball(loc),
-                                                            Super(loc, vel), _mass(mass) {}
+                                                            Super(loc, vel), _mass(mass) {
+
+      _recombine_timer = std::chrono::steady_clock::now();
+    }
 
     agario::mass mass() const override { return _mass; }
 
@@ -144,7 +164,8 @@ namespace agario {
 
     void reset_recombine_timer() {
       _recombine_timer = std::chrono::steady_clock::now() +
-                         std::chrono::seconds(30);
+                         std::chrono::seconds(RECOMBINE_TIMER_SEC);
+      _can_recombine = false;
     }
 
     agario::Velocity splitting_velocity;
