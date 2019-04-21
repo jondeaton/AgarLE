@@ -389,7 +389,8 @@ namespace agario {
 
         agario::mass new_cell_mass = std::min<agario::mass>(remaining_mass, CELL_POP_SIZE);
 
-        Cell new_cell(virus.location(), cell.velocity, new_cell_mass);
+        auto loc = virus.location();
+        Cell new_cell(loc, cell.velocity, new_cell_mass);
         new_cell.set_color(cell.color);
         new_cell.splitting_velocity = vel;
         new_cell.reset_recombine_timer();
