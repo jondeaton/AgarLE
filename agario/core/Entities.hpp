@@ -14,7 +14,7 @@
 #define FOOD_SPEED 10
 
 #define VIRUS_SIZE 10
-#define VIRUS_MASS 0
+#define VIRUS_MASS 50
 
 #define PELLET_SIDES 5
 #define VIRUS_SIDES 150

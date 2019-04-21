@@ -158,7 +158,7 @@ namespace agario {
       for (Cell &cell : player.cells) {
         eat_pellets(cell);
         eat_food(cell);
-//        check_virus_collisions(cell, created_cells);
+        check_virus_collisions(cell, created_cells);
       }
 
       // handle emitting food
@@ -184,9 +184,7 @@ namespace agario {
 //      check_player_collisions(player);
 
       recombine_cells(player);
-      // todo: decrement recombine timers
-      // todo: increment or decrement entity speeds
-      // todo: reset player action?
+
       // todo: player dead if has zero cells remaining
     }
 
@@ -358,21 +356,20 @@ namespace agario {
     }
 
     void check_virus_collisions(Cell &cell, std::vector<Cell> &created_cells) {
-      for (unsigned long i = 0; i < state.viruses.size(); i++) {
-        Virus &virus = state.viruses[i];
+
+      for (auto it = state.viruses.begin(); it != state.viruses.end();) {
+        Virus &virus = *it;
 
         if (cell > virus && cell.collides_with(virus)) {
-
-          disrupt(cell, created_cells);
-
-          std::swap(state.viruses[i], state.viruses.back()); // O(1) removal
+          disrupt(cell, virus, created_cells);
+          std::swap(*it, state.viruses.back()); // O(1) removal
           state.viruses.pop_back();
           return; // only collide once
-        }
+        } else ++it;
       }
     }
 
-    void disrupt(Cell &cell, std::vector<Cell> &created_cells) {
+    void disrupt(Cell &cell, Virus &virus, std::vector<Cell> &created_cells) {
       agario::mass total_mass = cell.mass(); // mass to conserve
 
       // reduce the cell by roughly this ratio CELL_POP_REDUCTION, making sure the
@@ -388,14 +385,19 @@ namespace agario {
       agario::angle theta = cell.velocity.direction();
       for (int c = 0; c < num_new_cells; c++) {
         agario::angle dvel_angle = cell.velocity.direction() + (2 * M_PI * c / num_new_cells);
-        agario::Velocity vel = cell.velocity + Velocity(theta + dvel_angle, CELL_POP_SPEED);
+        agario::Velocity vel = Velocity(theta + dvel_angle, max_speed(CELL_POP_SIZE));
 
         agario::mass new_cell_mass = std::min<agario::mass>(remaining_mass, CELL_POP_SIZE);
 
-        auto loc = cell.location();
-        created_cells.emplace_back(loc, vel, new_cell_mass);
+        Cell new_cell(virus.location(), cell.velocity, new_cell_mass);
+        new_cell.set_color(cell.color);
+        new_cell.splitting_velocity = vel;
+        new_cell.reset_recombine_timer();
+
+        created_cells.emplace_back(std::move(new_cell));
         remaining_mass -= new_cell_mass;
       }
+      cell.reset_recombine_timer();
     }
 
     float split_speed(agario::mass mass) {
