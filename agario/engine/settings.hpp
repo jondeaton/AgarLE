@@ -18,8 +18,9 @@
 // when it collides with a virus
 #define CELL_POP_REDUCTION 2
 #define CELL_POP_SIZE  25
-#define CELL_POP_SPEED 25
-
 
 #define DEFAULT_ARENA_WIDTH 500
 #define DEFAULT_ARENA_HEIGHT 500
+
+#define NUM_PELLETS 1000
+#define NUM_VIRUSES 25

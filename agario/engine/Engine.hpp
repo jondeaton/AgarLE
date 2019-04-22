@@ -35,10 +35,10 @@ namespace agario {
     Engine() : Engine(DEFAULT_ARENA_WIDTH, DEFAULT_ARENA_HEIGHT) {}
 
     agario::pid add_player(const std::string &name) {
-      std::pair<typename std::unordered_map<agario::pid, Player>::iterator, bool> p;
-      p = state.players.emplace(std::piecewise_construct,
-                                std::forward_as_tuple(next_pid),
-                                std::forward_as_tuple(next_pid, name, random_color()));
+      // p is pair<map_iter<pid, Player>, bool>
+      auto p = state.players.emplace(std::piecewise_construct,
+                                     std::forward_as_tuple(next_pid),
+                                     std::forward_as_tuple(next_pid, name, random_color()));
 
       if (!p.second) {
         std::stringstream ss;
@@ -55,8 +55,8 @@ namespace agario {
     }
 
     void initialize_game() {
-      add_pellets(1000);
-      add_viruses(25);
+      add_pellets(NUM_PELLETS);
+      add_viruses(NUM_VIRUSES);
     }
 
     const std::vector<Player> &players() const { return state.players; }
@@ -78,6 +78,10 @@ namespace agario {
     void tick(std::chrono::duration<double> elapsed_seconds) {
       for (auto &pair : state.players)
         tick_player(pair.second, elapsed_seconds);
+
+      check_player_collisions();
+      add_pellets(NUM_PELLETS - state.pellets.size());
+      add_viruses(NUM_VIRUSES - state.viruses.size());
       ticks++;
     }
 
@@ -180,12 +184,7 @@ namespace agario {
                           std::make_move_iterator(created_cells.end()));
       created_cells.erase(created_cells.begin(), created_cells.end());
 
-      // player collisions
-//      check_player_collisions(player);
-
       recombine_cells(player);
-
-      // todo: player dead if has zero cells remaining
     }
 
     void check_boundary_collisions(Cell &cell) {
@@ -307,33 +306,50 @@ namespace agario {
       }
     }
 
-    void check_player_collisions(Player &player) {
-      for (Cell &cell : player.cells)
-        eat_others(player, cell);
+    /**
+     * Checks all pairs of players for coliisions that result
+     * in one cell eating another. Updates the corresponding lists
+     * of cells in each player to reflect any collisions.
+     */
+    void check_player_collisions() {
+      for (auto p1_it = state.players.begin(); p1_it != state.players.end(); ++p1_it)
+        for (auto p2_it = std::next(p1_it); p2_it != state.players.end(); ++p2_it)
+          check_players_collisions(p1_it->second, p2_it->second);
     }
 
+    /**
+     * Checks cell-cell collisions between players `p1` and `p2`
+     * and does consumptions/removal of cells that collide
+     * @param p1 The first players
+     * @param p2 The second player
+     */
+    void check_players_collisions(Player &p1, Player &p2) {
+      for (auto &cell : p2.cells)
+        eat_others(p1, cell);
+      for (auto &cell : p1.cells)
+        eat_others(p2, cell);
+    }
+
+    /**
+     * Checks if `cell` collides with and can eat any of `player`'s
+     * cells. Updates the mas of `cell` and removes cells from
+     * `player` if any are eaten.
+     * todo: update this so that removals are O(1) making this
+     * section O(n) rather tha O(n^2)
+     */
     void eat_others(Player &player, Cell &cell) {
 
-      agario::mass gained_mass = 0;
+      agario::mass original_mass = player.mass();
 
-      for (auto &pair : state.players) {
-        auto &other_player = pair.second;
-        if (other_player == player) continue;
+      // remove all the cells that we eat
+      player.cells.erase(
+        std::remove_if(player.cells.begin(), player.cells.end(),
+                       [&](const Cell &other_cell) {
+                         return cell.collides_with(other_cell) && cell > other_cell;
+                       }),
+        player.cells.end());
 
-        for (Cell &other_cell : other_player.cells) {
-          if (cell.collides_with(other_cell) && cell > other_cell)
-            gained_mass += other_cell.mass();
-        }
-
-        // remove all the cells that we eat
-        other_player.cells.erase(
-          std::remove_if(other_player.cells.begin(), other_player.cells.end(),
-                         [&](const Cell &other_cell) {
-                           return cell.collides_with(other_cell) && cell > other_cell;
-                         }),
-          other_player.cells.end());
-      }
-
+      agario::mass gained_mass = original_mass - player.mass();
       cell.increment_mass(gained_mass);
     }
 
