@@ -267,7 +267,7 @@ namespace agario {
       for (Cell &cell : player.cells) {
 
         // not big enough to emit pellet
-        if (cell.mass() < CELL_MIN_SIZE + FOOD_SIZE) continue;
+        if (cell.mass() < CELL_MIN_SIZE + FOOD_MASS) continue;
 
         auto dir = (player.target - cell.location()).normed();
         Location loc = cell.location() + dir * cell.radius();

@@ -6,14 +6,9 @@
 
 #include <core/renderables.hpp>
 
-#define PELLET_SIZE 1
 #define PELLET_MASS 1
-
-#define FOOD_SIZE 3
 #define FOOD_MASS 10
-
-#define VIRUS_SIZE 10
-#define VIRUS_MASS 50
+#define VIRUS_MASS 100
 
 #define PELLET_SIDES 5
 #define VIRUS_SIDES 150
@@ -41,7 +36,7 @@ namespace agario {
 
     Pellet(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
 
-    agario::distance radius() const override { return PELLET_SIZE; }
+    distance radius() const override { return radius_conversion(mass()); }
 
     agario::mass mass() const override { return PELLET_MASS; }
 
@@ -63,7 +58,7 @@ namespace agario {
 
     Food(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
 
-    agario::distance radius() const override { return FOOD_SIZE; }
+    distance radius() const override { return radius_conversion(mass()); }
 
     agario::mass mass() const override { return FOOD_MASS; }
 
@@ -115,7 +110,7 @@ namespace agario {
 
     // todo: change VIRUS_SIZE to static member of Virus?
     // todo: viruses have variable mass and size
-    agario::distance radius() const override { return VIRUS_SIZE; }
+    distance radius() const override { return radius_conversion(mass()); }
 
     agario::mass mass() const override { return VIRUS_MASS; }
 

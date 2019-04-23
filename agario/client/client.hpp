@@ -46,9 +46,6 @@ namespace agario {
 
     agario::pid add_player(const std::string &name) {
       auto pid = engine.add_player(name);
-
-      engine.add_player("lol"); // todo: remove this
-
       return pid;
     }
 
