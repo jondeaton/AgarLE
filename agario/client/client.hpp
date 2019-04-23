@@ -46,11 +46,9 @@ namespace agario {
 
     agario::pid add_player(const std::string &name) {
       auto pid = engine.add_player(name);
-      engine.add_player("lol");
-      // todo: remove this... just for testing purposes
-//      engine.player(pid).add_cell(15, 20, CELL_MIN_SIZE + 50);
-//      for (int i = 0; i < 5; i++)
-//        engine.player(pid).add_cell(i, i, CELL_MIN_SIZE + i);
+
+      engine.add_player("lol"); // todo: remove this
+
       return pid;
     }
 

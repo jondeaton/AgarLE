@@ -80,6 +80,9 @@ namespace agario {
         tick_player(pair.second, elapsed_seconds);
 
       check_player_collisions();
+
+      move_foods(elapsed_seconds);
+
       add_pellets(NUM_PELLETS - state.pellets.size());
       add_viruses(NUM_VIRUSES - state.viruses.size());
       ticks++;
@@ -89,12 +92,6 @@ namespace agario {
       for (auto &pair : state.players)
         move_player(pair.second, elapsed_seconds);
       // todo: move other entities
-    }
-
-    template<typename T>
-    int sign(T val) {
-      if (val == T(0)) return 0;
-      return val > 0 ? 1 : -1;
     }
 
     void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
@@ -120,6 +117,35 @@ namespace agario {
 
       // make sure not to move two of players own cells into one another
       check_player_self_collisions(player);
+    }
+
+    void move_foods(std::chrono::duration<double> elapsed_seconds) {
+      auto dt = elapsed_seconds.count();
+
+      for (auto &food : state.foods) {
+        auto denom = std::abs(food.velocity.dx) + std::abs(food.velocity.dy);
+        if (denom == 0) continue;
+
+        auto x_ratio = food.velocity.dx / denom;
+        auto y_ratio = food.velocity.dy / denom;
+
+        auto ddx = x_ratio * FOOD_DECEL;
+        if (std::abs(ddx * dt) <= std::abs(food.velocity.dx))
+          food.velocity.dx -= ddx * dt;
+        else
+          food.velocity.dx = 0;
+
+        auto ddy = y_ratio * FOOD_DECEL;
+        if (std::abs(ddy * dt) <= std::abs(food.velocity.dy))
+          food.velocity.dy -= ddy * dt;
+        else
+          food.velocity.dy = 0;
+
+        food.x += food.velocity.dx * dt;
+        food.y += food.velocity.dy * dt;
+
+        check_boundary_collisions(food);
+      }
     }
 
     int total_players() { return state.players.size(); }
@@ -165,18 +191,8 @@ namespace agario {
         check_virus_collisions(cell, created_cells);
       }
 
-      // handle emitting food
-//      if (player.action == agario::action::feed)
-//        emit_foods(player);
-
-      // handle splitting
-      if (player.split_cooldown > 0)
-        player.split_cooldown -= 1;
-
-      if (player.action == agario::action::split && player.split_cooldown == 0) {
-        player_split(player, created_cells);
-        player.split_cooldown = 30;
-      }
+      maybe_emit_food(player);
+      maybe_split(player, created_cells);
 
       // add any cells that were created
       player.cells.insert(std::end(player.cells),
@@ -187,19 +203,24 @@ namespace agario {
       recombine_cells(player);
     }
 
-    void check_boundary_collisions(Cell &cell) {
-      // stay inside arena
-      if (cell.x < 0) cell.x = 0;
-      if (cell.x > _arena_width) cell.x = _arena_width;
-      if (cell.y < 0) cell.y = 0;
-      if (cell.y > _arena_height) cell.y = _arena_height;
-
+    void check_boundary_collisions(Ball &ball) {
+      ball.x = std::clamp<agario::distance>(ball.x, 0, _arena_width);
+      ball.y = std::clamp<agario::distance>(ball.y, 0, _arena_height);
     }
 
+    /**
+     * Moves all of `player`'s cells apart slightly such that
+     * cells which aren't eligible for recombining don't overlap
+     * with other cells of the same player.
+     */
     void check_player_self_collisions(Player &player) {
       for (auto it = player.cells.begin(); it != player.cells.end(); ++it) {
-        if (it->can_recombine()) continue;
         for (auto it2 = std::next(it); it2 != player.cells.end(); it2++) {
+
+          // only allow collisions if both are eligible for recombining
+          if (it->can_recombine() && it2->can_recombine())
+            continue;
+
           Cell &cell_a = *it;
           Cell &cell_b = *it2;
           if (cell_a.touches(cell_b))
@@ -209,10 +230,10 @@ namespace agario {
     }
 
     /**
-     * moves `cell_a` and `cell_b` appart slightly
+     * moves `cell_a` and `cell_b` apart slightly
      * such that they cannot be overlapping
      * @param cell_a first cell to move apart
-     * @param cell_b second cell to move appart
+     * @param cell_b second cell to move apart
      */
     void prevent_overlap(Cell &cell_a, Cell &cell_b) {
 
@@ -261,21 +282,42 @@ namespace agario {
       cell.increment_mass(num_eaten * FOOD_MASS);
     }
 
-    // actions
     void emit_foods(Player &player) {
 
       // emit one pellet from each sufficiently large cell
       for (Cell &cell : player.cells) {
 
         // not big enough to emit pellet
-        if (cell.mass() < CELL_MIN_SIZE + PELLET_SIZE) continue;
+        if (cell.mass() < CELL_MIN_SIZE + FOOD_SIZE) continue;
 
         auto dir = (player.target - cell.location()).normed();
         Location loc = cell.location() + dir * cell.radius();
 
         Velocity vel(dir * FOOD_SPEED);
+        Food food(loc, vel);
 
-        state.foods.emplace_back(loc, vel);
+        state.foods.emplace_back(std::move(food));
+        cell.increment_mass(- food.mass());
+      }
+    }
+
+    void maybe_emit_food(Player &player) {
+      if (player.feed_cooldown > 0)
+        player.feed_cooldown -= 1;
+
+      if (player.action == agario::action::feed && player.feed_cooldown == 0) {
+        emit_foods(player);
+        player.feed_cooldown = 10;
+      }
+    }
+
+    void maybe_split(Player &player, std::vector<Cell> &created_cells) {
+      if (player.split_cooldown > 0)
+        player.split_cooldown -= 1;
+
+      if (player.action == agario::action::split && player.split_cooldown == 0) {
+        player_split(player, created_cells);
+        player.split_cooldown = 30;
       }
     }
 

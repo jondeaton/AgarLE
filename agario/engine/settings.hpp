@@ -6,6 +6,9 @@
 #define CELL_MAX_SPEED 200
 #define CELL_SPLIT_MINIMUM 35
 
+#define FOOD_SPEED 100
+#define FOOD_DECEL 80
+
 #define RECOMBINE_TIMER_SEC 30
 
 // must be `CELL_EAT_MARGIN` times larger

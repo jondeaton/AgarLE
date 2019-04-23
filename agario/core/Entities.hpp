@@ -9,16 +9,15 @@
 #define PELLET_SIZE 1
 #define PELLET_MASS 1
 
-#define FOOD_SIZE 10
+#define FOOD_SIZE 3
 #define FOOD_MASS 10
-#define FOOD_SPEED 10
 
 #define VIRUS_SIZE 10
 #define VIRUS_MASS 50
 
 #define PELLET_SIDES 5
 #define VIRUS_SIDES 150
-#define FOOD_SIDES 20
+#define FOOD_SIDES 7
 #define CELL_SIDES 50
 
 namespace agario {
