@@ -91,7 +91,6 @@ namespace agario {
     void move_entities(std::chrono::duration<double> elapsed_seconds) {
       for (auto &pair : state.players)
         move_player(pair.second, elapsed_seconds);
-      // todo: move other entities
     }
 
     void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
@@ -103,14 +102,10 @@ namespace agario {
 
         // clip speed
         auto speed_limit = max_speed(cell.mass());
-        if (cell.speed() > speed_limit)
-          cell.velocity.set_speed(speed_limit);
+        cell.velocity.clamp_speed(0, speed_limit);
 
-        cell.x += (cell.velocity.dx + cell.splitting_velocity.dx) * dt;
-        cell.y += (cell.velocity.dy + cell.splitting_velocity.dy) * dt;
-
-        cell.splitting_velocity.dx *= 0.95;
-        cell.splitting_velocity.dy *= 0.95;
+        cell.move(dt);
+        cell.splitting_velocity.decelerate(SPLIT_DECELERATION, dt);
 
         check_boundary_collisions(cell);
       }
@@ -123,26 +118,10 @@ namespace agario {
       auto dt = elapsed_seconds.count();
 
       for (auto &food : state.foods) {
-        auto denom = std::abs(food.velocity.dx) + std::abs(food.velocity.dy);
-        if (denom == 0) continue;
+        if (food.velocity.magnitude() == 0) continue;
 
-        auto x_ratio = food.velocity.dx / denom;
-        auto y_ratio = food.velocity.dy / denom;
-
-        auto ddx = x_ratio * FOOD_DECEL;
-        if (std::abs(ddx * dt) <= std::abs(food.velocity.dx))
-          food.velocity.dx -= ddx * dt;
-        else
-          food.velocity.dx = 0;
-
-        auto ddy = y_ratio * FOOD_DECEL;
-        if (std::abs(ddy * dt) <= std::abs(food.velocity.dy))
-          food.velocity.dy -= ddy * dt;
-        else
-          food.velocity.dy = 0;
-
-        food.x += food.velocity.dx * dt;
-        food.y += food.velocity.dy * dt;
+        food.decelerate(FOOD_DECEL, dt);
+        food.move(dt);
 
         check_boundary_collisions(food);
       }

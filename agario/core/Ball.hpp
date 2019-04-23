@@ -70,6 +70,19 @@ namespace agario {
 
     float speed() const { return velocity.speed(); }
 
+    void accelerate(float accel, float dt) {
+      velocity.accelerate(accel, dt);
+    }
+
+    void decelerate(float decel, float dt) {
+      velocity.decelerate(decel, dt);
+    }
+
+    virtual void move(float dt) {
+      x += velocity.dx * dt;
+      y += velocity.dy * dt;
+    }
+
     agario::Velocity velocity;
   };
 

@@ -124,9 +124,60 @@ namespace agario {
       return static_cast<agario::angle>(angle);
     }
 
-    float speed() const {
+    void clamp_speed(float low, float high) {
+      if (speed() > high)
+        set_speed(high);
+      else if (speed() < low)
+        set_speed(low);
+    }
+
+    /**
+     * modified the magnitude of the velocity without
+     * changing it's direction by amount acc * dt
+     * @param acc the acceleration
+     * @param dt the time period over which time to
+     * accelerate the velocity
+     */
+    void accelerate(float acc, float dt) {
+      auto x_ratio = dx / magnitude();
+      auto y_ratio = dy / magnitude();
+
+      auto ddx = x_ratio * acc;
+      dx += ddx * dt;
+
+      auto ddy = y_ratio * acc;
+      dy += ddy * dt;
+    }
+
+    /**
+     * modifies the magnitude of the velocity by - decel * dt
+     * letting the velocity come to zero if
+     * @param decel deceleration magnitude
+     * @param dt time period (seconds) over which to decelerate
+     * the velocity
+     */
+    void decelerate(float decel, float dt) {
+      auto x_ratio = dx / magnitude();
+      auto y_ratio = dy / magnitude();
+
+      auto ddx = x_ratio * decel;
+      if (std::abs(ddx * dt) <= std::abs(dx))
+        dx -= ddx * dt;
+      else
+        dx = 0;
+
+      auto ddy = y_ratio * decel;
+      if (std::abs(ddy * dt) <= std::abs(dy))
+        dy -= ddy * dt;
+      else
+        dy = 0;
+    }
+
+    float magnitude() const {
       return sqrt(dx * dx + dy * dy);
     }
+
+    float speed() const { return magnitude(); }
 
     Velocity &operator+=(const Velocity &rhs) {
       dx += rhs.dx;

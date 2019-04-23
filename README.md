@@ -4,10 +4,8 @@ Reinforcement Learning environment for Agar.io
 
 # todo
 - Basic game mechanics
-  - Feeding
-  - time-dependent deceleration on splitting
   - Player starts in random location
-  - Virus mass aligns with it's size
+  - Virus/food mass aligns with it's size
   - Arena mass conservation
   - Fix bug when many small cells are on the edge
   - Fix exception on window close
@@ -25,3 +23,4 @@ Reinforcement Learning environment for Agar.io
   - Benchmarks for game ticking
   - More efficient algorithms for entity collisions
   - Better solution to NumberWrapper (is there one?)
+  - make speed and time new types?

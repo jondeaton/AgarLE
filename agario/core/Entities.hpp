@@ -147,6 +147,11 @@ namespace agario {
       return radius_conversion(mass());
     }
 
+    void move(float dt) override {
+      this->x += (this->velocity.dx + splitting_velocity.dx) * dt;
+      this->y += (this->velocity.dy + splitting_velocity.dy) * dt;
+    }
+
     void set_mass(agario::mass new_mass) {
       _mass = std::max<agario::mass>(new_mass, CELL_MIN_SIZE);
     }
