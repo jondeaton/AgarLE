@@ -6,7 +6,6 @@ Reinforcement Learning environment for Agar.io
 - Basic game mechanics
   - Arena mass conservation
   - Fix bug when many small cells are on the edge
-  - Fix exception on window close
   - Fix view on death (add player death state)
   - Make split/feed cooldown time based
 - AgarLE (Learning Environment)

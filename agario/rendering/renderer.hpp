@@ -120,6 +120,11 @@ namespace agario {
       glfwTerminate();
     }
 
+    ~Renderer() {
+      window->destroy();
+      terminate();
+    }
+
   private:
     std::shared_ptr<agario::Window> window;
 

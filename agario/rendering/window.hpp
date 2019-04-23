@@ -29,7 +29,8 @@ namespace agario {
   public:
 
     Window(int screen_width, int screen_height) :
-      screen_width(screen_width), screen_height(screen_height) {
+      screen_width(screen_width), screen_height(screen_height),
+      _destroy(false) {
 
       glfwSetErrorCallback(glfw_error_callback);
 
@@ -40,7 +41,7 @@ namespace agario {
       glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
       glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
-      glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
+      glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
       // Create a windowed mode window and its OpenGL context
@@ -50,6 +51,8 @@ namespace agario {
         glfwTerminate();
         throw WindowException("Window creation failed");
       }
+
+      _destroy = true;
 
       glfwMakeContextCurrent(window);
       glewExperimental = GL_TRUE;
@@ -88,8 +91,13 @@ namespace agario {
       return (float) screen_width / (float) screen_height;
     }
 
+    void destroy () {
+      if (_destroy)
+        glfwDestroyWindow(window);
+      _destroy = false;
+    }
+
     ~Window() {
-      glfwDestroyWindow(window);
     }
 
   private:
@@ -103,6 +111,7 @@ namespace agario {
     GLFWwindow *window;
     int screen_width;
     int screen_height;
+    bool _destroy;
   };
 
 

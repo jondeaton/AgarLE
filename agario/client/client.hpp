@@ -82,8 +82,6 @@ namespace agario {
         if (num_iterations) (*num_iterations)--;
       }
       std::cout << "Average FPS: " << (fps / fps_count) << std::endl;
-
-      renderer->terminate();
     }
 
   private:
