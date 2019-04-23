@@ -4,7 +4,6 @@ Reinforcement Learning environment for Agar.io
 
 # todo
 - Basic game mechanics
-  - Player starts in random location
   - Virus/food mass aligns with it's size
   - Arena mass conservation
   - Fix bug when many small cells are on the edge

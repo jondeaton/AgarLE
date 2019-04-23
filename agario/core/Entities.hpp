@@ -128,18 +128,18 @@ namespace agario {
     typedef typename std::conditional<renderable, RenderableMovingBall<CELL_SIDES>, MovingBall>::type Super;
     using Super::Super;
 
-    // because of virtual inheritance, must call virtual class constructor from most derived
-    Cell(distance x, distance y, agario::mass mass) : Ball(x, y),
-                                                      Super(x, y), _mass(mass) {
+    // gotta redeclare all the constructors because of virtual inheritance...
+    template<typename Loc, typename Vel>
+    Cell(Loc &&loc, Vel &&vel, agario::mass mass) : Ball(loc), Super(loc, vel),
+      _mass(mass), _can_recombine(false) {
       set_mass(mass);
       _recombine_timer = std::chrono::steady_clock::now();
     }
 
-    Cell(Location &loc, Velocity &vel, agario::mass mass) : Ball(loc),
-                                                            Super(loc, vel), _mass(mass) {
+    template<typename Loc>
+    Cell(Loc &&loc, agario::mass mass) : Cell(loc, Velocity(), mass) {}
 
-      _recombine_timer = std::chrono::steady_clock::now();
-    }
+    Cell(distance x, distance y, agario::mass mass) : Cell(Location(x, y), Velocity(), mass) { }
 
     agario::mass mass() const override { return _mass; }
 

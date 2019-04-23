@@ -23,14 +23,17 @@ namespace agario {
 
     Player() = delete;
 
-    Player(agario::pid pid, std::string name, agario::color color) :
+    template <typename Loc>
+    Player(agario::pid pid, std::string name, Loc&& loc, agario::color color) :
       action(none), target(0, 0),
       split_cooldown(0), feed_cooldown(0),
       _pid(pid), _name(std::move(name)), _score(0),
       _color(color) {
-      // todo: make this min size again
-      add_cell(0, 0, 20 * CELL_MIN_SIZE);
+      add_cell(loc, CELL_MIN_SIZE);
     }
+
+    Player(agario::pid pid, std::string name, agario::color color) :
+      Player(pid, name, Location(0, 0), color) { }
 
     Player(agario::pid pid, std::string name) :
       Player(pid, name, agario::color::blue) {}

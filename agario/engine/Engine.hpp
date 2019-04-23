@@ -38,7 +38,7 @@ namespace agario {
       // p is pair<map_iter<pid, Player>, bool>
       auto p = state.players.emplace(std::piecewise_construct,
                                      std::forward_as_tuple(next_pid),
-                                     std::forward_as_tuple(next_pid, name, random_color()));
+                                     std::forward_as_tuple(next_pid, name, random_location(), random_color()));
 
       if (!p.second) {
         std::stringstream ss;
