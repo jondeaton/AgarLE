@@ -21,19 +21,41 @@ namespace agario {
 
     typedef Cell <renderable> Cell;
 
-    explicit Player(pid pid, std::string name, agario::color color) :
+    Player() = delete;
+
+    template <typename Loc>
+    Player(agario::pid pid, std::string name, Loc&& loc, agario::color color) :
       action(none), target(0, 0),
-      _pid(pid), _name(std::move(name)), _score(0), _color(color) { }
+      split_cooldown(0), feed_cooldown(0),
+      _pid(pid), _name(std::move(name)), _score(0),
+      _color(color) {
+      add_cell(loc, CELL_MIN_SIZE);
+    }
+
+    Player(agario::pid pid, std::string name, agario::color color) :
+      Player(pid, name, Location(0, 0), color) { }
+
+    Player(agario::pid pid, std::string name) :
+      Player(pid, name, agario::color::blue) {}
 
     std::vector<Cell> cells;
     agario::action action;
     Location target;
+    agario::tick split_cooldown;
+    agario::tick feed_cooldown;
+
+    agario::color color() const {
+      return _color;
+    }
 
     template<typename... Args>
     void add_cell(Args &&... args) {
       cells.emplace_back(std::forward<Args>(args)...);
-      cells.back().color = _color;
+      if constexpr (renderable)
+        cells.back().color = _color;
     }
+    
+    bool dead() const { return cells.size() == 0; }
 
     void set_score(score new_score) { _score = new_score; }
 
@@ -79,8 +101,7 @@ namespace agario {
       return this->_pid == other.pid();
     }
 
-
-    std::enable_if<renderable, void>
+    typename std::enable_if<renderable, void>::type
     draw(Shader &shader) {
       for (auto &cell : cells)
         cell.draw(shader);

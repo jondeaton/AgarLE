@@ -8,6 +8,18 @@
 #define GL_SILENCE_DEPRECATION
 #include <GLFW/glfw3.h>
 
+class ShaderException : public std::runtime_error {
+  using runtime_error::runtime_error;
+};
+
+class ShaderCompilationException : public ShaderException {
+  using ShaderException::ShaderException;
+};
+
+class ShaderLinkingException : public ShaderException {
+  using ShaderException::ShaderException;
+};
+
 class Shader {
 public:
   GLuint program;
@@ -36,7 +48,9 @@ public:
       file.close();
       return stream.str();
     } catch (std::ifstream::failure &e) {
-      std::cerr << "SHADER FILE \"" << path << "\" not successfully read" << std::endl;
+      std::stringstream ss;
+      ss << "SHADER FILE \"" << path << "\" not successfully read";
+      throw ShaderException(ss.str());
     }
     return std::string();
   }
@@ -116,15 +130,17 @@ private:
       glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
       if (!success) {
         glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
-        std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: "
-                  << type << "\n" << infoLog << "\n" << std::endl;
+        std::stringstream ss;
+        ss << type << " " << infoLog;
+        throw ShaderCompilationException(ss.str());
       }
     } else {
       glGetProgramiv(shader, GL_LINK_STATUS, &success);
       if (!success) {
         glGetProgramInfoLog(shader, 1024, nullptr, infoLog);
-        std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type
-                  << "\n" << infoLog << "\n" << std::endl;
+        std::stringstream ss;
+        ss << type << " " << infoLog;
+        throw ShaderLinkingException(ss.str());
       }
     }
   }

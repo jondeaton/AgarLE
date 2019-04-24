@@ -6,19 +6,13 @@
 
 #include <core/renderables.hpp>
 
-#define PELLET_SIZE 1
 #define PELLET_MASS 1
-
-#define FOOD_SIZE 10
 #define FOOD_MASS 10
-#define FOOD_SPEED 10
-
-#define VIRUS_SIZE 75
-#define VIRUS_MASS 0
+#define VIRUS_MASS 100
 
 #define PELLET_SIDES 5
-#define VIRUS_SIDES 50
-#define FOOD_SIDES 20
+#define VIRUS_SIDES 150
+#define FOOD_SIDES 7
 #define CELL_SIDES 50
 
 namespace agario {
@@ -34,11 +28,15 @@ namespace agario {
     // constructors explicitly put here because of virtual inheritance rules...
     Pellet(distance x, distance y) : Ball(x, y), Super(x, y) {}
 
-    explicit Pellet(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    explicit Pellet(Location &&loc) : Ball(loc), Super(loc) {}
 
-    explicit Pellet(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    explicit Pellet(Location &loc) : Ball(loc), Super(loc) {}
 
-    agario::distance radius() const override { return PELLET_SIZE; }
+    Pellet(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+
+    Pellet(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+
+    distance radius() const override { return radius_conversion(mass()); }
 
     agario::mass mass() const override { return PELLET_MASS; }
 
@@ -56,11 +54,11 @@ namespace agario {
 
     Food(distance x, distance y) : Ball(x, y), Super(x, y) {}
 
-    explicit Food(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    Food(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
 
-    explicit Food(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    Food(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
 
-    agario::distance radius() const override { return FOOD_SIZE; }
+    distance radius() const override { return radius_conversion(mass()); }
 
     agario::mass mass() const override { return FOOD_MASS; }
 
@@ -76,14 +74,43 @@ namespace agario {
     typedef typename std::conditional<renderable, RenderableMovingBall<VIRUS_SIDES>, MovingBall>::type Super;
     using Super::Super;
 
-    Virus(distance x, distance y) : Ball(x, y), Super(x, y) {}
+    Virus(distance x, distance y) : Ball(x, y), Super(x, y) {
+      if constexpr (renderable) this->color = agario::color::green;
+    }
 
-    explicit Virus(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    explicit Virus(Location &&loc) : Ball(loc), Super(loc) {
+      if constexpr (renderable) this->color = agario::color::green;
+    }
 
-    explicit Virus(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    explicit Virus(Location &loc) : Ball(loc), Super(loc) {
+      if constexpr (renderable) this->color = agario::color::green;
+    }
 
+    Virus(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {
+      if constexpr (renderable) this->color = agario::color::green;
+    }
+
+    Virus(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {
+      if constexpr (renderable) this->color = agario::color::green;
+    }
+
+    typename std::enable_if<renderable, void>::type
+    _create_vertices() override {
+      auto num_verts = RenderableMovingBall<VIRUS_SIDES>::NVertices;
+      this->circle.verts[0] = 0;
+      this->circle.verts[1] = 0;
+      this->circle.verts[2] = 0;
+      for (unsigned i = 1; i < num_verts; i++) {
+        auto radius = 1 + sin(30 * M_PI * i / VIRUS_SIDES) / 15;
+        this->circle.verts[i * 3] = radius * cos(i * 2 * M_PI / VIRUS_SIDES);
+        this->circle.verts[i * 3 + 1] = radius * sin(i * 2 * M_PI / VIRUS_SIDES);
+        this->circle.verts[i * 3 + 2] = 0;
+      }
+    }
+
+    // todo: change VIRUS_SIZE to static member of Virus?
     // todo: viruses have variable mass and size
-    agario::distance radius() const override { return VIRUS_SIZE; }
+    distance radius() const override { return radius_conversion(mass()); }
 
     agario::mass mass() const override { return VIRUS_MASS; }
 
@@ -94,16 +121,20 @@ namespace agario {
   class Cell : public std::conditional<renderable, RenderableMovingBall<CELL_SIDES>, MovingBall>::type {
   public:
     typedef typename std::conditional<renderable, RenderableMovingBall<CELL_SIDES>, MovingBall>::type Super;
+    using Super::Super;
 
-    // because of virtual inheritance, must call virtual class constructor from most derived
-    Cell(distance x, distance y, agario::mass mass) : Ball(x, y),
-                                                      Super(x, y), _mass(mass) { set_mass(mass); }
+    // gotta redeclare all the constructors because of virtual inheritance...
+    template<typename Loc, typename Vel>
+    Cell(Loc &&loc, Vel &&vel, agario::mass mass) : Ball(loc), Super(loc, vel),
+      _mass(mass), _can_recombine(false) {
+      set_mass(mass);
+      _recombine_timer = std::chrono::steady_clock::now();
+    }
 
-    explicit Cell(Location &&loc, Velocity &vel, agario::mass mass) : Ball(loc),
-                                                                      Super(loc, vel), _mass(mass) {}
+    template<typename Loc>
+    Cell(Loc &&loc, agario::mass mass) : Cell(loc, Velocity(), mass) {}
 
-    explicit Cell(Location &loc, Velocity &vel, agario::mass mass) : Ball(loc),
-                                                                     Super(loc, vel), _mass(mass) {}
+    Cell(distance x, distance y, agario::mass mass) : Cell(Location(x, y), Velocity(), mass) { }
 
     agario::mass mass() const override { return _mass; }
 
@@ -111,16 +142,37 @@ namespace agario {
       return radius_conversion(mass());
     }
 
+    void move(float dt) override {
+      this->x += (this->velocity.dx + splitting_velocity.dx) * dt;
+      this->y += (this->velocity.dy + splitting_velocity.dy) * dt;
+    }
+
     void set_mass(agario::mass new_mass) {
       _mass = std::max<agario::mass>(new_mass, CELL_MIN_SIZE);
     }
 
-    void increment_mass(int inc) { set_mass(mass() + inc); }
+    void increment_mass(agario::mass inc) { set_mass(mass() + inc); }
 
     void reduce_mass_by_factor(float factor) { set_mass(mass() / factor); }
 
+    bool can_recombine() {
+      if (_can_recombine) return true;
+      _can_recombine = std::chrono::steady_clock::now() >= _recombine_timer;
+      return _can_recombine;
+    }
+
+    void reset_recombine_timer() {
+      _recombine_timer = std::chrono::steady_clock::now() +
+                         std::chrono::seconds(RECOMBINE_TIMER_SEC);
+      _can_recombine = false;
+    }
+
+    agario::Velocity splitting_velocity;
+    agario::time _recombine_timer;
+
   private:
     agario::mass _mass;
+    bool _can_recombine;
   };
 
 }

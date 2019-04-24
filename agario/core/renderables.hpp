@@ -16,12 +16,26 @@
 
 namespace agario {
 
+
+  class RenderingException : public std::runtime_error {
+    using runtime_error::runtime_error;
+  };
+
+  enum color {
+    red, orange, yellow, green, blue, purple, last
+  };
+
   GLfloat red_color[] = {1.0, 0.0, 0.0};
   GLfloat blue_color[] = {0.0, 0.0, 1.0};
   GLfloat green_color[] = {0.0, 1.0, 0.0};
   GLfloat orange_color[] = {1.0, 0.65, 0.0};
   GLfloat purple_color[] = {0.6, 0.2, 0.8};
   GLfloat yellow_color[] = {1.0, 1.0, 0.0};
+  GLfloat black_color[] = {0.0, 0.0, 0.0};
+
+  agario::color random_color() {
+    return static_cast<enum color>(rand() % agario::color::last);
+  }
 
   template<unsigned NSides>
   class Circle {
@@ -53,7 +67,7 @@ namespace agario {
           color_array = yellow_color;
           break;
         default:
-          throw std::exception();
+          throw RenderingException("Not a color");
       }
       std::copy(color_array, color_array + COLOR_LEN, color);
     }
@@ -63,6 +77,47 @@ namespace agario {
   class RenderableBall : virtual public Ball {
   public:
     using Ball::Ball;
+    agario::color color;
+
+    explicit RenderableBall(const Location &loc) : Ball(loc),
+                                                   color(agario::random_color()),
+                                                   _initialized(false) {}
+
+    RenderableBall(agario::distance x, agario::distance y) :
+      RenderableBall(Location(x, y)) {}
+
+    // move constructor
+    RenderableBall(RenderableBall &&rb) noexcept : RenderableBall(rb.location()) {
+      if (rb._initialized) {
+        _initialized = true;
+        circle = rb.circle;
+      }
+      color = rb.color;
+      rb._initialized = false;
+    }
+
+    // move assignment
+    RenderableBall &operator=(RenderableBall &&rb) noexcept {
+      x = rb.x;
+      y = rb.y;
+      if (rb._initialized) {
+        _initialized = true;
+        circle = rb.circle;
+      }
+      color = rb.color;
+      rb._initialized = false;
+      return *this;
+    }
+
+    // copy constructor and assignment operator
+    RenderableBall(const RenderableBall &rbm) = delete;
+
+    RenderableBall &operator=(const RenderableBall &rmb) = delete;
+
+    void set_color(agario::color c) {
+      color = c;
+      circle.set_color(c);
+    }
 
     void draw(Shader &shader) {
       if (!_initialized) _initialize();
@@ -93,10 +148,10 @@ namespace agario {
       }
     }
 
-  private:
+  protected:
     static constexpr unsigned NVertices = NSides + 2;
     Circle<NSides> circle;
-    bool _initialized = false;
+    bool _initialized;
 
     void _initialize() {
       _create_vertices();
@@ -117,13 +172,13 @@ namespace agario {
       _initialized = true;
     }
 
-    void _create_vertices() {
+    virtual void _create_vertices() {
       circle.verts[0] = 0;
       circle.verts[1] = 0;
       circle.verts[2] = 0;
-      for (int i = 1; i < NVertices; i++) {
-        circle.verts[i * 3] = static_cast<float> (0 + (1 * cos(i * 2 * M_PI / NSides)));
-        circle.verts[i * 3 + 1] = static_cast<float> (0 + (1 * sin(i * 2 * M_PI / NSides)));
+      for (unsigned i = 1; i < NVertices; i++) {
+        circle.verts[i * 3] = cos(i * 2 * M_PI / NSides);
+        circle.verts[i * 3 + 1] = sin(i * 2 * M_PI / NSides);
         circle.verts[i * 3 + 2] = 0;
       }
     }
@@ -131,8 +186,56 @@ namespace agario {
 
   template<unsigned NSides>
   class RenderableMovingBall : public RenderableBall<NSides>, public MovingBall {
+  public:
+
+    // inherit move constructor from renderable ball
     using RenderableBall<NSides>::RenderableBall;
-    using MovingBall::MovingBall;
+
+    RenderableMovingBall(distance x, distance y) : Ball(x, y),
+                                                   RenderableBall<NSides>(x, y),
+                                                   MovingBall(x, y) {}
+
+    explicit RenderableMovingBall(Location &&loc) : Ball(loc),
+                                                    RenderableBall<NSides>(loc),
+                                                    MovingBall(loc) {}
+
+    explicit RenderableMovingBall(Location &loc) : Ball(loc),
+                                                   RenderableBall<NSides>(loc),
+                                                   MovingBall(loc) {}
+
+    RenderableMovingBall(Location &loc, Velocity &vel) : Ball(loc),
+                                                         RenderableBall<NSides>(loc),
+                                                         MovingBall(loc, vel) {}
+
+    RenderableMovingBall(Location &&loc, Velocity &vel) : Ball(loc),
+                                                          RenderableBall<NSides>(loc),
+                                                          MovingBall(loc, vel) {}
+
+    // move constructor
+    RenderableMovingBall(RenderableMovingBall &&rmb) noexcept :
+      RenderableMovingBall(rmb.location(), rmb.velocity) {
+      if (rmb._initialized) {
+        this->_initialized = true;
+        this->circle = rmb.circle;
+      }
+      this->color = rmb.color;
+      rmb._initialized = false;
+    }
+
+    // move assignment
+    RenderableMovingBall &operator=(RenderableMovingBall &&rmb) noexcept {
+      x = rmb.x;
+      y = rmb.y;
+      velocity = rmb.velocity;
+      if (rmb._initialized) {
+        this->_initialized = true;
+        this->circle = rmb.circle;
+      }
+      this->color = rmb.color;
+      rmb._initialized = false;
+      return *this;
+    }
+
   };
 
   template<unsigned NLines>
@@ -180,9 +283,9 @@ namespace agario {
     void _initialize() {
       _create_vertices();
 
-      color[0] = 0.2;
-      color[1] = 0.2;
-      color[2] = 0.2;
+      color[0] = 0.1;
+      color[1] = 0.1;
+      color[2] = 0.1;
 
       glGenVertexArrays(1, &vao);
       glGenBuffers(1, &vbo);
@@ -204,26 +307,30 @@ namespace agario {
     }
 
     void _create_vertical_verts(GLfloat verts[]) {
+      GLfloat spacing = 1.0 / (NLines - 1);
       for (unsigned i = 0; i < NLines; i++) {
-        verts[6 * i] = static_cast<GLfloat>(i) / NLines;
+        GLfloat x = i * spacing;
+        verts[6 * i] = x;
         verts[6 * i + 1] = 0;
         verts[6 * i + 2] = z;
 
-        verts[6 * i + 3] = static_cast<GLfloat>(i) / NLines;
+        verts[6 * i + 3] = x;
         verts[6 * i + 4] = 1;
         verts[6 * i + 5] = z;
       }
     }
 
     void _create_horiz_verts(GLfloat verts[]) {
+      GLfloat spacing = 1.0 / (NLines - 1);
       for (unsigned i = 0; i < NLines; i++) {
+        GLfloat y = i * spacing;
         verts[6 * i] = 0;
-        verts[6 * i + 1] = static_cast<GLfloat>(i) / NLines;
-        verts[6 * i + 2] = 0;
+        verts[6 * i + 1] = y;
+        verts[6 * i + 2] = z;
 
         verts[6 * i + 3] = 1;
-        verts[6 * i + 4] = static_cast<GLfloat>(i) / NLines;
-        verts[6 * i + 5] = 0;
+        verts[6 * i + 4] = y;
+        verts[6 * i + 5] = z;
       }
     }
   };

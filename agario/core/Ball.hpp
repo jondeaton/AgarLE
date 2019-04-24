@@ -23,9 +23,14 @@ namespace agario {
 
     distance width() const { return 2 * radius(); }
 
-    bool collides_with(const Ball &other) {
+    bool collides_with(const Ball &other) const {
+      auto sqr_rads = pow(std::max(radius(), other.radius()), 2);
+      return sqr_rads >= sqr_distance_to(other);
+    }
+
+    bool touches(const Ball& other) const {
       auto sqr_rads = pow(radius() + other.radius(), 2);
-      return sqr_rads <= sqr_distance_to(other);
+      return sqr_rads >= sqr_distance_to(other);
     }
 
     Location location() const { return Location(x, y); }
@@ -44,13 +49,12 @@ namespace agario {
 
     distance x;
     distance y;
-    agario::color color;
 
     virtual ~Ball() = default;
 
   private:
 
-    distance sqr_distance_to(const Ball &other) {
+    distance sqr_distance_to(const Ball &other) const {
       return (location() - other.location()).norm_sqr();
     }
   };
@@ -63,6 +67,21 @@ namespace agario {
     MovingBall() = delete;
 
     MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) {}
+
+    float speed() const { return velocity.speed(); }
+
+    void accelerate(float accel, float dt) {
+      velocity.accelerate(accel, dt);
+    }
+
+    void decelerate(float decel, float dt) {
+      velocity.decelerate(decel, dt);
+    }
+
+    virtual void move(float dt) {
+      x += velocity.dx * dt;
+      y += velocity.dy * dt;
+    }
 
     agario::Velocity velocity;
   };

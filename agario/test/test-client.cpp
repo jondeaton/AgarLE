@@ -9,17 +9,20 @@ namespace {
   TEST(RenderTest, Once) {
     agario::Client client;
 
-    agario::Player<true> jon(0, "Jon", agario::color::blue);
+    typedef agario::Player<true> Player;
 
     agario::distance x = 100;
     agario::distance y = 100;
     agario::mass mass = 25;
+
+
+    Player jon(0, "Jon", agario::color::blue);
     jon.add_cell(x, y, mass);
     jon.add_cell(x + 10, y + 10, mass);
     jon.add_cell(x + 10, y - 10, mass);
 
 
-    agario::Player<true> austin(0, "Austin", agario::color::yellow);
+    Player austin(1, "Austin", agario::color::purple);
     austin.add_cell(x, y, mass);
     austin.add_cell(x - 10, y + 10, mass);
     austin.add_cell(x - 10, y - 10, mass);
@@ -29,11 +32,6 @@ namespace {
 
     client.game_loop();
   }
-
-//  TEST(RenderTest, Simple) {
-//   AgarioClient client;
-//   client.game_loop(10);
-//  }
 
 }
 

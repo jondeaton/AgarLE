@@ -1,13 +1,16 @@
 #pragma once
 
 #include "rendering/renderer.hpp"
+#include "rendering/window.hpp"
+
 #include "core/renderables.hpp"
+#include "engine/Engine.hpp"
+
+#include <chrono>
 
 #include <string>
 #include <ctime>
 #include <memory>
-
-void process_input(GLFWwindow *window);
 
 namespace agario {
 
@@ -19,82 +22,105 @@ namespace agario {
     typedef Food<true> Food;
     typedef Virus<true> Virus;
 
-    explicit Client() : renderer(nullptr), g_PreviousTicks(0), g_CurrentTicks(0) {}
+    Client() :
+      server(), port(),
+      engine(DEFAULT_ARENA_WIDTH, DEFAULT_ARENA_HEIGHT),
+      renderer(nullptr) {
+      engine.initialize_game();
+    }
 
-    void connect() {}
+    Client(std::string server, int port) :
+      server(std::move(server)), port(port), renderer(nullptr) {}
 
-    template<typename... Args>
-    void set_player(Args &&... args) {
-      player = std::make_shared<Player>(std::forward<Args>(args)...);
-      if (renderer != nullptr)
-        renderer->player = player;
+    void connect() {
+      std::cout << "Connecting to: " << server << ":" << port << "..." << std::endl;
+      // todo: set arena_height and width form server (among other things)
+      std::cout << "remote server connection not implemented yet." << std::endl;
+
     }
 
     template<typename... Args>
-    void add_player(Args &&... args) {
-      players.emplace_back(std::forward<Args>(args)...);
+    void set_player(agario::pid pid) {
+      player_pid = pid;
+    }
+
+    agario::pid add_player(const std::string &name) {
+      auto pid = engine.add_player(name);
+      return pid;
     }
 
     void initialize_renderer() {
-      agario::distance arena_width = 1000;
-      agario::distance arena_height = 1000;
-      renderer = std::make_unique<agario::Renderer>(arena_width, arena_height);
-      renderer->player = player;
+      window = std::make_shared<agario::Window>();
+      renderer = std::make_unique<agario::Renderer>(window,
+                                                    engine.arena_width(),
+                                                    engine.arena_height());
     }
 
-    void game_loop(std::optional<int> num_iterations = std::nullopt) {
+    void game_loop() {
       if (renderer == nullptr) initialize_renderer();
 
-      while ((!num_iterations || num_iterations > 0) && renderer->ready()) {
+      double fps = 0;
+      int fps_count = 0;
 
-//      process_input(window);
-        renderer->render_screen(players, foods, pellets, viruses);
+      auto before = std::chrono::system_clock::now();
+      while (!window->should_close()) {
 
-        int i = 1;
-        for (auto &cell : renderer->player->cells) {
-          cell.x += 0.2 * i;
-          cell.y += 0.2 * i;
-          i++;
+        auto &player = engine.player(player_pid);
+
+        if (player.dead()) {
+          std::cout << "Player \"" << player.name() << "\" (pid ";
+          std::cout << player.pid() << ") died." << std::endl;
+          engine.reset_player(player_pid);
         }
 
-        // todo: emit "heartbeat" signal to server
-        if (num_iterations) (*num_iterations)--;
+        process_input();
+        renderer->render_screen(player, engine.game_state());
+
+        auto now = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = now - before;
+
+        fps += 1 / elapsed_seconds.count();
+        fps_count += 1;
+
+        engine.tick(elapsed_seconds);
+
+        before = std::chrono::system_clock::now();
       }
-      renderer->terminate();
-    }
-
-    // todo: change these over to
-    void init_player(unsigned int pid, unsigned int mass) {
-//    _player.assign_pid(pid);
-//    _player.set_mass(mass)
-    }
-
-    // socket.on('serverTellPlayerMove', function (userData, foodsList, massList, virusList) {
-    void server_tell_player_move() {
-      // todo: yeah... gotta figure this one out
+      std::cout << "Average FPS: " << (fps / fps_count) << std::endl;
     }
 
   private:
+
+    std::string server;
+    int port;
+
+    agario::pid player_pid; // pid of the player we're tracking
+
+    agario::Engine<true> engine;
+
+    // todo: change these into regular pointers?
     std::unique_ptr<agario::Renderer> renderer;
+    std::shared_ptr<agario::Window> window;
 
-    std::clock_t g_PreviousTicks;
-    std::clock_t g_CurrentTicks;
+    void process_input() {
+      GLFWwindow *win = window->pointer();
+      auto &player = engine.player(player_pid);
 
-    std::shared_ptr<Player> player;
+      double xpos, ypos;
+      glfwGetCursorPos(win, &xpos, &ypos);
+      player.target = renderer->to_target(player, xpos, ypos);
+      player.action = agario::action::none;
 
-    std::vector<Player> players;
-    std::vector<Food> foods;
-    std::vector<Pellet> pellets;
-    std::vector<Virus> viruses;
+      if (glfwGetKey(win, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(win, true);
+
+      if (glfwGetKey(win, GLFW_KEY_SPACE) == GLFW_PRESS)
+        player.action = agario::action::split;
+
+      if (glfwGetKey(win, GLFW_KEY_W) == GLFW_PRESS)
+        player.action = agario::action::feed;
+    }
+
   };
-
-// Handle key input
-  void process_input(GLFWwindow *window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-      glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-      std::cout << "Space bar pressed!" << std::endl;
-  }
 
 }

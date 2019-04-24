@@ -33,13 +33,15 @@ set(AGARIO_CORE_SRC
         core/Entities.hpp)
 
 set(AGARIO_ENGINE_SRC
-        engine/Engine.hpp       engine/Engine.cpp
+        engine/Engine.hpp
+        engine/GameState.hpp
         engine/utils.hpp
         engine/settings.hpp)
 
 set(AGARIO_RENDERING_SRC
         rendering/renderer.hpp
-        rendering/shader.hpp)
+        rendering/shader.hpp
+        rendering/window.hpp)
 
 set(AGARIO_SRC ${AGARIO_CORE_SRC} ${AGARIO_ENGINE_SRC})
 
@@ -69,7 +71,7 @@ add_executable(test-client ${AGARIO_CLIENT_SRC} test/test-client.cpp)
 target_link_libraries(test-client agario gtest glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
 
 add_executable(client ${AGARIO_CLIENT_SRC} client/main.cpp)
-target_link_libraries(client agario glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
+target_link_libraries(client agario gtest glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
 
 include_directories(server)
 set(AGARIO_SERVER_SRC

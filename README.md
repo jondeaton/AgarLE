@@ -3,21 +3,19 @@
 Reinforcement Learning environment for Agar.io
 
 # todo
-- Basic game rendering
-  - Entity colors
-- Get basic game mechanics
-  - Handle player mouse/keyboard inputs
-  - Player follow mouse
-  - Entity interactions (several of these)
-- Refactoring
-  - restructure class structure to avoid Diamond problem
-  - better solution to NumberWrapper (or put in different file)
+- Basic game mechanics
+  - Arena mass conservation
+  - Make split/feed cooldown time based
+- AgarLE (Learning Environment)
+  - Make new CMake Project in other directory
+  - Design state representation(s)
 - Client-Server connection
+  - GameState serialization
   - Write server I/O
   - Write client I/O
-- Bind engine to AgarLE with PyBind
-  - Write C++ environment
-  - Get images without rendering them
-  - Write basic opponent algorithms
-  - Write non-visual (i.e. RAM) state space
 
+- Refactoring
+  - Benchmarks for game ticking
+  - More efficient algorithms for entity collisions
+  - Better solution to NumberWrapper (is there one?)
+  - make speed and time new types?
