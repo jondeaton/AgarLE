@@ -65,26 +65,28 @@ namespace agario {
     }
 
     const std::vector<Player> &players() const { return state.players; }
-
     const std::vector<Pellet> &pellets() const { return state.pellets; }
-
     const std::vector<Food> &foods() const { return state.foods; }
-
     const std::vector<Virus> &viruses() const { return state.viruses; }
-
-    agario::GameState<renderable> &game_state() {
-      return state;
-    }
-
+    agario::GameState<renderable> &game_state() { return state; }
     agario::distance arena_height() const { return _arena_height; }
-
     agario::distance arena_width() const { return _arena_width; }
 
+    /**
+     * Resets a player to the starting position
+     * @param pid player ID of the player to reset
+     */
     void reset_player(agario::pid pid) {
       player(pid).cells.clear();
       player(pid).add_cell(random_location(), CELL_MIN_SIZE);
     }
 
+    /**
+     * Performs a single game tick, moving all entities, performing
+     * collision detection and updating the game state accordingly
+     * @param elapsed_seconds the amount of time which has elapsed
+     * since the previous game tick.
+     */
     void tick(std::chrono::duration<double> elapsed_seconds) {
       for (auto &pair : state.players)
         tick_player(pair.second, elapsed_seconds);
