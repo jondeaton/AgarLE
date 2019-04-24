@@ -51,6 +51,11 @@ namespace agario {
     }
 
     Player &player(agario::pid pid) {
+      if (state.players.find(pid) == state.players.end()) {
+        std::stringstream ss;
+        ss << "Player ID: " << pid << " does not exist.";
+        throw EngineException(ss.str());
+      }
       return state.players.at(pid);
     }
 
@@ -75,6 +80,11 @@ namespace agario {
 
     agario::distance arena_width() const { return _arena_width; }
 
+    void reset_player(agario::pid pid) {
+      player(pid).cells.clear();
+      player(pid).add_cell(random_location(), CELL_MIN_SIZE);
+    }
+
     void tick(std::chrono::duration<double> elapsed_seconds) {
       for (auto &pair : state.players)
         tick_player(pair.second, elapsed_seconds);
@@ -86,11 +96,6 @@ namespace agario {
       add_pellets(NUM_PELLETS - state.pellets.size());
       add_viruses(NUM_VIRUSES - state.viruses.size());
       ticks++;
-    }
-
-    void move_entities(std::chrono::duration<double> elapsed_seconds) {
-      for (auto &pair : state.players)
-        move_player(pair.second, elapsed_seconds);
     }
 
     void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {

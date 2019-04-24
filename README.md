@@ -5,8 +5,6 @@ Reinforcement Learning environment for Agar.io
 # todo
 - Basic game mechanics
   - Arena mass conservation
-  - Fix bug when many small cells are on the edge
-  - Fix view on death (add player death state)
   - Make split/feed cooldown time based
 - AgarLE (Learning Environment)
   - Make new CMake Project in other directory

@@ -54,6 +54,8 @@ namespace agario {
       if constexpr (renderable)
         cells.back().color = _color;
     }
+    
+    bool dead() const { return cells.size() == 0; }
 
     void set_score(score new_score) { _score = new_score; }
 

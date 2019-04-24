@@ -56,16 +56,22 @@ namespace agario {
                                                     engine.arena_height());
     }
 
-    void game_loop(std::optional<int> num_iterations = std::nullopt) {
+    void game_loop() {
       if (renderer == nullptr) initialize_renderer();
 
       double fps = 0;
       int fps_count = 0;
 
       auto before = std::chrono::system_clock::now();
-      while ((!num_iterations || num_iterations > 0) && !window->should_close()) {
+      while (!window->should_close()) {
 
         auto &player = engine.player(player_pid);
+
+        if (player.dead()) {
+          std::cout << "Player \"" << player.name() << "\" (pid ";
+          std::cout << player.pid() << ") died." << std::endl;
+          engine.reset_player(player_pid);
+        }
 
         process_input();
         renderer->render_screen(player, engine.game_state());
@@ -79,7 +85,6 @@ namespace agario {
         engine.tick(elapsed_seconds);
 
         before = std::chrono::system_clock::now();
-        if (num_iterations) (*num_iterations)--;
       }
       std::cout << "Average FPS: " << (fps / fps_count) << std::endl;
     }
