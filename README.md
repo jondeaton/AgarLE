@@ -15,6 +15,7 @@ Reinforcement Learning environment for Agar.io
   - Write client I/O
 
 - Refactoring
+  - Change the ball > operator
   - Benchmarks for game ticking
   - More efficient algorithms for entity collisions
   - Better solution to NumberWrapper (is there one?)

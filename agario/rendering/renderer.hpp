@@ -17,7 +17,7 @@
 #include <optional>
 
 #include "shader.hpp"
-#include "engine/GameState.hpp"
+#include "core/GameState.hpp"
 #include "rendering/window.hpp"
 #include <core/Entities.hpp>
 #include <core/Player.hpp>

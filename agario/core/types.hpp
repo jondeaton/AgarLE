@@ -62,6 +62,10 @@ namespace agario {
     Coordinate normed() {
       return *this / this->norm();
     }
+
+    T distance_to(const Coordinate &other) const {
+      return (other - *this).norm();
+    }
   };
 
   template<typename T>

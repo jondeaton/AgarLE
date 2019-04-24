@@ -6,11 +6,14 @@
 #include "core/renderables.hpp"
 #include "engine/Engine.hpp"
 
+#include "bots/bots.hpp"
+
 #include <chrono>
 
 #include <string>
 #include <ctime>
 #include <memory>
+#include <bots/HungryBot.hpp>
 
 namespace agario {
 
@@ -48,6 +51,25 @@ namespace agario {
       auto pid = engine.add_player(name);
       return pid;
     }
+
+    void add_bots() {
+
+      for (int i = 0; i < 5; i++) {
+        agario::bot::RandomBot<true> rando("rando");
+        engine.add_player(std::move(rando));
+      }
+
+      for (int i = 0; i < 5; i++) {
+        agario::bot::HungryBot<true> hungrybot("hungry");
+        engine.add_player(std::move(hungrybot));
+      }
+
+      for (int i = 0; i < 5; i++) {
+        agario::bot::HungryShyBot<true> shybot("shy");
+        engine.add_player(std::move(shybot));
+      }
+    }
+
 
     void initialize_renderer() {
       window = std::make_shared<agario::Window>();

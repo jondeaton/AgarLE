@@ -32,9 +32,17 @@ set(AGARIO_CORE_SRC
         core/num_wrapper.hpp
         core/Entities.hpp)
 
+set(AGARIO_BOT_SRC
+        bots/bot.hpp
+        bots/bots.hpp
+        bots/RandomBot.hpp
+        bots/HungryBot.hpp
+        bots/HungryShyBot.hpp)
+
 set(AGARIO_ENGINE_SRC
+        ${AGARIO_BOT_SRC}
         engine/Engine.hpp
-        engine/GameState.hpp
+        core/GameState.hpp
         engine/utils.hpp
         engine/settings.hpp)
 
@@ -54,23 +62,24 @@ include_directories(client engine
         ${OPENGL_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 
 set(AGARIO_CLIENT_SRC
+        ${AGARIO_BOT_SRC}
         core/Entities.hpp
         client/client.hpp
         rendering/renderer.hpp
         rendering/shader.hpp)
 
-add_executable(test-opengl test/test-opengl.cpp)
-target_link_libraries(test-opengl
-        glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
+#add_executable(test-opengl test/test-opengl.cpp)
+#target_link_libraries(test-opengl
+#        glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
+#
+#add_executable(test-glm ${AGARIO_RENDERING_SRC} test/test-glm.cpp)
+#target_link_libraries(test-glm glfw ${GLFW_LIBRARIES}
+#        glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
+#
+#add_executable(test-client ${AGARIO_CLIENT_SRC} test/test-client.cpp)
+#target_link_libraries(test-client agario gtest glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
 
-add_executable(test-glm ${AGARIO_RENDERING_SRC} test/test-glm.cpp)
-target_link_libraries(test-glm glfw ${GLFW_LIBRARIES}
-        glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
-
-add_executable(test-client ${AGARIO_CLIENT_SRC} test/test-client.cpp)
-target_link_libraries(test-client agario gtest glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
-
-add_executable(client ${AGARIO_CLIENT_SRC} client/main.cpp)
+add_executable(client ${AGARIO_CLIENT_SRC} ${AGARIO_BOT_SRC} client/main.cpp)
 target_link_libraries(client agario gtest glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
 
 include_directories(server)

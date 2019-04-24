@@ -4,13 +4,16 @@
 #include <algorithm>
 #include <vector>
 
+#include "core/GameState.hpp"
 #include "core/Ball.hpp"
 #include "core/types.hpp"
 #include "core/Entities.hpp"
 #include "utils.hpp"
+#include "GameState.hpp"
 
 #include <assert.h>
 #include <type_traits>
+
 
 namespace agario {
 
@@ -23,8 +26,8 @@ namespace agario {
 
     Player() = delete;
 
-    template <typename Loc>
-    Player(agario::pid pid, std::string name, Loc&& loc, agario::color color) :
+    template<typename Loc>
+    Player(agario::pid pid, std::string name, Loc &&loc, agario::color color) :
       action(none), target(0, 0),
       split_cooldown(0), feed_cooldown(0),
       _pid(pid), _name(std::move(name)), _score(0),
@@ -33,10 +36,12 @@ namespace agario {
     }
 
     Player(agario::pid pid, std::string name, agario::color color) :
-      Player(pid, name, Location(0, 0), color) { }
+      Player(pid, name, Location(0, 0), color) {}
 
     Player(agario::pid pid, std::string name) :
       Player(pid, name, agario::color::blue) {}
+
+    Player(std::string name) : Player(-1, name, agario::color::blue) {}
 
     std::vector<Cell> cells;
     agario::action action;
@@ -54,7 +59,7 @@ namespace agario {
       if constexpr (renderable)
         cells.back().color = _color;
     }
-    
+
     bool dead() const { return cells.size() == 0; }
 
     void set_score(score new_score) { _score = new_score; }
@@ -89,23 +94,31 @@ namespace agario {
 
     agario::score score() const { return mass(); }
 
-    bool operator<(const Player &other) const {
-      return score() < other.score();
-    }
-
     agario::pid pid() const { return _pid; }
 
     std::string name() const { return _name; }
 
-    bool operator==(const Player &other) {
+    bool operator==(const Player &other) const {
       return this->_pid == other.pid();
     }
+
+    bool operator>(const Player &other) const { return mass() > other.mass(); }
+
+    bool operator<(const Player &other) const { return mass() < other.mass(); }
 
     typename std::enable_if<renderable, void>::type
     draw(Shader &shader) {
       for (auto &cell : cells)
         cell.draw(shader);
     }
+
+    void take_action();
+
+    virtual ~Player() = default;
+    Player(const Player & /* other */) = default;
+    Player &operator=(const Player & /* other */) = default;
+    Player(Player && /* other */) noexcept = default;
+    Player &operator=(Player && /* other */) noexcept = default;
 
   private:
     agario::pid _pid;

@@ -10,6 +10,8 @@
 #include "core/types.hpp"
 #include "core/Entities.hpp"
 
+#include "bots/bot.hpp"
+
 namespace agario {
 
   class EngineException : public std::runtime_error {
@@ -50,6 +52,20 @@ namespace agario {
       return p.first->second.pid();
     }
 
+    agario::pid add_player(Player &&player) {
+      auto p = state.players.insert(std::make_pair(next_pid, std::move(player)));
+
+      if (!p.second) {
+        std::stringstream ss;
+        ss << "Could not insert player named " << player.name() << "at pid " << next_pid;
+        throw EngineException(ss.str().c_str());
+      }
+
+      next_pid++;
+      return p.first->second.pid();
+    }
+
+
     Player &player(agario::pid pid) {
       if (state.players.find(pid) == state.players.end()) {
         std::stringstream ss;
@@ -88,6 +104,7 @@ namespace agario {
      * since the previous game tick.
      */
     void tick(std::chrono::duration<double> elapsed_seconds) {
+
       for (auto &pair : state.players)
         tick_player(pair.second, elapsed_seconds);
 
@@ -168,6 +185,17 @@ namespace agario {
     }
 
     void tick_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
+
+//      player.take_action(state);
+
+//      auto bot = dynamic_cast<agario::bot::Bot<renderable>*>(&player);
+//      if (bot != nullptr) {
+//        std::cout << "taking action for " << bot->name() << std::endl;
+//        bot->take_action(state);
+//      } else {
+//        std::cout << "player: " << player.name() << " not a bot" << std::endl;
+//      }
+
       move_player(player, elapsed_seconds);
 
       std::vector<Cell> created_cells;
@@ -247,7 +275,7 @@ namespace agario {
       state.pellets.erase(
         std::remove_if(state.pellets.begin(), state.pellets.end(),
                        [&](const Pellet &pellet) {
-                         return cell > pellet && cell.collides_with(pellet);
+                         return cell.can_eat(pellet) && cell.collides_with(pellet);
                        }),
         state.pellets.end());
       auto num_eaten = prev_size - total_pellets();
@@ -261,7 +289,7 @@ namespace agario {
       state.foods.erase(
         std::remove_if(state.foods.begin(), state.foods.end(),
                        [&](const Food &pellet) {
-                         return cell > pellet && cell.collides_with(pellet);
+                         return cell.can_eat(pellet) && cell.collides_with(pellet);
                        }),
         state.foods.end());
       auto num_eaten = prev_size - total_foods();
@@ -373,7 +401,7 @@ namespace agario {
       player.cells.erase(
         std::remove_if(player.cells.begin(), player.cells.end(),
                        [&](const Cell &other_cell) {
-                         return cell.collides_with(other_cell) && cell > other_cell;
+                         return cell.collides_with(other_cell) && cell.can_eat(other_cell);
                        }),
         player.cells.end());
 
@@ -404,7 +432,7 @@ namespace agario {
       for (auto it = state.viruses.begin(); it != state.viruses.end();) {
         Virus &virus = *it;
 
-        if (cell > virus && cell.collides_with(virus)) {
+        if (cell.can_eat(virus) && cell.collides_with(virus)) {
           disrupt(cell, virus, created_cells);
           std::swap(*it, state.viruses.back()); // O(1) removal
           state.viruses.pop_back();
