@@ -33,7 +33,6 @@ set(AGARIO_CORE_SRC
         core/Entities.hpp)
 
 set(AGARIO_BOT_SRC
-        bots/bot.hpp
         bots/bots.hpp
         bots/RandomBot.hpp
         bots/HungryBot.hpp

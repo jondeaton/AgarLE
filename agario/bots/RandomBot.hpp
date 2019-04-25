@@ -1,7 +1,6 @@
 #pragma once
 
-#include "bots/bot.hpp"
-#include "engine/Engine.hpp"
+#include "core/Player.hpp"
 
 namespace agario::bot {
 
@@ -20,8 +19,6 @@ namespace agario::bot {
 
     RandomBot(agario::pid pid, std::string name) : RandomBot(pid, name, agario::color::blue) {}
     RandomBot(std::string name) : RandomBot(-1, name, agario::color::blue) {}
-
-
 
     void take_action(const GameState<renderable> &state) override {
       static_cast<void>(state); // unused

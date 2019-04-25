@@ -11,8 +11,6 @@
 #include "core/types.hpp"
 #include "core/Entities.hpp"
 
-#include "bots/bot.hpp"
-
 namespace agario {
 
   class EngineException : public std::runtime_error {
@@ -28,7 +26,6 @@ namespace agario {
     typedef Food <renderable> Food;
     typedef Pellet <renderable> Pellet;
     typedef Virus <renderable> Virus;
-    typedef agario::bot::Bot<renderable> Bot;
 
     explicit Engine(distance arena_width, distance arena_height) :
       _arena_width(arena_width), _arena_height(arena_height),

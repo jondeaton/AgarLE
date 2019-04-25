@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bots/bot.hpp>
+#include "core/Player.hpp"
 
 #define SHY_RADIUS 25
 

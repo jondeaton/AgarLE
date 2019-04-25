@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bots/bot.hpp>
+#include "core/Player.hpp"
 
 namespace agario::bot {
 
