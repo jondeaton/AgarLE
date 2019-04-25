@@ -7,19 +7,28 @@
 namespace agario::bot {
 
   template<bool renderable>
-  class HungryShyBot : public agario::bot::Bot<renderable> {
+  class HungryShyBot : public agario::Player<renderable> {
   public:
-    typedef agario::bot::Bot<renderable> Bot;
-    using Bot::Bot; // inherit constructors
 
-    explicit HungryShyBot(std::string name) : Bot(name) { }
+    typedef agario::Player<renderable> Player;
 
-    void take_action(const GameState<renderable> &state) {
+    template<typename Loc>
+    HungryShyBot(agario::pid pid, std::string name, Loc &&loc, agario::color color) :
+    Player(pid, name, loc, color) { }
+
+    HungryShyBot(agario::pid pid, std::string name, agario::color color) :
+      HungryShyBot(pid, name, Location(0, 0), color) {}
+
+    HungryShyBot(agario::pid pid, std::string name) : HungryShyBot(pid, name, agario::color::blue) {}
+    HungryShyBot(std::string name) : HungryShyBot(-1, name, agario::color::blue) {}
+
+
+    void take_action(const GameState<renderable> &state) override {
       this->action = agario::action::none; // no splitting or anything
 
       // check if there are any big players nearby
       for (auto &pair : state.players) {
-        auto &other_player = pair.second;
+        Player &other_player = *pair.second;
 
         // is it nearby?
         auto distance = this->location().distance_to(other_player.location());

@@ -6,14 +6,24 @@
 namespace agario::bot {
 
   template<bool renderable>
-  class RandomBot : public agario::bot::Bot<renderable> {
+  class RandomBot : public agario::Player<renderable> {
   public:
-    typedef agario::bot::Bot<renderable> Bot;
-    using Bot::Bot; // inherit constructors
+    typedef agario::Player<renderable> Player;
 
-    RandomBot(std::string name) : Bot(name) { }
 
-    void take_action(const GameState<renderable> &state) {
+    template<typename Loc>
+    RandomBot(agario::pid pid, std::string name, Loc &&loc, agario::color color) :
+    Player(pid, name, loc, color) { }
+
+    RandomBot(agario::pid pid, std::string name, agario::color color) :
+      RandomBot(pid, name, Location(0, 0), color) {}
+
+    RandomBot(agario::pid pid, std::string name) : RandomBot(pid, name, agario::color::blue) {}
+    RandomBot(std::string name) : RandomBot(-1, name, agario::color::blue) {}
+
+
+
+    void take_action(const GameState<renderable> &state) override {
       static_cast<void>(state); // unused
 
       this->action = agario::action::none;

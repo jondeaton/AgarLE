@@ -7,6 +7,13 @@
 
 namespace agario {
 
+  // todo: forward declared here becaues circular references
+  template<bool renderable>
+  class GameState;
+
+  template<bool renderable>
+  class Player;
+
   enum _type_id {
     _distance, _angle
   };

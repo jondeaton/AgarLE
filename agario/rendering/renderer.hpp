@@ -17,7 +17,7 @@
 #include <optional>
 
 #include "shader.hpp"
-#include "core/GameState.hpp"
+#include "engine/GameState.hpp"
 #include "rendering/window.hpp"
 #include <core/Entities.hpp>
 #include <core/Player.hpp>
@@ -107,7 +107,7 @@ namespace agario {
         food.draw(shader);
 
       for (auto &pair : state.players)
-        pair.second.draw(shader);
+        pair.second->draw(shader);
 
       for (auto &virus : state.viruses)
         virus.draw(shader);

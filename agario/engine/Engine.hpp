@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <algorithm>
+#include <bots/HungryShyBot.hpp>
 
 #include "core/Player.hpp"
 #include "settings.hpp"
@@ -27,6 +28,7 @@ namespace agario {
     typedef Food <renderable> Food;
     typedef Pellet <renderable> Pellet;
     typedef Virus <renderable> Virus;
+    typedef agario::bot::Bot<renderable> Bot;
 
     explicit Engine(distance arena_width, distance arena_height) :
       _arena_width(arena_width), _arena_height(arena_height),
@@ -36,35 +38,13 @@ namespace agario {
 
     Engine() : Engine(DEFAULT_ARENA_WIDTH, DEFAULT_ARENA_HEIGHT) {}
 
+    template <typename P>
     agario::pid add_player(const std::string &name) {
-      // p is pair<map_iter<pid, Player>, bool>
-      auto p = state.players.emplace(std::piecewise_construct,
-                                     std::forward_as_tuple(next_pid),
-                                     std::forward_as_tuple(next_pid, name, random_location(), random_color()));
-
-      if (!p.second) {
-        std::stringstream ss;
-        ss << "Could not insert player named " << name << "at pid " << next_pid;
-        throw EngineException(ss.str().c_str());
-      }
-
+      auto player_ptr = std::make_shared<P>(next_pid, name, random_location(), random_color());
+      auto p = state.players.insert(std::make_pair(next_pid, player_ptr));
       next_pid++;
-      return p.first->second.pid();
+      return p.first->second->pid();
     }
-
-    agario::pid add_player(Player &&player) {
-      auto p = state.players.insert(std::make_pair(next_pid, std::move(player)));
-
-      if (!p.second) {
-        std::stringstream ss;
-        ss << "Could not insert player named " << player.name() << "at pid " << next_pid;
-        throw EngineException(ss.str().c_str());
-      }
-
-      next_pid++;
-      return p.first->second.pid();
-    }
-
 
     Player &player(agario::pid pid) {
       if (state.players.find(pid) == state.players.end()) {
@@ -72,7 +52,7 @@ namespace agario {
         ss << "Player ID: " << pid << " does not exist.";
         throw EngineException(ss.str());
       }
-      return state.players.at(pid);
+      return *state.players.at(pid);
     }
 
     void initialize_game() {
@@ -106,7 +86,7 @@ namespace agario {
     void tick(std::chrono::duration<double> elapsed_seconds) {
 
       for (auto &pair : state.players)
-        tick_player(pair.second, elapsed_seconds);
+        tick_player(*pair.second, elapsed_seconds);
 
       check_player_collisions();
 
@@ -164,6 +144,13 @@ namespace agario {
     Engine(Engine &&) = delete; // no move constructor
     Engine &operator=(Engine &&) = delete; // no move assignment
 
+
+    agario::Location random_location() {
+      auto x = random < agario::distance > (_arena_width);
+      auto y = random < agario::distance > (_arena_height);
+      return Location(x, y);
+    }
+
   private:
 
     agario::GameState<renderable> state;
@@ -186,15 +173,7 @@ namespace agario {
 
     void tick_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
 
-//      player.take_action(state);
-
-//      auto bot = dynamic_cast<agario::bot::Bot<renderable>*>(&player);
-//      if (bot != nullptr) {
-//        std::cout << "taking action for " << bot->name() << std::endl;
-//        bot->take_action(state);
-//      } else {
-//        std::cout << "player: " << player.name() << " not a bot" << std::endl;
-//      }
+      player.take_action(state);
 
       move_player(player, elapsed_seconds);
 
@@ -370,7 +349,7 @@ namespace agario {
     void check_player_collisions() {
       for (auto p1_it = state.players.begin(); p1_it != state.players.end(); ++p1_it)
         for (auto p2_it = std::next(p1_it); p2_it != state.players.end(); ++p2_it)
-          check_players_collisions(p1_it->second, p2_it->second);
+          check_players_collisions(*p1_it->second, *p2_it->second);
     }
 
     /**
@@ -479,12 +458,6 @@ namespace agario {
 
     float max_speed(agario::mass mass) {
       return CELL_MAX_SPEED / sqrt((float) mass);
-    }
-
-    agario::Location random_location() {
-      auto x = random < agario::distance > (_arena_width);
-      auto y = random < agario::distance > (_arena_height);
-      return Location(x, y);
     }
 
     template<typename T>

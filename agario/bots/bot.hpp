@@ -1,7 +1,7 @@
 #pragma once
 
 #include <core/Player.hpp>
-#include <core/GameState.hpp>
+#include <engine/GameState.hpp>
 
 namespace agario::bot {
 
@@ -14,6 +14,13 @@ namespace agario::bot {
     explicit Bot(std::string name) : Player(name) {}
 
     virtual void take_action(const GameState <renderable> &state) = 0;
+
+    virtual ~Bot() = default;
+
+    Bot(const Bot & /* other */) = default;
+    Bot &operator=(const Bot & /* other */) = default;
+    Bot(Bot && /* other */) noexcept = default;
+    Bot &operator=(Bot && /* other */) noexcept = default;
   };
 
 }

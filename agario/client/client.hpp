@@ -48,26 +48,19 @@ namespace agario {
     }
 
     agario::pid add_player(const std::string &name) {
-      auto pid = engine.add_player(name);
-      return pid;
+      return engine.add_player<Player>(name);
     }
 
     void add_bots() {
 
-      for (int i = 0; i < 5; i++) {
-        agario::bot::RandomBot<true> rando("rando");
-        engine.add_player(std::move(rando));
-      }
+      for (int i = 0; i < 5; i++)
+        engine.add_player<bot::RandomBot<true>>("rando");
 
-      for (int i = 0; i < 5; i++) {
-        agario::bot::HungryBot<true> hungrybot("hungry");
-        engine.add_player(std::move(hungrybot));
-      }
+      for (int i = 0; i < 5; i++)
+        engine.add_player<bot::HungryBot<true>>("hungry");
 
-      for (int i = 0; i < 5; i++) {
-        agario::bot::HungryShyBot<true> shybot("shy");
-        engine.add_player(std::move(shybot));
-      }
+//      for (int i = 0; i < 5; i++)
+//        engine.add_player<bot::HungryShyBot<true>>("shy");
     }
 
 

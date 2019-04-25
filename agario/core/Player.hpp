@@ -4,16 +4,14 @@
 #include <algorithm>
 #include <vector>
 
-#include "core/GameState.hpp"
+#include "core/types.hpp"
 #include "core/Ball.hpp"
 #include "core/types.hpp"
 #include "core/Entities.hpp"
 #include "utils.hpp"
-#include "GameState.hpp"
 
 #include <assert.h>
 #include <type_traits>
-
 
 namespace agario {
 
@@ -112,8 +110,11 @@ namespace agario {
         cell.draw(shader);
     }
 
-    void take_action();
+    virtual void take_action(const GameState<renderable> &state) {
+      static_cast<void>(state);
+    }
 
+    // virtual destructor because it's polymorphic
     virtual ~Player() = default;
     Player(const Player & /* other */) = default;
     Player &operator=(const Player & /* other */) = default;

@@ -42,7 +42,7 @@ set(AGARIO_BOT_SRC
 set(AGARIO_ENGINE_SRC
         ${AGARIO_BOT_SRC}
         engine/Engine.hpp
-        core/GameState.hpp
+        engine/GameState.hpp
         engine/utils.hpp
         engine/settings.hpp)
 

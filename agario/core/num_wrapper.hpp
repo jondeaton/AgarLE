@@ -18,6 +18,10 @@ public:
 
   operator T() const { return value; }
 
+  static numWrapper<T, type_distinguisher> max() {
+    return numWrapper(std::numeric_limits<T>::max());
+  }
+
   //modifiers
   numWrapper &operator=(T v) {
     value = v;
