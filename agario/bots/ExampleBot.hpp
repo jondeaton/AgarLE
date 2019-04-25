@@ -6,30 +6,30 @@ namespace agario::bot {
 
   template<bool renderable>
   class ExampleBot : public agario::Player<renderable> {
+  /**
+   * This is an example Bot. Use it as a template to write other ones.
+   */
+  typedef agario::Player<renderable> Player;
+
   public:
-    typedef agario::Player<renderable> Player;
-
-    // constructors that mirror those declared in
+    // constructors that mirror those declared in Player (don't touch)
     template<typename Loc>
-    ExampleBot(agario::pid pid, std::string name, Loc &&loc, agario::color color) :
-      Player(pid, name, loc, color) { }
-
-    ExampleBot(agario::pid pid, std::string name, agario::color color) :
-      ExampleBot(pid, name, Location(0, 0), color) {}
-
+    ExampleBot(agario::pid pid, std::string name, Loc &&loc, agario::color color) : Player(pid, name, loc, color) { }
+    ExampleBot(agario::pid pid, std::string name, agario::color color) : ExampleBot(pid, name, Location(0, 0), color) {}
     ExampleBot(agario::pid pid, std::string name) : ExampleBot(pid, name, agario::color::blue) {}
-    ExampleBot(std::string name) : ExampleBot(-1, name, agario::color::blue) {}
+    ExampleBot(std::string name) : ExampleBot(-1, name) {}
+    ExampleBot() : ExampleBot(typeid(*this).name())
 
     /**
      * Example take_action function. This function is called on the bot
      * during every game tick, allowing the bot to act differently
      * on each tick of the game. In MDP terms, this function is the
-     * agent's policy. To use this funciton, set the "action" and "target"
+     * agent's policy. To use this function, set the "action" and "target"
      * fields of the bot
      *
      *  - action can be either "split", "feed", or "none".
      *
-     *  - taret is the location in world space where the agent should move towards.
+     *  - target is the location in world space where the agent should move towards.
      *    When you're actually playing the game, this is equal to the location
      *    of your mouse's cursor in the game.
      *
