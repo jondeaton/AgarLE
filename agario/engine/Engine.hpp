@@ -7,7 +7,7 @@
 #include <bots/HungryShyBot.hpp>
 
 #include "core/Player.hpp"
-#include "settings.hpp"
+#include "core/settings.hpp"
 #include "core/types.hpp"
 #include "core/Entities.hpp"
 #include "GameState.hpp"

@@ -8,6 +8,7 @@
 #include "core/Ball.hpp"
 #include "core/types.hpp"
 #include "core/Entities.hpp"
+#include "core/settings.hpp"
 #include "utils.hpp"
 
 #include <assert.h>

@@ -2,9 +2,8 @@
 
 #define GL_SILENCE_DEPRECATION
 
-#include <GL/glew.h>
+#include <OpenGL/gl3.h>
 #include <GLFW/glfw3.h>
-#include <OpenGL/OpenGL.h>
 
 #include <exception>
 #include <iostream>
@@ -55,11 +54,6 @@ namespace agario {
       _destroy = true;
 
       glfwMakeContextCurrent(window);
-      glewExperimental = GL_TRUE;
-
-      GLenum err = glewInit();
-      if (err != GLEW_OK)
-        throw WindowException("GLEW initialization failed");
 
       glfwSetWindowUserPointer(window, this);
       glfwSetWindowSizeCallback(window, window_resize_callback);

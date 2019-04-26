@@ -6,7 +6,7 @@
 #include <core/Ball.hpp>
 #include <bots/bots.hpp>
 
-namespace agario::envigonment {
+namespace agario::environment {
 
     typedef double reward;
 
@@ -35,7 +35,7 @@ namespace agario::envigonment {
 
     public:
 
-      explicit Environment(int frames_per_step) :
+      Environment(int frames_per_step) :
       frames_per_step(frames_per_step), _done(false), step_dt(1.0 / 60) {
         pid = engine.template add_player<Player>("agent");
       }
@@ -53,13 +53,6 @@ namespace agario::envigonment {
 
       Observation get_state() const {}
 
-      void reset() {
-        engine.reset();
-        pid = engine.template add_player<Player>("agent");
-        add_bots();
-        _done = false;
-      }
-
       void render() {}
 
       void take_action(Action action) {
@@ -69,6 +62,13 @@ namespace agario::envigonment {
       }
 
       reward get_reward() const {}
+
+      void reset() {
+        engine.reset();
+        pid = engine.template add_player<Player>("agent");
+        add_bots();
+        _done = false;
+      }
 
       bool done() const { return _done; }
 

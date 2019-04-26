@@ -1,8 +1,8 @@
 #pragma once
 
-#define GLEW_STATIC
+#define GL_SILENCE_DEPRECATION
 
-#include <GL/glew.h>
+#include <OpenGL/gl3.h>
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
@@ -15,7 +15,6 @@
 #define COLOR_LEN 3
 
 namespace agario {
-
 
   class RenderingException : public std::runtime_error {
     using runtime_error::runtime_error;

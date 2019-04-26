@@ -2,9 +2,8 @@
 
 #define GL_SILENCE_DEPRECATION
 
-#include <GL/glew.h>
+#include <OpenGL/gl3.h>
 #include <GLFW/glfw3.h>
-#include <OpenGL/OpenGL.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -24,6 +23,14 @@
 
 #define NUM_GRID_LINES 11
 
+const char* vertex_shader_src =
+#include "shaders/_vertex.glsl"
+  ;
+
+const char* fragment_shader_src =
+#include "shaders/_fragment.glsl"
+  ;
+
 namespace agario {
 
   class Renderer {
@@ -40,7 +47,7 @@ namespace agario {
       window(window),
       arena_width(arena_width), arena_height(arena_height),
       shader(), grid(arena_width, arena_height) {
-      shader.generate_shader("../rendering/vertex.glsl", "../rendering/fragment.glsl");
+      shader.compile_shaders(vertex_shader_src, fragment_shader_src);
       shader.use();
     }
 

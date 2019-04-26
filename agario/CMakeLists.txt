@@ -9,6 +9,17 @@ set(BENCH_FLAGS "-Ofast -fno-omit-frame-pointer")
 # To configure for "release", then run cmake with:
 # cmake -DCMAKE_BUILD_TYPE=Release
 
+function(make_includable input_file output_file)
+    file(READ ${input_file} content)
+    set(delim "for_c++_include")
+    set(content "R\"${delim}(\n${content})${delim}\"")
+    file(WRITE ${output_file} "${content}")
+endfunction(make_includable)
+
+make_includable(rendering/shaders/vertex.glsl rendering/shaders/_vertex.glsl)
+make_includable(rendering/shaders/fragment.glsl rendering/shaders/_fragment.glsl)
+
+
 IF(APPLE)
     # Fix linking on 10.14+. See https://stackoverflow.com/questions/54068035
     link_directories(/usr/local/lib)
@@ -25,6 +36,7 @@ endif()
 include_directories(".")
 
 set(AGARIO_CORE_SRC
+        core/core.hpp
         core/Player.hpp
         core/utils.hpp          core/utils.cpp
         core/Ball.hpp
@@ -42,8 +54,7 @@ set(AGARIO_ENGINE_SRC
         ${AGARIO_BOT_SRC}
         engine/Engine.hpp
         engine/GameState.hpp
-        engine/utils.hpp
-        engine/settings.hpp)
+        core/settings.hpp)
 
 set(AGARIO_RENDERING_SRC
         rendering/renderer.hpp
@@ -57,8 +68,7 @@ add_library(agario STATIC ${AGARIO_SRC})
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_library(GLFW REQUIRED)
-include_directories(client engine
-        ${OPENGL_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
+include_directories(client engine ${OPENGL_INCLUDE_DIR})
 
 set(AGARIO_CLIENT_SRC
         ${AGARIO_BOT_SRC}

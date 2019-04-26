@@ -3,7 +3,8 @@
 #include <math.h>
 
 #include "core/types.hpp"
-#include "settings.hpp"
+
+#define CELL_EAT_MARGIN 1.1
 
 namespace agario {
 

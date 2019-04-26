@@ -1,10 +1,10 @@
 #pragma once
 
-#include <core/Ball.hpp>
-#include <core/types.hpp>
-#include <core/utils.hpp>
-
-#include <core/renderables.hpp>
+#include "core/Ball.hpp"
+#include "core/types.hpp"
+#include "core/utils.hpp"
+#include "core/settings.hpp"
+#include "core/renderables.hpp"
 
 #define PELLET_MASS 1
 #define FOOD_MASS 10
