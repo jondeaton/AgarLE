@@ -42,8 +42,8 @@ int main(int argc, char *argv[]) {
 
     agario::Client client;
     agario::pid pid = client.add_player(name);
-    client.set_player(pid);
 
+    client.set_player(pid);
     client.add_bots();
 
     client.game_loop();

@@ -26,19 +26,13 @@ namespace agario {
 
     template<typename Loc>
     Player(agario::pid pid, std::string name, Loc &&loc, agario::color color) :
-      action(none), target(0, 0),
-      split_cooldown(0), feed_cooldown(0),
-      _pid(pid), _name(std::move(name)), _score(0),
-      _color(color) {
+      action(none), target(0, 0), split_cooldown(0), feed_cooldown(0),
+      _pid(pid), _name(std::move(name)), _score(0), _color(color) {
       add_cell(loc, CELL_MIN_SIZE);
     }
 
-    Player(agario::pid pid, std::string name, agario::color color) :
-      Player(pid, name, Location(0, 0), color) {}
-
-    Player(agario::pid pid, std::string name) :
-      Player(pid, name, agario::color::blue) {}
-
+    Player(agario::pid pid, std::string name, agario::color color) : Player(pid, name, Location(0, 0), color) {}
+    Player(agario::pid pid, std::string name) : Player(pid, name, agario::color::blue) {}
     Player(std::string name) : Player(-1, name, agario::color::blue) {}
 
     std::vector<Cell> cells;
