@@ -170,7 +170,7 @@ namespace agario {
 
     void tick_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
 
-      if (ticks % 10 == 0)
+      if (ticks % 10 == 0) // makes the game run a lot faster :(
         player.take_action(state);
 
       move_player(player, elapsed_seconds);
