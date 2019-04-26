@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <algorithm>
+#include <bots/HungryShyBot.hpp>
 
 #include "core/Player.hpp"
 #include "settings.hpp"
@@ -34,20 +35,12 @@ namespace agario {
 
     Engine() : Engine(DEFAULT_ARENA_WIDTH, DEFAULT_ARENA_HEIGHT) {}
 
+    template <typename P>
     agario::pid add_player(const std::string &name) {
-      // p is pair<map_iter<pid, Player>, bool>
-      auto p = state.players.emplace(std::piecewise_construct,
-                                     std::forward_as_tuple(next_pid),
-                                     std::forward_as_tuple(next_pid, name, random_location(), random_color()));
-
-      if (!p.second) {
-        std::stringstream ss;
-        ss << "Could not insert player named " << name << "at pid " << next_pid;
-        throw EngineException(ss.str().c_str());
-      }
-
+      auto player_ptr = std::make_shared<P>(next_pid, name, random_location(), random_color());
+      auto p = state.players.insert(std::make_pair(next_pid, player_ptr));
       next_pid++;
-      return p.first->second.pid();
+      return p.first->second->pid();
     }
 
     Player &player(agario::pid pid) {
@@ -56,7 +49,7 @@ namespace agario {
         ss << "Player ID: " << pid << " does not exist.";
         throw EngineException(ss.str());
       }
-      return state.players.at(pid);
+      return *state.players.at(pid);
     }
 
     void initialize_game() {
@@ -88,8 +81,9 @@ namespace agario {
      * since the previous game tick.
      */
     void tick(std::chrono::duration<double> elapsed_seconds) {
+
       for (auto &pair : state.players)
-        tick_player(pair.second, elapsed_seconds);
+        tick_player(*pair.second, elapsed_seconds);
 
       check_player_collisions();
 
@@ -147,6 +141,13 @@ namespace agario {
     Engine(Engine &&) = delete; // no move constructor
     Engine &operator=(Engine &&) = delete; // no move assignment
 
+
+    agario::Location random_location() {
+      auto x = random < agario::distance > (_arena_width);
+      auto y = random < agario::distance > (_arena_height);
+      return Location(x, y);
+    }
+
   private:
 
     agario::GameState<renderable> state;
@@ -168,6 +169,10 @@ namespace agario {
     }
 
     void tick_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
+
+      if (ticks % 10 == 0) // makes the game run a lot faster :(
+        player.take_action(state);
+
       move_player(player, elapsed_seconds);
 
       std::vector<Cell> created_cells;
@@ -247,7 +252,7 @@ namespace agario {
       state.pellets.erase(
         std::remove_if(state.pellets.begin(), state.pellets.end(),
                        [&](const Pellet &pellet) {
-                         return cell > pellet && cell.collides_with(pellet);
+                         return cell.can_eat(pellet) && cell.collides_with(pellet);
                        }),
         state.pellets.end());
       auto num_eaten = prev_size - total_pellets();
@@ -261,7 +266,7 @@ namespace agario {
       state.foods.erase(
         std::remove_if(state.foods.begin(), state.foods.end(),
                        [&](const Food &pellet) {
-                         return cell > pellet && cell.collides_with(pellet);
+                         return cell.can_eat(pellet) && cell.collides_with(pellet);
                        }),
         state.foods.end());
       auto num_eaten = prev_size - total_foods();
@@ -342,7 +347,7 @@ namespace agario {
     void check_player_collisions() {
       for (auto p1_it = state.players.begin(); p1_it != state.players.end(); ++p1_it)
         for (auto p2_it = std::next(p1_it); p2_it != state.players.end(); ++p2_it)
-          check_players_collisions(p1_it->second, p2_it->second);
+          check_players_collisions(*p1_it->second, *p2_it->second);
     }
 
     /**
@@ -373,7 +378,7 @@ namespace agario {
       player.cells.erase(
         std::remove_if(player.cells.begin(), player.cells.end(),
                        [&](const Cell &other_cell) {
-                         return cell.collides_with(other_cell) && cell > other_cell;
+                         return cell.collides_with(other_cell) && cell.can_eat(other_cell);
                        }),
         player.cells.end());
 
@@ -404,7 +409,7 @@ namespace agario {
       for (auto it = state.viruses.begin(); it != state.viruses.end();) {
         Virus &virus = *it;
 
-        if (cell > virus && cell.collides_with(virus)) {
+        if (cell.can_eat(virus) && cell.collides_with(virus)) {
           disrupt(cell, virus, created_cells);
           std::swap(*it, state.viruses.back()); // O(1) removal
           state.viruses.pop_back();
@@ -451,12 +456,6 @@ namespace agario {
 
     float max_speed(agario::mass mass) {
       return CELL_MAX_SPEED / sqrt((float) mass);
-    }
-
-    agario::Location random_location() {
-      auto x = random < agario::distance > (_arena_width);
-      auto y = random < agario::distance > (_arena_height);
-      return Location(x, y);
     }
 
     template<typename T>

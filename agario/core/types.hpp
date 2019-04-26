@@ -7,6 +7,13 @@
 
 namespace agario {
 
+  // todo: forward declared here becaues circular references
+  template<bool renderable>
+  class GameState;
+
+  template<bool renderable>
+  class Player;
+
   enum _type_id {
     _distance, _angle
   };
@@ -61,6 +68,10 @@ namespace agario {
 
     Coordinate normed() {
       return *this / this->norm();
+    }
+
+    T distance_to(const Coordinate &other) const {
+      return (other - *this).norm();
     }
   };
 

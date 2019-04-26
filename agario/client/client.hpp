@@ -6,11 +6,14 @@
 #include "core/renderables.hpp"
 #include "engine/Engine.hpp"
 
+#include "bots/bots.hpp"
+
 #include <chrono>
 
 #include <string>
 #include <ctime>
 #include <memory>
+#include <bots/HungryBot.hpp>
 
 namespace agario {
 
@@ -45,8 +48,18 @@ namespace agario {
     }
 
     agario::pid add_player(const std::string &name) {
-      auto pid = engine.add_player(name);
-      return pid;
+      return engine.add_player<Player>(name);
+    }
+
+    void add_bots() {
+//      for (int i = 0; i < 5; i++)
+//        engine.add_player<bot::RandomBot<true>>("rando");
+
+      for (int i = 0; i < 10; i++)
+        engine.add_player<bot::HungryBot<true>>("hungry");
+
+      for (int i = 0; i < 25; i++)
+        engine.add_player<bot::HungryShyBot<true>>("shy");
     }
 
     void initialize_renderer() {
@@ -59,8 +72,8 @@ namespace agario {
     void game_loop() {
       if (renderer == nullptr) initialize_renderer();
 
-      double fps = 0;
-      int fps_count = 0;
+      auto beginning = std::chrono::system_clock::now();
+      int count = 0;
 
       auto before = std::chrono::system_clock::now();
       while (!window->should_close()) {
@@ -77,16 +90,18 @@ namespace agario {
         renderer->render_screen(player, engine.game_state());
 
         auto now = std::chrono::system_clock::now();
-        std::chrono::duration<double> elapsed_seconds = now - before;
+        auto dt = now - before;
 
-        fps += 1 / elapsed_seconds.count();
-        fps_count += 1;
-
-        engine.tick(elapsed_seconds);
+        count++;
+        engine.tick(dt);
 
         before = std::chrono::system_clock::now();
       }
-      std::cout << "Average FPS: " << (fps / fps_count) << std::endl;
+      auto now = std::chrono::system_clock::now();
+      std::chrono::duration<double> total_time = now - beginning;
+
+      float fps = count / total_time.count();
+      std::cout << "Average FPS: " << fps << std::endl;
     }
 
   private:

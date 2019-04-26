@@ -107,7 +107,7 @@ namespace agario {
         food.draw(shader);
 
       for (auto &pair : state.players)
-        pair.second.draw(shader);
+        pair.second->draw(shader);
 
       for (auto &virus : state.viruses)
         virus.draw(shader);

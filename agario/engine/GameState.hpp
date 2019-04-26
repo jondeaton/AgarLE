@@ -12,12 +12,10 @@ namespace agario {
   template<bool renderable>
   class GameState {
   public:
-    std::unordered_map<agario::pid, agario::Player<renderable>> players;
+    std::unordered_map<agario::pid, std::shared_ptr<agario::Player<renderable>>> players;
     std::vector<agario::Pellet<renderable>> pellets;
     std::vector<agario::Food<renderable>> foods;
     std::vector<agario::Virus<renderable>> viruses;
-
-    // todo: serialization and deserialization
   };
 
 }

@@ -33,19 +33,16 @@ namespace agario {
       return sqr_rads >= sqr_distance_to(other);
     }
 
-    Location location() const { return Location(x, y); }
-
-    bool operator<(const Ball &other) const {
-      return mass() * CELL_EAT_MARGIN < other.mass();
-    }
-
-    bool operator>(const Ball &other) const {
+    bool can_eat(const Ball &other) const {
       return mass() > other.mass() * CELL_EAT_MARGIN;
     }
 
-    bool operator==(const Ball &other) const {
-      return mass() == other.mass();
-    }
+    Location location() const { return Location(x, y); }
+
+    // mass based comparison, useful for sorting and such
+    bool operator==(const Ball &other) const { return mass() == other.mass(); }
+    bool operator<(const Ball &other) const { return mass() < other.mass(); }
+    bool operator>(const Ball &other) const { return mass() > other.mass(); }
 
     distance x;
     distance y;
