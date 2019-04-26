@@ -8,7 +8,7 @@ import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 
-from agario.client import AgarioClient
+import agario_env
 
 class AgarioEnv(gym.Env):
     metadata = {'render.modes': ['human']}
@@ -23,7 +23,7 @@ class AgarioEnv(gym.Env):
             spaces.MultiBinary(1), # split?
             spaces.MultiBinary(1))) # feed?
 
-        self.client = AgarioClient()
+        self._env = agario_env.Environment()
 
         self.prev_status = 0
         self.status = 0
@@ -40,8 +40,8 @@ class AgarioEnv(gym.Env):
 
         Returns
         -------
-        ob, reward, episode_over, info : tuple
-            ob (object) :
+        observation, reward, episode_over, info : tuple
+            observation (object) :
                 an environment-specific object representing your observation of
                 the environment.
             reward (float) :
@@ -60,26 +60,18 @@ class AgarioEnv(gym.Env):
                  However, official evaluations of your agent are not allowed to
                  use this for learning.
         """
-        self._take_action(action)
 
-        self.prev_status = self.self.status
-        self.status = self.client.step()
-        reward = self._get_reward()
-        ob = self.env.getState()
+        self._env.take_action(action)
 
-        episode_over = False # or something
+        reward = self._env.step()
+        observation = self._env.get_state()
+        episode_over = self._env.done()
 
-        return ob, reward, episode_over, {}
+        return observation, reward, episode_over, {}
 
-    def _take_action(self, action):
-
-        self.client.act()
-
-    def _get_reward(self):
-        return self.status - self.prev_status
 
     def reset(self):
-        pass
+        self._env.reset()
 
     def render(self, mode='human'):
-        pass
+        self._env.render()

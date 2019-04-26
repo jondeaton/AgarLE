@@ -16,6 +16,14 @@ namespace agario {
     std::vector<agario::Pellet<renderable>> pellets;
     std::vector<agario::Food<renderable>> foods;
     std::vector<agario::Virus<renderable>> viruses;
+
+    void clear() {
+      players.clear();
+      pellets.clear();
+      foods.clear();
+      viruses.clear();
+    }
+
   };
 
 }

@@ -52,9 +52,6 @@ namespace agario {
     }
 
     void add_bots() {
-//      for (int i = 0; i < 5; i++)
-//        engine.add_player<bot::RandomBot<true>>("rando");
-
       for (int i = 0; i < 10; i++)
         engine.add_player<bot::HungryBot<true>>("hungry");
 

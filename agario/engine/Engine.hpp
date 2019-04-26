@@ -10,6 +10,7 @@
 #include "settings.hpp"
 #include "core/types.hpp"
 #include "core/Entities.hpp"
+#include "GameState.hpp"
 
 namespace agario {
 
@@ -50,6 +51,11 @@ namespace agario {
         throw EngineException(ss.str());
       }
       return *state.players.at(pid);
+    }
+
+    void reset() {
+      state.clear();
+      initialize_game();
     }
 
     void initialize_game() {
