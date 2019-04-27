@@ -43,8 +43,9 @@ namespace agario {
     typedef Virus<true> Virus;
 
     explicit Renderer(std::shared_ptr<agario::Window> window,
-                      agario::distance arena_width, agario::distance arena_height) :
-      window(window),
+                      agario::distance arena_width,
+                      agario::distance arena_height) :
+      window(std::move(window)),
       arena_width(arena_width), arena_height(arena_height),
       shader(), grid(arena_width, arena_height) {
       shader.compile_shaders(vertex_shader_src, fragment_shader_src);
@@ -54,10 +55,13 @@ namespace agario {
     explicit Renderer(agario::distance arena_width, agario::distance arena_height) :
       Renderer(nullptr, arena_width, arena_height) {}
 
-    /// converts a screen position to a world position
-    /// \param xpos screen horizontal position
-    /// \param ypos screen vertical position
-    /// \return world location
+    /**
+     * converts a screen position to a world position
+     * @param player player to calculate position relative to
+     * @param xpos screen horizontal position (0 to screen_width - 1)
+     * @param ypos screen vertical position (0 to screen_height - 1)
+     * @return world location
+     */
     agario::Location to_target(Player &player, float xpos, float ypos) {
 
       // normalized device coordinates (from -1 to 1)

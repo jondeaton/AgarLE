@@ -8,86 +8,92 @@
 
 namespace agario::environment {
 
-    typedef double reward;
+  typedef double reward;
 
-    class Action {
-    public:
-      agario::Location target;
-      agario::action game_action;
-    };
+  template<unsigned W, unsigned H, unsigned NumFrames>
+  class Observation {
+  public:
+    unsigned char frame_data[NumFrames * W * H * 3];
+  };
 
+  template<bool renderable, unsigned W, unsigned H, unsigned NumFrames>
+  class Environment {
+    typedef agario::Player<renderable> Player;
+    typedef agario::Cell<renderable> Cell;
+    typedef agario::Pellet<renderable> Pellet;
+    typedef agario::Food<renderable> Food;
+    typedef agario::Virus<renderable> Virus;
 
-    class Observation {
-    public:
-      // todo
-    };
+    typedef agario::bot::HungryBot<renderable> HungryBot;
+    typedef agario::bot::HungryShyBot<renderable> HungryShyBot;
 
-    template<bool renderable>
-    class Environment {
-      typedef agario::Player<renderable> Player;
-      typedef agario::Cell<renderable> Cell;
-      typedef agario::Pellet<renderable> Pellet;
-      typedef agario::Food<renderable> Food;
-      typedef agario::Virus<renderable> Virus;
+    typedef Observation<W, H, NumFrames> Observation;
 
-      typedef agario::bot::HungryBot<renderable> HungryBot;
-      typedef agario::bot::HungryShyBot<renderable> HungryShyBot;
+  public:
 
-    public:
-
-      Environment(int frames_per_step) :
+    explicit Environment(int frames_per_step) :
       frames_per_step(frames_per_step), _done(false), step_dt(1.0 / 60) {
-        pid = engine.template add_player<Player>("agent");
-      }
+      pid = engine.template add_player<Player>("agent");
+    }
 
-      reward step(Action action) {
-        for (int i = 0; i < frames_per_step; i++) {
-          auto &player = engine.player(pid);
-          if (player.dead()) {
-            _done = true;
-            break;
-          }
-          engine.tick(step_dt);
+    reward step() {
+      auto &player = engine.player(pid);
+      auto mass_before = player.mass();
+      for (int i = 0; i < frames_per_step; i++) {
+        if (player.dead()) {
+          _done = true;
+          break;
         }
+        engine.tick(step_dt);
+        _store_observation(i);
       }
+      return player.mass() - mass_before;
+    }
 
-      Observation get_state() const {}
+    const Observation &get_state() const { return _observation; }
 
-      void render() {}
+    void render() {}
 
-      void take_action(Action action) {
-        auto &player = engine.player(pid);
-        player.action = action.game_action;
-        player.target = action.target;
-      }
+    void take_action(float target_x, float target_y, agario::action action) {
+      auto &player = engine.player(pid);
+      player.action = action;
+      player.target = agario::Location(target_x, target_y);
+    }
 
-      reward get_reward() const {}
+    void reset() {
+      engine.reset();
+      pid = engine.template add_player<Player>("agent");
+      add_bots();
+      _done = false;
+    }
 
-      void reset() {
-        engine.reset();
-        pid = engine.template add_player<Player>("agent");
-        add_bots();
-        _done = false;
-      }
+    bool done() const { return _done; }
 
-      bool done() const { return _done; }
+  private:
+    Engine<renderable> engine;
+    agario::pid pid;
+    int frames_per_step;
+    bool _done;
+    std::chrono::duration<float> step_dt;
+    Observation _observation;
 
-    private:
-      Engine<renderable> engine;
-      agario::pid pid;
-      int frames_per_step;
-      bool _done;
-      std::chrono::duration<float> step_dt;
+    void add_bots() {
+      for (int i = 0; i < 10; i++)
+        engine.template add_player<HungryBot>("hungry");
 
-      void add_bots() {
-        for (int i = 0; i < 10; i++)
-          engine.template add_player<HungryBot>("hungry");
+      for (int i = 0; i < 25; i++)
+        engine.template add_player<HungryShyBot>("shy");
+    }
 
-        for (int i = 0; i < 25; i++)
-          engine.template add_player<HungryShyBot>("shy");
-      }
 
-    };
+    void _store_observation(int frame) {
+      for (int i = 0; i < W * H * 3; i++)
+        _observation.frame_data[frame * (W * H * 3) + i] = frame;
+
+      // todo: render the screen into frame_data
+    }
+
+  };
 }
 
 

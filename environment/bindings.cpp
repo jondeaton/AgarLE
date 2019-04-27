@@ -1,36 +1,15 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
+#include <pybind11/numpy.h>
 
 #include <iostream>
 #include <environment.hpp>
 
-void say_hello() {
-  std::cout << "hello world!" << std::endl;
-}
-
+void say_hello() { std::cout << "hello world!" << std::endl; }
 int add(int x, int y) { return x + y; }
 
-class Adder {
-public:
-  Adder(int x) : x_(x){};
-  int add(int y) { return x_ + y; }
-
-  void setAddition(int x) { x_ = x; }
-  int getAddition() { return x_; }
-
-private:
-  int x_;
-};
-
-std::string join(std::vector<std::string> tojoin) {
-  std::string ret;
-  for (auto c : tojoin) {
-    ret += c;
-  }
-  return ret;
-}
-
+namespace py = pybind11;
 
 PYBIND11_MODULE(agario_env, module) {
   using namespace pybind11::literals; // for _a literal to define arguments
@@ -39,19 +18,35 @@ PYBIND11_MODULE(agario_env, module) {
   module.def("say_hello", &say_hello, "say hello");
   module.def("add", &add, "Add 2 numbers together", "x"_a, "y"_a);
 
-  typedef agario::environment::Environment<true> Environment;
+  constexpr unsigned Width = 256;
+  constexpr unsigned Height = 256;
+  constexpr unsigned NumFrames = 4;
+  constexpr unsigned observation_size = NumFrames * Width * Height * 3;
+
+  typedef agario::environment::Environment<true, Width, Height, NumFrames> Environment;
 
   pybind11::class_<Environment>(module, "Environment")
-    .def(pybind11::init<int>());
-//    .def("step")
-//    .def("get_state")
-//    .def("take_action")
-//    .def("reset")
-
-  pybind11::class_<Adder>(module, "Adder")
     .def(pybind11::init<int>())
-    .def("add", &Adder::add)
-    .def_property("addition", &Adder::getAddition, &Adder::setAddition);
+    .def("step", &Environment::step)
+    .def("get_state", [](const Environment &env) {
+      auto observation = env.get_state();
 
-  module.def("join", &join, "Join a list into a string", "tojoin"_a);
+      auto frame_buffer = new unsigned char[observation_size];
+      std::memcpy(frame_buffer,
+                  observation.frame_data,
+                  observation_size * sizeof(unsigned char));
+
+      py::capsule _free(frame_buffer, [](void *f) {
+        auto foo = reinterpret_cast<unsigned char *>(f);
+        delete[] foo;
+      });
+
+      std::vector<int> shape = {NumFrames, Width, Height, 3};
+      std::vector<int> strides = {Width * Height * 3, Height * 3, 3, 1};
+
+      return py::array_t<unsigned char>(shape, strides, frame_buffer, _free);
+    })
+    .def("done", &Environment::done)
+    .def("take_action", &Environment::take_action, "x"_a, "y"_a, "act"_a)
+    .def("reset", &Environment::reset);
 }
