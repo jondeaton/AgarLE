@@ -66,14 +66,28 @@ namespace agario {
                                                     engine.arena_height());
     }
 
-    void game_loop() {
+    void play() {
       if (renderer == nullptr) initialize_renderer();
 
       auto beginning = std::chrono::system_clock::now();
-      int count = 0;
+      auto ticks_before = engine.ticks();
 
+      game_loop();
+
+      auto now = std::chrono::system_clock::now();
+      std::chrono::duration<double> total_time = now - beginning;
+
+      float fps = (engine.ticks() - ticks_before) / total_time.count();
+      std::cout << "Average FPS: " << fps << std::endl;
+    }
+
+    void game_loop() {
       auto before = std::chrono::system_clock::now();
       while (!window->should_close()) {
+
+        auto now = std::chrono::system_clock::now();
+        auto dt = now - before;
+        before = now;
 
         auto &player = engine.player(player_pid);
 
@@ -86,19 +100,11 @@ namespace agario {
         process_input();
         renderer->render_screen(player, engine.game_state());
 
-        auto now = std::chrono::system_clock::now();
-        auto dt = now - before;
+        glfwPollEvents();
+        window->swap_buffers();
 
-        count++;
         engine.tick(dt);
-
-        before = std::chrono::system_clock::now();
       }
-      auto now = std::chrono::system_clock::now();
-      std::chrono::duration<double> total_time = now - beginning;
-
-      float fps = count / total_time.count();
-      std::cout << "Average FPS: " << fps << std::endl;
     }
 
   private:

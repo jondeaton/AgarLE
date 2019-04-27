@@ -54,9 +54,9 @@ namespace agario::environment {
 
     void render() {}
 
-    void take_action(float target_x, float target_y, agario::action action) {
+    void take_action(float target_x, float target_y, int action) {
       auto &player = engine.player(pid);
-      player.action = action;
+      player.action = static_cast<agario::action>(action);
       player.target = agario::Location(target_x, target_y);
     }
 

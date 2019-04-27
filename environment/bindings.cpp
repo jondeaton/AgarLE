@@ -31,20 +31,20 @@ PYBIND11_MODULE(agario_env, module) {
     .def("get_state", [](const Environment &env) {
       auto observation = env.get_state();
 
-      auto frame_buffer = new unsigned char[observation_size];
+      auto frame_buffer = new std::uint8_t[observation_size];
       std::memcpy(frame_buffer,
                   observation.frame_data,
-                  observation_size * sizeof(unsigned char));
+                  observation_size * sizeof(std::uint8_t));
 
       py::capsule _free(frame_buffer, [](void *f) {
-        auto foo = reinterpret_cast<unsigned char *>(f);
+        auto foo = reinterpret_cast<std::uint8_t *>(f);
         delete[] foo;
       });
 
       std::vector<int> shape = {NumFrames, Width, Height, 3};
       std::vector<int> strides = {Width * Height * 3, Height * 3, 3, 1};
 
-      return py::array_t<unsigned char>(shape, strides, frame_buffer, _free);
+      return py::array_t<std::uint8_t>(shape, strides, frame_buffer, _free);
     })
     .def("done", &Environment::done)
     .def("take_action", &Environment::take_action, "x"_a, "y"_a, "act"_a)

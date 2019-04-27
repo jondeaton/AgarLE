@@ -1,16 +1,18 @@
-# AgarAI
+# AgarLE (Agar.io Learning Environment)
 
-Reinforcement Learning environment for Agar.io
+This project presents a high performance re-implementation of the popular online multi-player
+game agar.io and a Python interface suitable for reinforcement learning.
+
 
 # todo
-- AgarLE (Learning Environment)
+- Learning Environment
   - Make new CMake Project in other directory
   - Render game without open window
   - Design state representation(s)
   - Wrap in OpenAI Gym Environment
 - Bugs
   - splitting into bottom left corner breaks the game
-  - player doesn't have name?
+  - split faster: split speed = same for all cells?
 - Game Mechanics Tweaking
   - Feeding viruses causing them to duplicate
   - big cells should move and split faster

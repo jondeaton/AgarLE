@@ -59,7 +59,8 @@ set(AGARIO_ENGINE_SRC
 set(AGARIO_RENDERING_SRC
         rendering/renderer.hpp
         rendering/shader.hpp
-        rendering/window.hpp)
+        rendering/window.hpp
+        rendering/FrameBufferObject.hpp)
 
 set(AGARIO_SRC ${AGARIO_CORE_SRC} ${AGARIO_ENGINE_SRC})
 
@@ -72,6 +73,7 @@ include_directories(client engine ${OPENGL_INCLUDE_DIR})
 
 set(AGARIO_CLIENT_SRC
         ${AGARIO_BOT_SRC}
+        ${AGARIO_RENDERING_SRC}
         core/Entities.hpp
         client/client.hpp
         rendering/renderer.hpp

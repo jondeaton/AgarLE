@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     client.set_player(pid);
     client.add_bots();
 
-    client.game_loop();
+    client.play();
 
   } else {
     std::string server = args["server"].as<std::string>();

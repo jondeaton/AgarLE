@@ -122,9 +122,6 @@ namespace agario {
 
       for (auto &virus : state.viruses)
         virus.draw(shader);
-
-      window->swap_buffers();
-      glfwPollEvents();
     }
 
     void terminate() {

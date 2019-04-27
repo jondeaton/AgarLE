@@ -91,8 +91,7 @@ namespace agario {
       _destroy = false;
     }
 
-    ~Window() {
-    }
+    ~Window() { destroy(); }
 
   private:
 

@@ -30,7 +30,7 @@ namespace agario {
 
     explicit Engine(distance arena_width, distance arena_height) :
       _arena_width(arena_width), _arena_height(arena_height),
-      ticks(0), next_pid(0) {
+      _ticks(0), next_pid(0) {
       std::srand(std::chrono::system_clock::now().time_since_epoch().count());
     }
 
@@ -81,6 +81,12 @@ namespace agario {
     }
 
     /**
+     * Total game ticks
+     * @return the number of ticks that have elapsed in the game
+     */
+    agario::tick ticks() const { return _ticks; }
+
+    /**
      * Performs a single game tick, moving all entities, performing
      * collision detection and updating the game state accordingly
      * @param elapsed_seconds the amount of time which has elapsed
@@ -97,7 +103,7 @@ namespace agario {
 
       add_pellets(NUM_PELLETS - state.pellets.size());
       add_viruses(NUM_VIRUSES - state.viruses.size());
-      ticks++;
+      _ticks++;
     }
 
     void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
@@ -161,7 +167,7 @@ namespace agario {
     distance _arena_width;
     distance _arena_height;
 
-    agario::tick ticks;
+    agario::tick _ticks;
     agario::pid next_pid;
 
     void add_pellets(int num_pellets) {
@@ -176,7 +182,7 @@ namespace agario {
 
     void tick_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
 
-      if (ticks % 10 == 0) // makes the game run a lot faster :(
+      if (_ticks % 10 == 0) // increases frame rate a lot
         player.take_action(state);
 
       move_player(player, elapsed_seconds);
