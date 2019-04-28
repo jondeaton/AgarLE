@@ -6,17 +6,43 @@
 #include <core/Ball.hpp>
 #include <bots/bots.hpp>
 
+#include "rendering/FrameBufferObject.hpp"
+#include "rendering/renderer.hpp"
+
+#define PIXEL_SIZE 3
+#define DEFAULT_DT (1.0 / 60)
+
 namespace agario::environment {
 
   typedef double reward;
 
-  template<unsigned W, unsigned H, unsigned NumFrames>
+  template<unsigned W, unsigned H>
   class Observation {
   public:
-    unsigned char frame_data[NumFrames * W * H * 3];
+    explicit Observation(unsigned num_frames) : _num_frames(num_frames) {
+      _frame_data = new std::uint8_t[size()];
+    }
+
+    const std::uint8_t *frame_data() const { return _frame_data; }
+
+    std::size_t size() const {
+      return _num_frames * W * H * PIXEL_SIZE;
+    }
+
+    std::uint8_t *frame_data(unsigned frame_index) {
+      if (frame_index >= _num_frames)
+        throw FBOException("Frame index " + std::to_string(frame_index) + " out of bounds");
+
+      return &_frame_data[frame_index * W * H * PIXEL_SIZE];
+    }
+
+    ~Observation() { delete[] _frame_data; }
+  private:
+    unsigned _num_frames;
+    std::uint8_t *_frame_data;
   };
 
-  template<bool renderable, unsigned W, unsigned H, unsigned NumFrames>
+  template<bool renderable, unsigned W, unsigned H>
   class Environment {
     typedef agario::Player<renderable> Player;
     typedef agario::Cell<renderable> Cell;
@@ -27,25 +53,29 @@ namespace agario::environment {
     typedef agario::bot::HungryBot<renderable> HungryBot;
     typedef agario::bot::HungryShyBot<renderable> HungryShyBot;
 
-    typedef Observation<W, H, NumFrames> Observation;
+    typedef Observation<W, H> Observation;
 
   public:
 
     explicit Environment(int frames_per_step) :
-      frames_per_step(frames_per_step), _done(false), step_dt(1.0 / 60) {
+      engine(), _observation(frames_per_step),
+      _num_frames(frames_per_step), _done(false), step_dt(DEFAULT_DT),
+      frame_buffer(std::make_shared<FrameBufferObject<W, H>>()),
+      renderer(frame_buffer, engine.arena_width(), engine.arena_height()) {
       pid = engine.template add_player<Player>("agent");
     }
 
     reward step() {
       auto &player = engine.player(pid);
+
       auto mass_before = player.mass();
-      for (int i = 0; i < frames_per_step; i++) {
+      for (int i = 0; i < _num_frames; i++) {
         if (player.dead()) {
           _done = true;
           break;
         }
         engine.tick(step_dt);
-        _store_observation(i);
+        _store_observation(player, i);
       }
       return player.mass() - mass_before;
     }
@@ -72,10 +102,14 @@ namespace agario::environment {
   private:
     Engine<renderable> engine;
     agario::pid pid;
-    int frames_per_step;
+
+    int _num_frames;
     bool _done;
     std::chrono::duration<float> step_dt;
+
     Observation _observation;
+    std::shared_ptr<FrameBufferObject<W, H>> frame_buffer;
+    agario::Renderer renderer;
 
     void add_bots() {
       for (int i = 0; i < 10; i++)
@@ -85,12 +119,10 @@ namespace agario::environment {
         engine.template add_player<HungryShyBot>("shy");
     }
 
-
-    void _store_observation(int frame) {
-      for (int i = 0; i < W * H * 3; i++)
-        _observation.frame_data[frame * (W * H * 3) + i] = frame;
-
-      // todo: render the screen into frame_data
+    void _store_observation(Player &player, unsigned frame_index) {
+      renderer.render_screen(player, engine.game_state());
+      void *data = _observation.frame_data(frame_index);
+      frame_buffer->copy(data);
     }
 
   };

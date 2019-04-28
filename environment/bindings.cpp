@@ -6,6 +6,8 @@
 #include <iostream>
 #include <environment.hpp>
 
+#define PIXEL_SIZE 3
+
 void say_hello() { std::cout << "hello world!" << std::endl; }
 int add(int x, int y) { return x + y; }
 
@@ -21,30 +23,28 @@ PYBIND11_MODULE(agario_env, module) {
   constexpr unsigned Width = 256;
   constexpr unsigned Height = 256;
   constexpr unsigned NumFrames = 4;
-  constexpr unsigned observation_size = NumFrames * Width * Height * 3;
+  constexpr unsigned observation_size = NumFrames * Width * Height * PIXEL_SIZE;
 
-  typedef agario::environment::Environment<true, Width, Height, NumFrames> Environment;
+  typedef agario::environment::Environment<true, Width, Height> Environment;
 
   pybind11::class_<Environment>(module, "Environment")
     .def(pybind11::init<int>())
     .def("step", &Environment::step)
     .def("get_state", [](const Environment &env) {
-      auto observation = env.get_state();
 
-      auto frame_buffer = new std::uint8_t[observation_size];
-      std::memcpy(frame_buffer,
-                  observation.frame_data,
-                  observation_size * sizeof(std::uint8_t));
+      auto &observation = env.get_state();
+      auto data = new std::uint8_t[observation.size()];
+      std::memcpy(data, observation.frame_data(), observation.size());
 
-      py::capsule _free(frame_buffer, [](void *f) {
-        auto foo = reinterpret_cast<std::uint8_t *>(f);
-        delete[] foo;
-      });
+      std::vector<int> shape = {NumFrames, Width, Height, PIXEL_SIZE};
+      std::vector<int> strides = {Width * Height * PIXEL_SIZE, Height * PIXEL_SIZE, PIXEL_SIZE, 1};
 
-      std::vector<int> shape = {NumFrames, Width, Height, 3};
-      std::vector<int> strides = {Width * Height * 3, Height * 3, 3, 1};
-
-      return py::array_t<std::uint8_t>(shape, strides, frame_buffer, _free);
+      auto arr = py::array_t<std::uint8_t>(py::buffer_info(data,
+                                                           sizeof(std::uint8_t),
+                                                           py::format_descriptor<std::uint8_t>::format(),
+                                                           4, shape, strides));
+      delete[] data;
+      return arr;
     })
     .def("done", &Environment::done)
     .def("take_action", &Environment::take_action, "x"_a, "y"_a, "act"_a)

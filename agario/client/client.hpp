@@ -15,6 +15,11 @@
 #include <memory>
 #include <bots/HungryBot.hpp>
 
+#define WINDOW_NAME "AgarIO"
+#define DEFAULT_SCREEN_WIDTH 640
+#define DEFAULT_SCREEN_HEIGHT 480
+
+
 namespace agario {
 
   class Client {
@@ -60,7 +65,7 @@ namespace agario {
     }
 
     void initialize_renderer() {
-      window = std::make_shared<agario::Window>();
+      window = std::make_shared<Window>(WINDOW_NAME, DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT);
       renderer = std::make_unique<agario::Renderer>(window,
                                                     engine.arena_width(),
                                                     engine.arena_height());
@@ -118,7 +123,7 @@ namespace agario {
 
     // todo: change these into regular pointers?
     std::unique_ptr<agario::Renderer> renderer;
-    std::shared_ptr<agario::Window> window;
+    std::shared_ptr<Window> window;
 
     void process_input() {
       GLFWwindow *win = window->pointer();

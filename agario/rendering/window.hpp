@@ -5,107 +5,92 @@
 #include <OpenGL/gl3.h>
 #include <GLFW/glfw3.h>
 
+#include "rendering/Canvas.hpp"
+
 #include <exception>
-#include <iostream>
 
-#define WINDOW_NAME "AgarIO"
+class WindowException : public std::runtime_error {
+  using runtime_error::runtime_error;
+};
 
-#define DEFAULT_SCREEN_WIDTH 640
-#define DEFAULT_SCREEN_HEIGHT 480
+void glfw_error_callback(int error, const char *description) {
+  (void) error;
+  throw WindowException(description);
+}
 
-namespace agario {
+class Window : public Canvas {
+public:
 
-  class WindowException : public std::runtime_error {
-    using runtime_error::runtime_error;
-  };
+  Window(const std::string &window_name, int screen_width, int screen_height) :
+    screen_width(screen_width), screen_height(screen_height),
+    _destroy(false) {
 
-  void glfw_error_callback(int error, const char *description) {
-    (void) error;
-    throw WindowException(description);
-  }
+    glfwSetErrorCallback(glfw_error_callback);
 
-  class Window {
-  public:
+    if (!glfwInit())
+      throw WindowException("GLFW initialization failed.");
 
-    Window(int screen_width, int screen_height) :
-      screen_width(screen_width), screen_height(screen_height),
-      _destroy(false) {
-
-      glfwSetErrorCallback(glfw_error_callback);
-
-      if (!glfwInit())
-        throw WindowException("GLFW initialization failed.");
-
-      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-      glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-      glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
-      glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-      // Create a windowed mode window and its OpenGL context
-      window = glfwCreateWindow(screen_width, screen_height, WINDOW_NAME, nullptr, nullptr);
+    // Create a windowed mode window and its OpenGL context
+    window = glfwCreateWindow(screen_width, screen_height, window_name.c_str(), nullptr, nullptr);
 
-      if (window == nullptr) {
-        glfwTerminate();
-        throw WindowException("Window creation failed");
-      }
-
-      _destroy = true;
-
-      glfwMakeContextCurrent(window);
-
-      glfwSetWindowUserPointer(window, this);
-      glfwSetWindowSizeCallback(window, window_resize_callback);
+    if (window == nullptr) {
+      glfwTerminate();
+      throw WindowException("Window creation failed");
     }
 
-    Window() : Window(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT) {}
+    _destroy = true;
 
-    int width() const {
-      return screen_width;
-    }
+    glfwMakeContextCurrent(window);
 
-    int height() const {
-      return screen_height;
-    }
+    glfwSetWindowUserPointer(window, this);
+    glfwSetWindowSizeCallback(window, window_resize_callback);
+  }
 
-    GLFWwindow *pointer() const {
-      return window;
-    }
+  Window(int screen_width, int screen_height) : Window("", screen_width, screen_height) {}
 
-    bool should_close() const {
-      return glfwWindowShouldClose(window);
-    }
+  int width() const override { return screen_width; }
+  int height() const override { return screen_height; }
 
-    void swap_buffers() const {
-      glfwSwapBuffers(window);
-    };
+  GLFWwindow *pointer() const {
+    return window;
+  }
 
-    float aspect_ratio() const {
-      return (float) screen_width / (float) screen_height;
-    }
+  bool should_close() const {
+    return glfwWindowShouldClose(window);
+  }
 
-    void destroy () {
-      if (_destroy)
-        glfwDestroyWindow(window);
-      _destroy = false;
-    }
-
-    ~Window() { destroy(); }
-
-  private:
-
-    static void window_resize_callback(GLFWwindow *window, int width, int height) {
-      auto win = static_cast<Window *>(glfwGetWindowUserPointer(window));
-      win->screen_width = width;
-      win->screen_height = height;
-    }
-
-    GLFWwindow *window;
-    int screen_width;
-    int screen_height;
-    bool _destroy;
+  void swap_buffers() const {
+    glfwSwapBuffers(window);
   };
 
+  void destroy() {
+    if (_destroy)
+      glfwDestroyWindow(window);
+    _destroy = false;
+  }
 
-}
+  ~Window() { destroy(); }
+
+private:
+
+  static void window_resize_callback(GLFWwindow *window, int width, int height) {
+    auto win = static_cast<Window *>(glfwGetWindowUserPointer(window));
+    win->screen_width = width;
+    win->screen_height = height;
+  }
+
+  GLFWwindow *window;
+  int screen_width;
+  int screen_height;
+  bool _destroy;
+};
+
+
+

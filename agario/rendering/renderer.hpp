@@ -15,11 +15,13 @@
 #include <math.h>
 #include <optional>
 
-#include "shader.hpp"
 #include "engine/GameState.hpp"
-#include "rendering/window.hpp"
 #include <core/Entities.hpp>
 #include <core/Player.hpp>
+
+#include "rendering/Canvas.hpp"
+#include "rendering/shader.hpp"
+
 
 #define NUM_GRID_LINES 11
 
@@ -42,12 +44,13 @@ namespace agario {
     typedef Food<true> Food;
     typedef Virus<true> Virus;
 
-    explicit Renderer(std::shared_ptr<agario::Window> window,
+    explicit Renderer(std::shared_ptr<Canvas> canvas,
                       agario::distance arena_width,
                       agario::distance arena_height) :
-      window(std::move(window)),
+      canvas(std::move(canvas)),
       arena_width(arena_width), arena_height(arena_height),
       shader(), grid(arena_width, arena_height) {
+
       shader.compile_shaders(vertex_shader_src, fragment_shader_src);
       shader.use();
     }
@@ -65,8 +68,8 @@ namespace agario {
     agario::Location to_target(Player &player, float xpos, float ypos) {
 
       // normalized device coordinates (from -1 to 1)
-      auto ndc_x = 2 * (xpos / window->width()) - 1;
-      auto ndc_y = 1 - 2 * (ypos / window->height());
+      auto ndc_x = 2 * (xpos / canvas->width()) - 1;
+      auto ndc_y = 1 - 2 * (ypos / canvas->height());
       auto loc = glm::vec4(ndc_x, ndc_y, 1.0, 1);
 
       auto perspective = perspective_projection(player);
@@ -90,7 +93,7 @@ namespace agario {
     }
 
     glm::mat4 perspective_projection(const Player &player) {
-      return glm::perspective(glm::radians(45.0f), window->aspect_ratio(), 0.1f, 1 + camera_z(player));
+      return glm::perspective(glm::radians(45.0f), canvas->aspect_ratio(), 0.1f, 1 + camera_z(player));
     }
 
     glm::mat4 view_projection(const Player &player) {
@@ -124,17 +127,12 @@ namespace agario {
         virus.draw(shader);
     }
 
-    void terminate() {
+    ~Renderer() {
       glfwTerminate();
     }
 
-    ~Renderer() {
-      window->destroy();
-      terminate();
-    }
-
   private:
-    std::shared_ptr<agario::Window> window;
+    std::shared_ptr<Canvas> canvas;
 
     agario::distance arena_width;
     agario::distance arena_height;
