@@ -1,24 +1,26 @@
 # AgarLE (Agar.io Learning Environment)
 
-This project presents a high performance re-implementation of the popular online multi-player
+This project presents a performant re-implementation of the popular online multi-player
 game agar.io and a Python interface suitable for reinforcement learning.
 
 
 # todo
 - Learning Environment
-  - Make new CMake Project in other directory
-  - Render game without open window
-  - Design state representation(s)
-  - Wrap in OpenAI Gym Environment
+  - image isn't centered on player
+  - make focused player some special color
+  - get rid of dock icon (how?)
+  - environment messes up matplotlib
+  - configurable width and height
 - Bugs
   - splitting into bottom left corner breaks the game
-  - split faster: split speed = same for all cells?
+    - fix this by clipping position *after movement*
 - Game Mechanics Tweaking
   - Feeding viruses causing them to duplicate
-  - big cells should move and split faster
-  - slow taking away of mass from big cells?
-  - split/feed cooldown time based (not tick based)
+  - big cells should move/split faster (same split speed?)
+  - arena mass conservation?
 - Refactoring
+  - Get rid of debugging targets
+  - document everything a lot
   - Benchmarks for game ticking
   - More efficient algorithms for entity collisions
   - Better solution to NumberWrapper (is there one?)
