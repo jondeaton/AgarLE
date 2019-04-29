@@ -33,17 +33,15 @@ PYBIND11_MODULE(agario_env, module) {
     .def("get_state", [](const Environment &env) {
 
       auto &observation = env.get_state();
-      auto data = new std::uint8_t[observation.size()];
-      std::memcpy(data, observation.frame_data(), observation.size());
 
+      auto data = (void *) observation.frame_data();
       std::vector<int> shape = {NumFrames, Width, Height, PIXEL_SIZE};
       std::vector<int> strides = {Width * Height * PIXEL_SIZE, Height * PIXEL_SIZE, PIXEL_SIZE, 1};
 
-      auto arr = py::array_t<std::uint8_t>(py::buffer_info(data,
-                                                           sizeof(std::uint8_t),
+      auto arr = py::array_t<std::uint8_t>(py::buffer_info(data, sizeof(std::uint8_t),
                                                            py::format_descriptor<std::uint8_t>::format(),
-                                                           4, shape, strides));
-      delete[] data;
+                                                           observation.num_frames(),
+                                                           shape, strides));
       return arr;
     })
     .def("done", &Environment::done)

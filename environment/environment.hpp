@@ -29,12 +29,16 @@ namespace agario::environment {
       return _num_frames * W * H * PIXEL_SIZE;
     }
 
+    void clear() { std::fill(_frame_data, _frame_data + size(), 0); }
+
     std::uint8_t *frame_data(unsigned frame_index) {
       if (frame_index >= _num_frames)
         throw FBOException("Frame index " + std::to_string(frame_index) + " out of bounds");
 
       return &_frame_data[frame_index * W * H * PIXEL_SIZE];
     }
+
+    unsigned num_frames() const { return _num_frames; }
 
     ~Observation() { delete[] _frame_data; }
   private:

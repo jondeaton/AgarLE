@@ -29,5 +29,6 @@ game agar.io and a Python interface suitable for reinforcement learning.
 - Client-Server connection
   - GameState serialization
   - Server IO
-  - Client IO
+  - Client IO 
+  - browser client (WASM + WebGL?)
 

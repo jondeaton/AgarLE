@@ -67,7 +67,6 @@ set(AGARIO_SRC ${AGARIO_CORE_SRC} ${AGARIO_ENGINE_SRC})
 add_library(agario STATIC ${AGARIO_SRC})
 
 find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
 find_library(GLFW REQUIRED)
 include_directories(client engine ${OPENGL_INCLUDE_DIR})
 
@@ -79,19 +78,8 @@ set(AGARIO_CLIENT_SRC
         rendering/renderer.hpp
         rendering/shader.hpp)
 
-#add_executable(test-opengl test/test-opengl.cpp)
-#target_link_libraries(test-opengl
-#        glfw ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
-#
-#add_executable(test-glm ${AGARIO_RENDERING_SRC} test/test-glm.cpp)
-#target_link_libraries(test-glm glfw ${GLFW_LIBRARIES}
-#        glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
-#
-#add_executable(test-client ${AGARIO_CLIENT_SRC} test/test-client.cpp)
-#target_link_libraries(test-client agario gtest glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
-
 add_executable(client ${AGARIO_CLIENT_SRC} ${AGARIO_BOT_SRC} client/main.cpp)
-target_link_libraries(client agario gtest glfw glew ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_glu_LIBRARY})
+target_link_libraries(client agario gtest glfw glew ${OPENGL_LIBRARIES} ${OPENGL_glu_LIBRARY})
 
 include_directories(server)
 set(AGARIO_SERVER_SRC
