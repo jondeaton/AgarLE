@@ -1,8 +1,6 @@
 #pragma once
 
-#define GL_SILENCE_DEPRECATION
-
-#include <OpenGL/gl3.h>
+#include "rendering/platform.hpp"
 #include <GLFW/glfw3.h>
 
 #include "rendering/Canvas.hpp"
