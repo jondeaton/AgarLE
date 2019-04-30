@@ -8,6 +8,7 @@ set(AGARIO_ENV_SOURCE
         bindings.cpp
         environment.hpp)
 
+set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 find_library(GLFW REQUIRED)
 find_package(glfw3)

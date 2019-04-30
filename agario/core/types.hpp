@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <chrono>
 
 #include "core/num_wrapper.hpp"
 

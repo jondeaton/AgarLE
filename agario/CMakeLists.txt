@@ -66,6 +66,7 @@ set(AGARIO_SRC ${AGARIO_CORE_SRC} ${AGARIO_ENGINE_SRC})
 
 add_library(agario STATIC ${AGARIO_SRC})
 
+set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 find_library(GLFW REQUIRED)
 include_directories(client engine ${OPENGL_INCLUDE_DIR})
@@ -92,7 +93,7 @@ set(TEST_SRC
         test/test-engine.hpp
         test/main.cpp)
 
-find_package(gtest REQUIRED)
+find_package(gtest)
 if (GTEST_FOUND)
     #set(TEST_FLAGS "-g -O0 -Wall -Wextra -pedantic")
 

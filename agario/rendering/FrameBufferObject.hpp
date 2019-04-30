@@ -2,7 +2,11 @@
 
 #define GL_SILENCE_DEPRECATION
 
+#if defined __APPLE__
 #include <OpenGL/gl3.h>
+#else
+#include <GL/gl.h>
+#endif
 #include <GLFW/glfw3.h>
 
 #include "rendering/Canvas.hpp"
