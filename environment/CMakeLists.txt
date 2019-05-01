@@ -12,6 +12,13 @@ set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 find_library(GLFW REQUIRED)
 find_package(glfw3)
+
+find_package(GLM REQUIRED)
+
+include_directories(${GLM_INCLUDE_DIRS})
+link_directories(${GLM_LIBRARY_DIRS})
+add_definitions(${GLM_DEFINITIONS})
+
 include_directories(${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIR})
 
 pybind11_add_module(agario_env ${AGARIO_ENV_SOURCE})
