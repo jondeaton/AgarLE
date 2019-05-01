@@ -70,6 +70,12 @@ add_library(agario STATIC ${AGARIO_SRC})
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 find_library(GLFW REQUIRED)
+find_package(GLM REQUIRED)
+
+include_directories(${GLM_INCLUDE_DIRS})
+link_directories(${GLM_LIBRARY_DIRS})
+add_definitions(${GLM_DEFINITIONS})
+
 include_directories(client engine ${OPENGL_INCLUDE_DIR})
 
 set(AGARIO_CLIENT_SRC
