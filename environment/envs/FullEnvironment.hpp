@@ -7,19 +7,18 @@ namespace agario::env::full {
   class Observation {
     typedef GameState<false> GameState;
   public:
-    explicit Observation(const GameState &game_state) {
-
+    explicit Observation(const Player<false> &player, const GameState &game_state) {
+      int num_cells = player.cells.size();
+      _data[0] = new float[num_cells * 5];
     }
 
     const std::vector<float *> &data() const { return _data; }
 
-
-    ~Observation() {
-
-    }
+    ~Observation() { }
 
   private:
     std::vector<float *> _data;
+    std::vector<int> _sizes;
   };
 
 

@@ -28,7 +28,7 @@ PYBIND11_MODULE(agario_env, module) {
   constexpr unsigned observation_size = NumFrames * Width * Height * PIXEL_SIZE;
 
   typedef agario::env::ScreenEnvironment<true, Width, Height> ScreenEnvironment;
-  typedef agario::env::full::Environment RamEnvironment;
+  typedef agario::env::full::Environment FullEnvironment;
 
   pybind11::class_<ScreenEnvironment>(module, "ScreenEnvironment")
     .def(pybind11::init<int>())
@@ -50,12 +50,11 @@ PYBIND11_MODULE(agario_env, module) {
     .def("done", &ScreenEnvironment::done)
     .def("take_action", &ScreenEnvironment::take_action, "x"_a, "y"_a, "act"_a)
     .def("reset", &ScreenEnvironment::reset);
-
-
-  pybind11::class_<RamEnvironment>(module, "RamEnvironment")
+  
+  pybind11::class_<FullEnvironment>(module, "FullEnvironment")
     .def(pybind11::init<int>())
-    .def("step", &RamEnvironment::step)
-    .def("get_state", [](const RamEnvironment &env) {
+    .def("step", &FullEnvironment::step)
+    .def("get_state", [](const FullEnvironment &env) {
       auto &observation = env.get_state();
 
       py::list data_list;

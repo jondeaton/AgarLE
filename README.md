@@ -10,7 +10,9 @@ game agar.io and a Python interface suitable for reinforcement learning.
   - make focused player some special color
   - get rid of dock icon (how?)
   - environment messes up matplotlib
-  - configurable width and height
+  - configurable width and height of screen
+  - Full Environment
+  - Print out player masses at end of game
 - Bugs
   - splitting into bottom left corner breaks the game
     - fix this by clipping position *after movement*
