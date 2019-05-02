@@ -12,8 +12,10 @@ namespace agario::bot {
     typedef agario::Player<renderable> Player;
     template<typename Loc>
     HungryShyBot(agario::pid pid, std::string name, Loc &&loc, agario::color color) : Player(pid, name, loc, color) { }
+    template<typename Loc>
+    HungryShyBot(agario::pid pid, std::string name, Loc &&loc) : HungryShyBot(pid, name, loc, agario::color::purple) {}
     HungryShyBot(agario::pid pid, std::string name, agario::color color) : HungryShyBot(pid, name, Location(0, 0), color) {}
-    HungryShyBot(agario::pid pid, std::string name) : HungryShyBot(pid, name, agario::color::blue) {}
+    HungryShyBot(agario::pid pid, std::string name) : HungryShyBot(pid, name, agario::color::purple) {}
     HungryShyBot(std::string name) : HungryShyBot(-1, name) {}
     HungryShyBot() : HungryShyBot(typeid(*this).name()) { }
 

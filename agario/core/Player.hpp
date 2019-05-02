@@ -32,9 +32,11 @@ namespace agario {
       add_cell(loc, CELL_MIN_SIZE);
     }
 
+    template<typename Loc>
+    Player(agario::pid pid, std::string name, Loc &&loc) : Player(pid, name, loc, random_color()) {}
     Player(agario::pid pid, std::string name, agario::color color) : Player(pid, name, Location(0, 0), color) {}
-    Player(agario::pid pid, std::string name) : Player(pid, name, agario::color::blue) {}
-    Player(std::string name) : Player(-1, name, agario::color::blue) {}
+    Player(agario::pid pid, std::string name) : Player(pid, name, random_color()) {}
+    Player(std::string name) : Player(-1, name) {}
 
     std::vector<Cell> cells;
     agario::action action;
@@ -122,5 +124,12 @@ namespace agario {
     agario::score _score;
     agario::color _color;
   };
+
+
+  template<bool r>
+  std::ostream &operator<<(std::ostream &os, const Player<r> &player) {
+    os << player.name() << " (" << player.pid() << "), " << " score: " << player.score();
+    return os;
+  }
 
 }
