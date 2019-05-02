@@ -87,7 +87,7 @@ set(AGARIO_CLIENT_SRC
         rendering/shader.hpp)
 
 add_executable(client ${AGARIO_CLIENT_SRC} ${AGARIO_BOT_SRC} client/main.cpp)
-target_link_libraries(client agario glfw ${OPENGL_LIBRARIES} ${OPENGL_glu_LIBRARY})
+target_link_libraries(client agario glfw ${OPENGL_LIBRARIES})
 
 include_directories(server)
 set(AGARIO_SERVER_SRC

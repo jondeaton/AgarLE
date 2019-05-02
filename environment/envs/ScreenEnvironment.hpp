@@ -12,7 +12,7 @@
 #define PIXEL_SIZE 3
 #define DEFAULT_DT (1.0 / 60)
 
-namespace agario::environment {
+namespace agario::env {
 
   typedef double reward;
 
@@ -47,13 +47,8 @@ namespace agario::environment {
   };
 
   template<bool renderable, unsigned W, unsigned H>
-  class Environment {
+  class ScreenEnvironment {
     typedef agario::Player<renderable> Player;
-    typedef agario::Cell<renderable> Cell;
-    typedef agario::Pellet<renderable> Pellet;
-    typedef agario::Food<renderable> Food;
-    typedef agario::Virus<renderable> Virus;
-
     typedef agario::bot::HungryBot<renderable> HungryBot;
     typedef agario::bot::HungryShyBot<renderable> HungryShyBot;
 
@@ -61,7 +56,7 @@ namespace agario::environment {
 
   public:
 
-    explicit Environment(int frames_per_step) :
+    explicit ScreenEnvironment(int frames_per_step) :
       engine(), _observation(frames_per_step),
       _num_frames(frames_per_step), _done(false), step_dt(DEFAULT_DT),
       frame_buffer(std::make_shared<FrameBufferObject<W, H>>()),

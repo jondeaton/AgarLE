@@ -68,6 +68,7 @@ namespace agario {
     const std::vector<Food> &foods() const { return state.foods; }
     const std::vector<Virus> &viruses() const { return state.viruses; }
     agario::GameState<renderable> &game_state() { return state; }
+    const agario::GameState<renderable> &get_game_state() const { return state; }
     agario::distance arena_height() const { return _arena_height; }
     agario::distance arena_width() const { return _arena_width; }
 

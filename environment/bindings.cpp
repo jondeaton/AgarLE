@@ -4,7 +4,9 @@
 #include <pybind11/numpy.h>
 
 #include <iostream>
-#include <environment.hpp>
+
+#include "envs/ScreenEnvironment.hpp"
+#include "envs/FullEnvironment.hpp"
 
 #define PIXEL_SIZE 3
 
@@ -25,12 +27,13 @@ PYBIND11_MODULE(agario_env, module) {
   constexpr unsigned NumFrames = 4;
   constexpr unsigned observation_size = NumFrames * Width * Height * PIXEL_SIZE;
 
-  typedef agario::environment::Environment<true, Width, Height> Environment;
+  typedef agario::env::ScreenEnvironment<true, Width, Height> ScreenEnvironment;
+  typedef agario::env::full::Environment RamEnvironment;
 
-  pybind11::class_<Environment>(module, "Environment")
+  pybind11::class_<ScreenEnvironment>(module, "ScreenEnvironment")
     .def(pybind11::init<int>())
-    .def("step", &Environment::step)
-    .def("get_state", [](const Environment &env) {
+    .def("step", &ScreenEnvironment::step)
+    .def("get_state", [](const ScreenEnvironment &env) {
 
       auto &observation = env.get_state();
 
@@ -44,7 +47,33 @@ PYBIND11_MODULE(agario_env, module) {
                                                            shape, strides));
       return arr;
     })
-    .def("done", &Environment::done)
-    .def("take_action", &Environment::take_action, "x"_a, "y"_a, "act"_a)
-    .def("reset", &Environment::reset);
+    .def("done", &ScreenEnvironment::done)
+    .def("take_action", &ScreenEnvironment::take_action, "x"_a, "y"_a, "act"_a)
+    .def("reset", &ScreenEnvironment::reset);
+
+
+  pybind11::class_<RamEnvironment>(module, "RamEnvironment")
+    .def(pybind11::init<int>())
+    .def("step", &RamEnvironment::step)
+    .def("get_state", [](const RamEnvironment &env) {
+      auto &observation = env.get_state();
+
+      py::list data_list;
+
+      const std::vector<float *> data_vec = observation.data();
+
+      for (auto data_entry : data_vec) {
+//         auto arr = py::array_t<std::uint8_t>(py::buffer_info());
+
+//         data_list.append(arr);
+      }
+
+
+    })
+    .def("done", &ScreenEnvironment::done)
+    .def("take_action", &ScreenEnvironment::take_action, "x"_a, "y"_a, "act"_a)
+    .def("reset", &ScreenEnvironment::reset);
+
+  }
+
 }

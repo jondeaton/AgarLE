@@ -6,7 +6,8 @@ add_subdirectory(pybind11)
 
 set(AGARIO_ENV_SOURCE
         bindings.cpp
-        environment.hpp)
+        envs/ScreenEnvironment.hpp
+        envs/FullEnvironment.hpp)
 
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
