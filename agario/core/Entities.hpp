@@ -108,8 +108,6 @@ namespace agario {
       }
     }
 
-    // todo: change VIRUS_SIZE to static member of Virus?
-    // todo: viruses have variable mass and size
     distance radius() const override { return radius_conversion(mass()); }
 
     agario::mass mass() const override { return VIRUS_MASS; }

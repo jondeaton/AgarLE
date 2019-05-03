@@ -53,6 +53,15 @@ namespace agario {
       return *state.players.at(pid);
     }
 
+    const Player &get_player(agario::pid pid) const {
+      if (state.players.find(pid) == state.players.end()) {
+        std::stringstream ss;
+        ss << "Player ID: " << pid << " does not exist.";
+        throw EngineException(ss.str());
+      }
+      return *state.players.at(pid);
+    }
+
     void reset() {
       state.clear();
       initialize_game();

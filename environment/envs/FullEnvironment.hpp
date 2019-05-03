@@ -4,55 +4,113 @@
 
 namespace agario::env::full {
 
+  template <bool renderable>
   class Observation {
-    typedef GameState<false> GameState;
+    typedef GameState<renderable> GameState;
+    typedef Player<renderable> Player;
   public:
-    explicit Observation(const Player<false> &player, const GameState &game_state) {
+    explicit Observation(const Player &player, const GameState &game_state) {
+      // todo: please refactor :(
+
+      int num_viruses = game_state.viruses.size();
+      _data.push_back(new float[2 * num_viruses]);
+      _store_viruses(game_state, _data[0]);
+      _shapes.push_back({ num_viruses, 2 });
+
+      int num_foods = game_state.foods.size();
+      _data.push_back(new float[2 * num_foods]);
+      _store_foods(game_state, _data[1]);
+      _shapes.push_back({ num_foods, 2 });
+
+      int num_pellets = game_state.pellets.size();
+      _data.push_back(new float[2 * num_pellets]);
+      _store_pellets(game_state, _data[2]);
+      _shapes.push_back({ num_pellets, 2 });
+
       int num_cells = player.cells.size();
-      _data[0] = new float[num_cells * 5];
-      _store_player_cells(player, _data[0]);
+      _data.push_back(new float[5 * num_cells]);
+      _store_player_cells(player, _data[3]);
+      _shapes.push_back({ num_cells, 5 });
+
+      for (auto &pair : game_state.players) {
+        auto &other_player = *pair.second;
+        if (other_player == player) continue;
+
+        num_cells = other_player.cells.size();
+        auto player_data = new float[5 * num_cells];
+        _store_player_cells(other_player, player_data);
+        _data.push_back(player_data);
+        _shapes.push_back({ num_cells, 5 });
+      }
     }
 
     const std::vector<float *> &data() const { return _data; }
 
+    const std::vector<std::vector<int>> shapes() const { return _shapes; }
 
-    ~Observation() { }
+    ~Observation() {
+      for (float *d : _data)
+        delete[] d;
+    }
 
   private:
     std::vector<float *> _data;
-    std::vector<int> _sizes;
+    std::vector<std::vector<int>> _shapes;
 
-    void _store_player_cells(const Player<false> &player, float *loc) {
+    void _store_viruses(const GameState &game_state, float *buffer) {
+      int i = 0;
+      for (auto &virus : game_state.viruses) {
+        buffer[i * 2 + 0] = (float) virus.x;
+        buffer[i * 2 + 1] = (float) virus.y;
+        i++;
+      }
+    }
+
+    void _store_foods(const GameState &game_state, float *buffer) {
+      int i = 0;
+      for (auto &food : game_state.foods) {
+        buffer[i * 2 + 0] = (float) food.x;
+        buffer[i * 2 + 1] = (float) food.y;
+        i++;
+      }
+    }
+
+    void _store_pellets(const GameState &game_state, float *buffer) {
+      int i = 0;
+      for (auto &pellet : game_state.pellets) {
+        buffer[i * 2 + 0] = (float) pellet.x;
+        buffer[i * 2 + 1] = (float) pellet.y;
+        i++;
+      }
+    }
+
+    void _store_player_cells(const Player &player, float *buffer) {
       int i = 0;
       for (auto &cell : player.cells) {
-        _data[0][i * 5 + 0] = (float) cell.mass();
-        _data[0][i * 5 + 1] = (float) cell.x;
-        _data[0][i * 5 + 2] = (float) cell.y;
-        _data[0][i * 5 + 3] = (float) cell.velocity.dx;
-        _data[0][i * 5 + 5] = (float) cell.velocity.dy;
+        buffer[i * 5 + 0] = (float) cell.x;
+        buffer[i * 5 + 1] = (float) cell.y;
+        buffer[i * 5 + 2] = (float) cell.velocity.dx;
+        buffer[i * 5 + 3] = (float) cell.velocity.dy;
+        buffer[i * 5 + 4] = (float) cell.mass();
         i++;
       }
     }
 
   };
 
-
-  class Environment {
-    static constexpr bool renderable = false;
+  template <bool renderable>
+  class FullEnvironment {
     typedef agario::Player<renderable> Player;
-    typedef agario::Cell<renderable> Cell;
-    typedef agario::Pellet<renderable> Pellet;
-    typedef agario::Food<renderable> Food;
-    typedef agario::Virus<renderable> Virus;
-
+    typedef Observation<renderable> Observation;
     typedef agario::bot::HungryBot<renderable> HungryBot;
     typedef agario::bot::HungryShyBot<renderable> HungryShyBot;
 
   public:
 
-    explicit Environment(int frames_per_step) :
+    explicit FullEnvironment(int frames_per_step) :
       engine(), _num_frames(frames_per_step), _done(false), step_dt(DEFAULT_DT) {
       pid = engine.template add_player<Player>("agent");
+      reset();
     }
 
     reward step() {
@@ -72,7 +130,8 @@ namespace agario::env::full {
     }
 
     const Observation get_state() const {
-      return Observation(engine.get_game_state());
+      auto &player = engine.get_player(pid);
+      return Observation(player, engine.get_game_state());
     }
 
     void render() {}

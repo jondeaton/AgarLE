@@ -28,7 +28,7 @@ PYBIND11_MODULE(agario_env, module) {
   constexpr unsigned observation_size = NumFrames * Width * Height * PIXEL_SIZE;
 
   typedef agario::env::ScreenEnvironment<true, Width, Height> ScreenEnvironment;
-  typedef agario::env::full::Environment FullEnvironment;
+  typedef agario::env::full::FullEnvironment<true> FullEnvironment;
 
   pybind11::class_<ScreenEnvironment>(module, "ScreenEnvironment")
     .def(pybind11::init<int>())
@@ -36,43 +36,51 @@ PYBIND11_MODULE(agario_env, module) {
     .def("get_state", [](const ScreenEnvironment &env) {
 
       auto &observation = env.get_state();
-
       auto data = (void *) observation.frame_data();
       std::vector<int> shape = {NumFrames, Width, Height, PIXEL_SIZE};
       std::vector<int> strides = {Width * Height * PIXEL_SIZE, Height * PIXEL_SIZE, PIXEL_SIZE, 1};
 
       auto arr = py::array_t<std::uint8_t>(py::buffer_info(data, sizeof(std::uint8_t),
                                                            py::format_descriptor<std::uint8_t>::format(),
-                                                           observation.num_frames(),
-                                                           shape, strides));
+                                                           4, shape, strides));
       return arr;
     })
     .def("done", &ScreenEnvironment::done)
     .def("take_action", &ScreenEnvironment::take_action, "x"_a, "y"_a, "act"_a)
     .def("reset", &ScreenEnvironment::reset);
-  
+
   pybind11::class_<FullEnvironment>(module, "FullEnvironment")
     .def(pybind11::init<int>())
     .def("step", &FullEnvironment::step)
     .def("get_state", [](const FullEnvironment &env) {
+
       auto &observation = env.get_state();
 
       py::list data_list;
 
-      const std::vector<float *> data_vec = observation.data();
+      const auto &data_vec = observation.data();
+      const auto &shapes = observation.shapes();
 
-      for (auto data_entry : data_vec) {
-//         auto arr = py::array_t<std::uint8_t>(py::buffer_info());
+      for (int i = 0; i < data_vec.size(); i++) {
 
-//         data_list.append(arr);
+        void *data = (void *) data_vec[i];
+        std::vector<int> shape = shapes[i];
+        std::vector<int> strides = {(int)(shape[1] * sizeof(float)), sizeof(float)};
+
+        auto buffer = py::buffer_info(data, sizeof(float),
+                                      py::format_descriptor<float>::format(),
+                                      2, shape, strides);
+
+        auto arr = py::array_t<float>(buffer);
+
+        data_list.append(arr);
       }
 
-
+      return data_list;
     })
-    .def("done", &ScreenEnvironment::done)
-    .def("take_action", &ScreenEnvironment::take_action, "x"_a, "y"_a, "act"_a)
-    .def("reset", &ScreenEnvironment::reset);
-
-  }
+    .def("done", &FullEnvironment::done)
+    .def("take_action", &FullEnvironment::take_action, "x"_a, "y"_a, "act"_a)
+    .def("reset", &FullEnvironment::reset);
 
 }
+
