@@ -9,9 +9,9 @@ game agar.io and a Python interface suitable for reinforcement learning.
   - image isn't centered on player
   - make focused player some special color
   - get rid of dock icon (how?)
-  - environment messes up matplotlib
-  - configurable width and height of screen
   - Full Environment
+  - environment messes up matplotlib (plt.figure()?)
+  - configurable width and height of screen
   - make the action target relative to position
   - rename standalone to singleplayer
   - make client work without -s flag

@@ -58,10 +58,10 @@ namespace agario {
 
     void add_bots() {
       for (int i = 0; i < 10; i++)
-        engine.add_player<bot::HungryBot<true>>("hungry");
+        engine.add_player<bot::HungryBot<true>>("HungryBot");
 
       for (int i = 0; i < 25; i++)
-        engine.add_player<bot::HungryShyBot<true>>("shy");
+        engine.add_player<bot::HungryShyBot<true>>("HungryShyBot");
     }
 
     void initialize_renderer() {
@@ -82,8 +82,13 @@ namespace agario {
       auto now = std::chrono::system_clock::now();
       std::chrono::duration<double> total_time = now - beginning;
 
+      std::cout << "Game time: " << total_time.count() << " sec." << std::endl;
+
       float fps = (engine.ticks() - ticks_before) / total_time.count();
       std::cout << "Average FPS: " << fps << std::endl;
+
+      std::cout << "Leaderboard:" << std::endl;
+      std::cout << engine.game_state() << std::endl;
     }
 
     void game_loop() {

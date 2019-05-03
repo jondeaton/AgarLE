@@ -38,7 +38,7 @@ namespace agario {
 
     template <typename P>
     agario::pid add_player(const std::string &name) {
-      auto player_ptr = std::make_shared<P>(next_pid, name, random_location(), random_color());
+      auto player_ptr = std::make_shared<P>(next_pid, name, random_location());
       auto p = state.players.insert(std::make_pair(next_pid, player_ptr));
       next_pid++;
       return p.first->second->pid();

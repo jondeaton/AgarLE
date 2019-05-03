@@ -9,15 +9,12 @@ namespace agario::bot {
   public:
     typedef agario::Player<renderable> Player;
 
-
     template<typename Loc>
-    RandomBot(agario::pid pid, std::string name, Loc &&loc, agario::color color) :
-    Player(pid, name, loc, color) { }
-
-    RandomBot(agario::pid pid, std::string name, agario::color color) :
-      RandomBot(pid, name, Location(0, 0), color) {}
-
-    RandomBot(agario::pid pid, std::string name) : RandomBot(pid, name, agario::color::blue) {}
+    RandomBot(agario::pid pid, std::string name, Loc &&loc, agario::color color) : Player(pid, name, loc, color) { }
+    template<typename Loc>
+    RandomBot(agario::pid pid, std::string name, Loc &&loc) : RandomBot(pid, name, loc, agario::color::red) {}
+    RandomBot(agario::pid pid, std::string name, agario::color color) : RandomBot(pid, name, Location(0, 0), color) {}
+    RandomBot(agario::pid pid, std::string name) : RandomBot(pid, name, agario::color::red) {}
     RandomBot(std::string name) : RandomBot(-1, name, agario::color::blue) {}
 
     void take_action(const GameState<renderable> &state) override {
