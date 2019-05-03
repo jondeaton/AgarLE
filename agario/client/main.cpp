@@ -13,10 +13,10 @@ cxxopts::Options options() {
       .show_positional_help();
 
     options.add_options()
-      ("s,standalone", "standalone mode", cxxopts::value<bool>()->default_value("false"))
+      ("s,singleplayer", "singleplayer mode", cxxopts::value<bool>()->default_value("false"))
       ("server", "Server", cxxopts::value<std::string>()->default_value("localhost"))
       ("port", "Port", cxxopts::value<int>()->default_value("80"))
-      ("name", "Player Name", cxxopts::value<std::string>()->default_value(""))
+      ("name", "Player Name", cxxopts::value<std::string>()->default_value("unnamed"))
       ("help", "Print help");
 
 
@@ -34,31 +34,32 @@ int main(int argc, char *argv[]) {
   auto opts = options();
   auto args = opts.parse(argc, argv);
 
-  bool standalone = args["standalone"].as<bool>();
+//  bool singleplayer = args["singleplayer"].as<bool>();
   std::string name = args["name"].as<std::string>();
 
-  if (standalone) {
-    std::cout << "Standalone mode." << std::endl;
 
-    agario::Client client;
-    agario::pid pid = client.add_player(name);
+//  if (singleplayer) {
+  std::cout << "Single-player mode." << std::endl;
 
-    client.set_player(pid);
-    client.add_bots();
+  agario::Client client;
+  agario::pid pid = client.add_player(name);
 
-    client.play();
+  client.set_player(pid);
+  client.add_bots();
 
-  } else {
-    std::string server = args["server"].as<std::string>();
-    int port = args["port"].as<int>();
+  client.play();
 
-    std::cout << "Server: " << server << std::endl;
-    std::cout << "Port: " << port << std::endl;
-
-    agario::Client client(server, port);
-    client.connect();
-    client.game_loop();
-  }
+//  } else {
+//    std::string server = args["server"].as<std::string>();
+//    int port = args["port"].as<int>();
+//
+//    std::cout << "Server: " << server << std::endl;
+//    std::cout << "Port: " << port << std::endl;
+//
+//    agario::Client client(server, port);
+//    client.connect();
+//    client.game_loop();
+//  }
 
   return 0;
 }

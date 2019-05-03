@@ -13,9 +13,6 @@ game agar.io and a Python interface suitable for reinforcement learning.
   - environment messes up matplotlib (plt.figure()?)
   - configurable width and height of screen
   - make the action target relative to position
-  - rename standalone to singleplayer
-  - make client work without -s flag
-  - fix having to use -DCMAKE_BUILD_TYPE in build
 - Bugs
   - splitting into bottom left corner breaks the game
     - fix this by clipping position *after movement*
