@@ -6,24 +6,22 @@ game agar.io and a Python interface suitable for reinforcement learning.
 
 # todo
 - Learning Environment
-  - image isn't centered on player
+  - image isn't centered on player (!!!!)
   - make focused player some special color
   - get rid of dock icon (how?)
-  - environment messes up matplotlib (plt.figure()?)
   - configurable width and height of screen
-  - Full Environment
-  - Print out player masses at end of game
   - make the action target relative to position
-  - rename standalone to singleplayer
-  - make client work without -s flag
-  - fix having to use -DCMAKE_BUILD_TYPE in build
-- Bugs
-  - splitting into bottom left corner breaks the game
-    - fix this by clipping position *after movement*
+  - Full environment still is renderable :(
 - Game Mechanics Tweaking
-  - Feeding viruses causing them to duplicate
   - big cells should move/split faster (same split speed?)
+  - small cells can push big cells
+  - Feeding viruses causing them to duplicate
   - arena mass conservation?
+ - Bugs
+    - viruses appear inside players = splitting them
+    - get too big, zoom out too far = screen dissappears :(
+    - splitting into bottom left corner breaks the game
+      - fix this by clipping position *after movement*
 - Refactoring
   - Get rid of debugging targets
   - document everything a lot

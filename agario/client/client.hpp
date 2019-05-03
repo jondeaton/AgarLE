@@ -89,6 +89,8 @@ namespace agario {
 
       std::cout << "Leaderboard:" << std::endl;
       std::cout << engine.game_state() << std::endl;
+
+      window->destroy();
     }
 
     void game_loop() {
