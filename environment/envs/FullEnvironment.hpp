@@ -10,15 +10,30 @@ namespace agario::env::full {
     explicit Observation(const Player<false> &player, const GameState &game_state) {
       int num_cells = player.cells.size();
       _data[0] = new float[num_cells * 5];
+      _store_player_cells(player, _data[0]);
     }
 
     const std::vector<float *> &data() const { return _data; }
+
 
     ~Observation() { }
 
   private:
     std::vector<float *> _data;
     std::vector<int> _sizes;
+
+    void _store_player_cells(const Player<false> &player, float *loc) {
+      int i = 0;
+      for (auto &cell : player.cells) {
+        _data[0][i * 5 + 0] = (float) cell.mass();
+        _data[0][i * 5 + 1] = (float) cell.x;
+        _data[0][i * 5 + 2] = (float) cell.y;
+        _data[0][i * 5 + 3] = (float) cell.velocity.dx;
+        _data[0][i * 5 + 5] = (float) cell.velocity.dy;
+        i++;
+      }
+    }
+
   };
 
 
