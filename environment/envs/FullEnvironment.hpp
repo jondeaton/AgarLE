@@ -1,8 +1,18 @@
 #pragma once
 
+#include <engine/Engine.hpp>
+#include <core/types.hpp>
+#include <core/Entities.hpp>
+#include <core/Ball.hpp>
+#include <bots/bots.hpp>
+
 #include "engine/GameState.hpp"
 
+#define DEFAULT_DT (1.0 / 60)
+
 namespace agario::env::full {
+
+  typedef double reward;
 
   template <bool renderable>
   class Observation {
@@ -99,7 +109,7 @@ namespace agario::env::full {
   };
 
   template <bool renderable>
-  class FullEnvironment {
+  class Environment {
     typedef agario::Player<renderable> Player;
     typedef Observation<renderable> Observation;
     typedef agario::bot::HungryBot<renderable> HungryBot;
@@ -107,7 +117,7 @@ namespace agario::env::full {
 
   public:
 
-    explicit FullEnvironment(int frames_per_step) :
+    explicit Environment(int frames_per_step) :
       engine(), _num_frames(frames_per_step), _done(false), step_dt(DEFAULT_DT) {
       pid = engine.template add_player<Player>("agent");
       reset();
