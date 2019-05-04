@@ -77,9 +77,9 @@ namespace agario {
     using Ball::Ball;
     agario::color color;
 
-    explicit RenderableBall(const Location &loc) : Ball(loc),
-                                                   color(agario::random_color()),
-                                                   _initialized(false) {}
+    template <typename Loc>
+    explicit RenderableBall(Loc &&loc) : Ball(loc), color(agario::random_color()),
+                                                    _initialized(false) {}
 
     RenderableBall(agario::distance x, agario::distance y) :
       RenderableBall(Location(x, y)) {}

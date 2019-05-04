@@ -21,7 +21,7 @@ namespace agario {
 
   public:
 
-    typedef Cell <renderable> Cell;
+    typedef Cell<renderable> Cell;
 
     Player() = delete;
 
@@ -101,14 +101,25 @@ namespace agario {
 
     bool operator<(const Player &other) const { return mass() < other.mass(); }
 
-    typename std::enable_if<renderable, void>::type
-    draw(Shader &shader) {
+    template<typename = typename std::enable_if<renderable>>
+    void draw(Shader &shader) {
       for (auto &cell : cells)
         cell.draw(shader);
     }
 
     virtual void take_action(const GameState<renderable> &state) {
       static_cast<void>(state);
+    }
+
+    void add_cells(std::vector<Cell> &new_cells) {
+      if constexpr (renderable) {
+        for (auto &cell : new_cells)
+          cell.set_color(color());
+      }
+
+      cells.insert(std::end(cells),
+                   std::make_move_iterator(new_cells.begin()),
+                   std::make_move_iterator(new_cells.end()));
     }
 
     // virtual destructor because it's polymorphic

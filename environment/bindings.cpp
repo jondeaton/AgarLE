@@ -16,7 +16,7 @@ int add(int x, int y) { return x + y; }
 namespace py = pybind11;
 
 PYBIND11_MODULE(agario_env, module) {
-  using namespace pybind11::literals; // for _a literal to define arguments
+  using namespace pybind11::literals;
   module.doc() = "Agario Learning Environment";
 
   module.def("say_hello", &say_hello, "say hello");
@@ -28,8 +28,6 @@ PYBIND11_MODULE(agario_env, module) {
   constexpr unsigned observation_size = NumFrames * Width * Height * PIXEL_SIZE;
 
   typedef agario::env::ScreenEnvironment<true, Width, Height> ScreenEnvironment;
-  typedef agario::env::full::FullEnvironment<true> FullEnvironment;
-
   pybind11::class_<ScreenEnvironment>(module, "ScreenEnvironment")
     .def(pybind11::init<int>())
     .def("step", &ScreenEnvironment::step)
@@ -49,6 +47,8 @@ PYBIND11_MODULE(agario_env, module) {
     .def("take_action", &ScreenEnvironment::take_action, "x"_a, "y"_a, "act"_a)
     .def("reset", &ScreenEnvironment::reset);
 
+
+  typedef agario::env::full::FullEnvironment<true> FullEnvironment;
   pybind11::class_<FullEnvironment>(module, "FullEnvironment")
     .def(pybind11::init<int>())
     .def("step", &FullEnvironment::step)

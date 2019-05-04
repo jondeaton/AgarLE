@@ -208,9 +208,7 @@ namespace agario {
       maybe_split(player, created_cells);
 
       // add any cells that were created
-      player.cells.insert(std::end(player.cells),
-                          std::make_move_iterator(created_cells.begin()),
-                          std::make_move_iterator(created_cells.end()));
+      player.add_cells(created_cells);
       created_cells.erase(created_cells.begin(), created_cells.end());
 
       recombine_cells(player);
@@ -351,7 +349,6 @@ namespace agario {
 
         // todo: add constructor that takes splitting velocity (and color)
         Cell new_cell(loc, vel, split_mass);
-        new_cell.set_color(player.color());
         new_cell.splitting_velocity = vel;
 
         cell.reset_recombine_timer();
@@ -462,7 +459,6 @@ namespace agario {
 
         auto loc = virus.location();
         Cell new_cell(loc, cell.velocity, new_cell_mass);
-        new_cell.set_color(cell.color);
         new_cell.splitting_velocity = vel;
         new_cell.reset_recombine_timer();
 

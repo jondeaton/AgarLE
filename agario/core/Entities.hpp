@@ -20,21 +20,14 @@ namespace agario {
   template<bool renderable>
   class Pellet : public std::conditional<renderable, RenderableBall<PELLET_SIDES>, Ball>::type {
   public:
-
-    // inherit constructors
     typedef typename std::conditional<renderable, RenderableBall<PELLET_SIDES>, Ball>::type Super;
-    using Super::Super;
 
     // constructors explicitly put here because of virtual inheritance rules...
     Pellet(distance x, distance y) : Ball(x, y), Super(x, y) {}
-
-    explicit Pellet(Location &&loc) : Ball(loc), Super(loc) {}
-
-    explicit Pellet(Location &loc) : Ball(loc), Super(loc) {}
-
-    Pellet(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
-
-    Pellet(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    template<typename Loc, bool r = renderable>
+    explicit Pellet(Loc &&loc, typename std::enable_if<r>::type* = 0) : Ball(loc), Super(loc) {}
+    template<typename Loc, bool r = renderable>
+    explicit Pellet(Loc &&loc, typename std::enable_if<!r>::type* = 0) : Ball(loc) {}
 
     distance radius() const override { return radius_conversion(mass()); }
 
@@ -66,13 +59,32 @@ namespace agario {
   };
 
 
+  template<bool>
+  struct oVirus : virtual public RenderableMovingBall<VIRUS_SIDES> {
+    void _create_vertices() override {
+      auto num_verts = RenderableMovingBall<VIRUS_SIDES>::NVertices;
+      this->circle.verts[0] = 0;
+      this->circle.verts[1] = 0;
+      this->circle.verts[2] = 0;
+      for (unsigned i = 1; i < num_verts; i++) {
+        auto radius = 1 + sin(30 * M_PI * i / VIRUS_SIDES) / 15;
+        this->circle.verts[i * 3] = radius * cos(i * 2 * M_PI / VIRUS_SIDES);
+        this->circle.verts[i * 3 + 1] = radius * sin(i * 2 * M_PI / VIRUS_SIDES);
+        this->circle.verts[i * 3 + 2] = 0;
+      }
+    }
+  };
+
+  template<>
+  struct oVirus<false> {
+  };
+
   template<bool renderable>
-  class Virus : public std::conditional<renderable, RenderableMovingBall<VIRUS_SIDES>, MovingBall>::type {
+  class Virus : public std::conditional<renderable, oVirus<renderable>, MovingBall>::type {
   public:
 
     // inherit constructors
     typedef typename std::conditional<renderable, RenderableMovingBall<VIRUS_SIDES>, MovingBall>::type Super;
-    using Super::Super;
 
     Virus(distance x, distance y) : Ball(x, y), Super(x, y) {
       if constexpr (renderable) this->color = agario::color::green;
@@ -94,20 +106,6 @@ namespace agario {
       if constexpr (renderable) this->color = agario::color::green;
     }
 
-    typename std::enable_if<renderable, void>::type
-    _create_vertices() override {
-      auto num_verts = RenderableMovingBall<VIRUS_SIDES>::NVertices;
-      this->circle.verts[0] = 0;
-      this->circle.verts[1] = 0;
-      this->circle.verts[2] = 0;
-      for (unsigned i = 1; i < num_verts; i++) {
-        auto radius = 1 + sin(30 * M_PI * i / VIRUS_SIDES) / 15;
-        this->circle.verts[i * 3] = radius * cos(i * 2 * M_PI / VIRUS_SIDES);
-        this->circle.verts[i * 3 + 1] = radius * sin(i * 2 * M_PI / VIRUS_SIDES);
-        this->circle.verts[i * 3 + 2] = 0;
-      }
-    }
-
     distance radius() const override { return radius_conversion(mass()); }
 
     agario::mass mass() const override { return VIRUS_MASS; }
@@ -124,7 +122,7 @@ namespace agario {
     // gotta redeclare all the constructors because of virtual inheritance...
     template<typename Loc, typename Vel>
     Cell(Loc &&loc, Vel &&vel, agario::mass mass) : Ball(loc), Super(loc, vel),
-      _mass(mass), _can_recombine(false) {
+                                                    _mass(mass), _can_recombine(false) {
       set_mass(mass);
       _recombine_timer = std::chrono::steady_clock::now();
     }
@@ -132,7 +130,7 @@ namespace agario {
     template<typename Loc>
     Cell(Loc &&loc, agario::mass mass) : Cell(loc, Velocity(), mass) {}
 
-    Cell(distance x, distance y, agario::mass mass) : Cell(Location(x, y), Velocity(), mass) { }
+    Cell(distance x, distance y, agario::mass mass) : Cell(Location(x, y), Velocity(), mass) {}
 
     agario::mass mass() const override { return _mass; }
 
