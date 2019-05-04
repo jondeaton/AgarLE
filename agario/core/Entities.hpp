@@ -86,25 +86,15 @@ namespace agario {
     // inherit constructors
     typedef typename std::conditional<renderable, RenderableMovingBall<VIRUS_SIDES>, MovingBall>::type Super;
 
-    Virus(distance x, distance y) : Ball(x, y), Super(x, y) {
+
+    template <typename Loc, typename Vel>
+    Virus(Loc &&loc, Vel &&vel) : Ball(loc), Super(loc, vel) {
       if constexpr (renderable) this->color = agario::color::green;
     }
 
-    explicit Virus(Location &&loc) : Ball(loc), Super(loc) {
-      if constexpr (renderable) this->color = agario::color::green;
-    }
-
-    explicit Virus(Location &loc) : Ball(loc), Super(loc) {
-      if constexpr (renderable) this->color = agario::color::green;
-    }
-
-    Virus(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {
-      if constexpr (renderable) this->color = agario::color::green;
-    }
-
-    Virus(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {
-      if constexpr (renderable) this->color = agario::color::green;
-    }
+    template <typename Loc>
+    explicit Virus(Loc &&loc) : Virus(loc, Velocity()) {}
+    Virus(distance x, distance y) : Virus(Location(x, y)) {}
 
     distance radius() const override { return radius_conversion(mass()); }
 
