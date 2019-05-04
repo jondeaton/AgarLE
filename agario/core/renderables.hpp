@@ -77,9 +77,9 @@ namespace agario {
     using Ball::Ball;
     agario::color color;
 
-    template <typename Loc>
+    template<typename Loc>
     explicit RenderableBall(Loc &&loc) : Ball(loc), color(agario::random_color()),
-                                                    _initialized(false) {}
+                                         _initialized(false) {}
 
     RenderableBall(agario::distance x, agario::distance y) :
       RenderableBall(Location(x, y)) {}
@@ -186,28 +186,16 @@ namespace agario {
   class RenderableMovingBall : public RenderableBall<NSides>, public MovingBall {
   public:
 
-    // inherit move constructor from renderable ball
+    // inherit move constructor from RenderableBall
     using RenderableBall<NSides>::RenderableBall;
 
-    RenderableMovingBall(distance x, distance y) : Ball(x, y),
-                                                   RenderableBall<NSides>(x, y),
-                                                   MovingBall(x, y) {}
+    template<typename Loc, typename Vel>
+    RenderableMovingBall(Loc &&loc, Vel &&vel) : Ball(loc),
+                                                 RenderableBall<NSides>(loc),
+                                                 MovingBall(loc, vel) {}
 
-    explicit RenderableMovingBall(Location &&loc) : Ball(loc),
-                                                    RenderableBall<NSides>(loc),
-                                                    MovingBall(loc) {}
-
-    explicit RenderableMovingBall(Location &loc) : Ball(loc),
-                                                   RenderableBall<NSides>(loc),
-                                                   MovingBall(loc) {}
-
-    RenderableMovingBall(Location &loc, Velocity &vel) : Ball(loc),
-                                                         RenderableBall<NSides>(loc),
-                                                         MovingBall(loc, vel) {}
-
-    RenderableMovingBall(Location &&loc, Velocity &vel) : Ball(loc),
-                                                          RenderableBall<NSides>(loc),
-                                                          MovingBall(loc, vel) {}
+    template<typename Loc>
+    explicit RenderableMovingBall(Loc &&loc) : RenderableMovingBall(loc, Velocity()) {}
 
     // move constructor
     RenderableMovingBall(RenderableMovingBall &&rmb) noexcept :

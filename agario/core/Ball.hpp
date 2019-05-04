@@ -64,7 +64,8 @@ namespace agario {
 
     MovingBall() = delete;
 
-    MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) {}
+    template<typename Loc, typename Vel>
+    MovingBall(Loc &&loc, Vel &&vel) : Ball(loc), velocity(vel) {}
 
     float speed() const { return velocity.speed(); }
 

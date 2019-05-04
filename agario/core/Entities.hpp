@@ -107,7 +107,6 @@ namespace agario {
   class Cell : public std::conditional<renderable, RenderableMovingBall<CELL_SIDES>, MovingBall>::type {
   public:
     typedef typename std::conditional<renderable, RenderableMovingBall<CELL_SIDES>, MovingBall>::type Super;
-    using Super::Super;
 
     // gotta redeclare all the constructors because of virtual inheritance...
     template<typename Loc, typename Vel>
