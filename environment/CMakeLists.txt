@@ -18,11 +18,11 @@ if (OpenGL_FOUND)
 
     find_library(GLFW REQUIRED)
     find_package(glfw3)
-    # find_package(GLM REQUIRED)
+    find_package(glm REQUIRED)
 
-    # include_directories(${GLM_INCLUDE_DIRS})
-    # link_directories(${GLM_LIBRARY_DIRS})
-    # add_definitions(${GLM_DEFINITIONS})
+     include_directories(${GLM_INCLUDE_DIRS})
+     link_directories(${GLM_LIBRARY_DIRS})
+     add_definitions(${GLM_DEFINITIONS})
 
     include_directories(${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIR})
 
@@ -32,7 +32,7 @@ if (OpenGL_FOUND)
 
     pybind11_add_module(agario_screen_env ${AGARIO_SCREEN_ENV_SOURCE})
     target_include_directories(agario_screen_env PRIVATE "../agario" ${OPENGL_INCLUDE_DIR})
-    target_link_libraries(agario_screen_env PUBLIC agario glfw ${OPENGL_LIBRARIES} glm)
+    target_link_libraries(agario_screen_env PUBLIC agario ${OPENGL_LIBRARIES} glm glfw)
 else()
     message("OpenGL not found")
 endif()

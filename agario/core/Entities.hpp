@@ -4,7 +4,7 @@
 #include "core/types.hpp"
 #include "core/utils.hpp"
 #include "core/settings.hpp"
-#include "core/renderables.hpp"
+#include "core/color.hpp"
 
 #define PELLET_MASS 1
 #define FOOD_MASS 10
@@ -17,8 +17,8 @@
 
 namespace agario {
 
-  template<bool renderable>
-  class Pellet : public std::conditional<renderable, RenderableBall<PELLET_SIDES>, Ball>::type {
+  template<bool renderable, unsigned NumSides = PELLET_SIDES>
+  class Pellet : public std::conditional<renderable, RenderableBall<NumSides>, Ball>::type {
   public:
     typedef typename std::conditional<renderable, RenderableBall<PELLET_SIDES>, Ball>::type Super;
 
@@ -35,9 +35,8 @@ namespace agario {
   private:
   };
 
-
-  template<bool renderable>
-  class Food : public std::conditional<renderable, RenderableMovingBall<FOOD_SIDES>, MovingBall>::type {
+  template<bool renderable, unsigned NumSides = FOOD_SIDES>
+  class Food : public std::conditional<renderable, RenderableMovingBall<NumSides>, MovingBall>::type {
   public:
 
     typedef RenderableMovingBall<FOOD_SIDES> RenderableMovingBall;
@@ -54,27 +53,27 @@ namespace agario {
   };
 
 
-  template<bool>
-  struct oVirus : virtual public RenderableMovingBall<VIRUS_SIDES> {
+  template<bool r, unsigned NumSides>
+  struct oVirus : virtual public RenderableMovingBall<NumSides> {
     void _create_vertices() override {
-      auto num_verts = RenderableMovingBall<VIRUS_SIDES>::NVertices;
+      auto num_verts = RenderableMovingBall<NumSides>::NVertices;
       this->circle.verts[0] = 0;
       this->circle.verts[1] = 0;
       this->circle.verts[2] = 0;
       for (unsigned i = 1; i < num_verts; i++) {
-        auto radius = 1 + sin(30 * M_PI * i / VIRUS_SIDES) / 15;
-        this->circle.verts[i * 3] = radius * cos(i * 2 * M_PI / VIRUS_SIDES);
-        this->circle.verts[i * 3 + 1] = radius * sin(i * 2 * M_PI / VIRUS_SIDES);
+        auto radius = 1 + sin(30 * M_PI * i / NumSides) / 15;
+        this->circle.verts[i * 3] = radius * cos(i * 2 * M_PI / NumSides);
+        this->circle.verts[i * 3 + 1] = radius * sin(i * 2 * M_PI / NumSides);
         this->circle.verts[i * 3 + 2] = 0;
       }
     }
   };
 
-  template<>
-  struct oVirus<false> { };
+  template<unsigned NumSides>
+  struct oVirus<false, NumSides> { };
 
-  template<bool renderable>
-  class Virus : public std::conditional<renderable, oVirus<renderable>, MovingBall>::type {
+  template<bool renderable, unsigned NumSides = VIRUS_SIDES>
+  class Virus : public std::conditional<renderable, oVirus<renderable, NumSides>, MovingBall>::type {
   public:
 
     typedef RenderableMovingBall<VIRUS_SIDES> RenderableMovingBall;
@@ -100,8 +99,8 @@ namespace agario {
   private:
   };
 
-  template<bool renderable>
-  class Cell : public std::conditional<renderable, RenderableMovingBall<CELL_SIDES>, MovingBall>::type {
+  template<bool renderable, unsigned NumSides = CELL_SIDES>
+  class Cell : public std::conditional<renderable, RenderableMovingBall<NumSides>, MovingBall>::type {
   public:
     typedef typename std::conditional<renderable, RenderableMovingBall<CELL_SIDES>, MovingBall>::type Super;
 
