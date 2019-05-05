@@ -103,7 +103,6 @@ namespace agario {
      * since the previous game tick.
      */
     void tick(std::chrono::duration<double> elapsed_seconds) {
-
       for (auto &pair : state.players)
         tick_player(*pair.second, elapsed_seconds);
 

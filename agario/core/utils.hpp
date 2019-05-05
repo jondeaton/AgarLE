@@ -1,11 +1,19 @@
 #pragma once
 
 #include "core/types.hpp"
+#include "settings.hpp"
 
 namespace agario {
 
-  distance radius_conversion(mass mass);
-  mass mass_conversion(distance radius);
+  agario::distance radius_conversion(mass mass) {
+    auto area = mass / MASS_AREA_RADIO;
+    return (distance) std::sqrt(area / M_PI);
+  }
+
+  agario::mass mass_conversion(distance radius) {
+    auto area = M_PI * std::pow(radius, 2);
+    return static_cast<agario::mass>(std::round(MASS_AREA_RADIO * area));
+  }
 
   template <typename T>
   T clamp(T x, T low, T high) {
@@ -16,6 +24,4 @@ namespace agario {
     return static_cast<T>((num + denom - 1) / denom);
   }
 
-  // todo: new type speed?
-  float max_speed(agario::mass mass);
 }

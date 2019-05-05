@@ -11,7 +11,6 @@ game agar.io and a Python interface suitable for reinforcement learning.
   - get rid of dock icon (how?)
   - configurable width and height of screen
   - make the action target relative to position
-  - Full environment still is renderable :(
 - Game Mechanics Tweaking
   - big cells should move/split faster (same split speed?)
   - small cells can push big cells
