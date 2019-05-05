@@ -11,9 +11,9 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(agario_env, module) {
+PYBIND11_MODULE(agario_screen_env, module) {
   using namespace pybind11::literals;
-  module.doc() = "Agario Learning Environment";
+  module.doc() = "Agario Learning Environment (Screen)";
 
   constexpr unsigned Width = 256;
   constexpr unsigned Height = 256;
@@ -21,7 +21,7 @@ PYBIND11_MODULE(agario_env, module) {
   constexpr unsigned observation_size = NumFrames * Width * Height * PIXEL_SIZE;
 
   typedef agario::env::screen::Environment<true, Width, Height> ScreenEnvironment;
-  pybind11::class_<ScreenEnvironment>(module, "ScreenEnvironment")
+  pybind11::class_<ScreenEnvironment>(module, "Environment")
     .def(pybind11::init<int>())
     .def("step", &ScreenEnvironment::step)
     .def("get_state", [](const ScreenEnvironment &env) {

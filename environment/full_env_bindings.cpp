@@ -9,12 +9,12 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(agario_env, module) {
+PYBIND11_MODULE(agario_full_env, module) {
   using namespace pybind11::literals;module.
-  doc() = "Agario Learning Environment";
-  typedef agario::env::full::Environment<true> FullEnvironment;
+  doc() = "Agario Learning Environment (Full)";
+  typedef agario::env::full::Environment<false> FullEnvironment;
 
-  pybind11::class_<FullEnvironment>(module, "FullEnvironment")
+  pybind11::class_<FullEnvironment>(module, "Environment")
     .def (pybind11::init<int>())
     .def("step", &FullEnvironment::step)
     .def("get_state", [](const FullEnvironment &env) {

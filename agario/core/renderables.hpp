@@ -139,7 +139,8 @@ namespace agario {
       glBindVertexArray(0);
     }
 
-    ~RenderableBall() {
+    ~RenderableBall() override {
+//      std::cout << "~RenderableBall()" << std::endl;
       if (_initialized) {
         glDeleteVertexArrays(1, &circle.vao);
         glDeleteBuffers(1, &circle.vbo);

@@ -23,7 +23,6 @@ namespace agario {
     typedef typename std::conditional<renderable, RenderableBall<PELLET_SIDES>, Ball>::type Super;
 
     // constructors explicitly put here because of virtual inheritance rules...
-    Pellet(distance x, distance y) : Ball(x, y), Super(x, y) {}
     template<typename Loc, bool r = renderable>
     explicit Pellet(Loc &&loc, typename std::enable_if<r>::type* = 0) : Ball(loc), Super(loc) {}
     template<typename Loc, bool r = renderable>
@@ -41,15 +40,11 @@ namespace agario {
   class Food : public std::conditional<renderable, RenderableMovingBall<FOOD_SIDES>, MovingBall>::type {
   public:
 
-    // inherit constructors
-    typedef typename std::conditional<renderable, RenderableMovingBall<FOOD_SIDES>, MovingBall>::type Super;
-    using Super::Super;
+    typedef RenderableMovingBall<FOOD_SIDES> RenderableMovingBall;
+    typedef typename std::conditional<renderable, RenderableMovingBall, MovingBall>::type Super;
 
-    Food(distance x, distance y) : Ball(x, y), Super(x, y) {}
-
-    Food(Location &&loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
-
-    Food(Location &loc, Velocity &vel) : Ball(loc), Super(loc, vel) {}
+    template<typename Loc, typename Vel>
+    Food(Loc &&loc, Vel &&vel) : Ball(loc), Super(loc, vel) {}
 
     distance radius() const override { return radius_conversion(mass()); }
 
@@ -76,25 +71,27 @@ namespace agario {
   };
 
   template<>
-  struct oVirus<false> {
-  };
+  struct oVirus<false> { };
 
   template<bool renderable>
   class Virus : public std::conditional<renderable, oVirus<renderable>, MovingBall>::type {
   public:
 
-    // inherit constructors
-    typedef typename std::conditional<renderable, RenderableMovingBall<VIRUS_SIDES>, MovingBall>::type Super;
+    typedef RenderableMovingBall<VIRUS_SIDES> RenderableMovingBall;
+    typedef typename std::conditional<renderable, RenderableMovingBall, MovingBall>::type Super;
 
+    // renderable constructor
+    template <typename Loc, typename Vel, bool r = renderable>
+    Virus(Loc &&loc, Vel &&vel, typename std::enable_if<r>::type* = 0) :
+      Ball(loc), RenderableMovingBall(loc, vel) { this->color = agario::color::green; }
 
-    template <typename Loc, typename Vel>
-    Virus(Loc &&loc, Vel &&vel) : Ball(loc), Super(loc, vel) {
-      if constexpr (renderable) this->color = agario::color::green;
-    }
+    // non-renderable constructor
+    template <typename Loc, typename Vel, bool r = renderable>
+    Virus(Loc &&loc, Vel &&vel, typename std::enable_if<!r>::type* = 0) :
+      Ball(loc), MovingBall(loc, vel) { }
 
     template <typename Loc>
     explicit Virus(Loc &&loc) : Virus(loc, Velocity()) {}
-    Virus(distance x, distance y) : Virus(Location(x, y)) {}
 
     distance radius() const override { return radius_conversion(mass()); }
 
