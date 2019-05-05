@@ -48,11 +48,17 @@ namespace agario {
       return _color;
     }
 
-    template<typename... Args>
-    void add_cell(Args &&... args) {
+    template<bool enable = renderable, typename... Args>
+    typename std::enable_if<enable, void>::type
+    add_cell(Args &&... args) {
       cells.emplace_back(std::forward<Args>(args)...);
-      if constexpr (renderable)
-        cells.back().color = _color;
+      cells.back().color = _color;
+    }
+
+    template<bool enable = renderable, typename... Args>
+    typename std::enable_if<!enable, void>::type
+     add_cell(Args &&... args) {
+      cells.emplace_back(std::forward<Args>(args)...);
     }
 
     bool dead() const { return cells.size() == 0; }
@@ -101,8 +107,9 @@ namespace agario {
 
     bool operator<(const Player &other) const { return mass() < other.mass(); }
 
-    template<typename = typename std::enable_if<renderable>>
-    void draw(Shader &shader) {
+    template <typename T, bool enable = renderable>
+    typename std::enable_if<enable, void>::type
+    draw(T &shader) {
       for (auto &cell : cells)
         cell.draw(shader);
     }
@@ -111,12 +118,20 @@ namespace agario {
       static_cast<void>(state);
     }
 
-    void add_cells(std::vector<Cell> &new_cells) {
-      if constexpr (renderable) {
-        for (auto &cell : new_cells)
-          cell.set_color(color());
-      }
+    template <bool r = renderable>
+    typename std::enable_if<r, void>::type
+    add_cells(std::vector<Cell> &new_cells) {
+      for (auto &cell : new_cells)
+        cell.set_color(color());
 
+      cells.insert(std::end(cells),
+                   std::make_move_iterator(new_cells.begin()),
+                   std::make_move_iterator(new_cells.end()));
+    }
+
+    template <bool r = renderable>
+    typename std::enable_if<!r, void>::type
+    add_cells(std::vector<Cell> &new_cells) {
       cells.insert(std::end(cells),
                    std::make_move_iterator(new_cells.begin()),
                    std::make_move_iterator(new_cells.end()));

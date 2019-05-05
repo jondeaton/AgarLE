@@ -8,16 +8,20 @@
 
 namespace agario {
 
-  // todo: forward declared here becaues circular references
-  template<bool renderable>
-  class GameState;
+  template<bool renderable> class GameState;
+  template<bool renderable> class Player;
+  template<bool renderable, unsigned NumSides> class Cell;
+  template<bool renderable, unsigned NumSides> class Food;
+  template<bool renderable, unsigned NumSides> class Virus;
+  template<bool renderable, unsigned NumSides> class Pellet;
 
-  template<bool renderable>
-  class Player;
+  class Ball;
+  class MovingBall;
 
-  enum _type_id {
-    _distance, _angle
-  };
+  template<unsigned NumSides> class RenderableBall;
+  template<unsigned NumSides> class RenderableMovingBall;
+
+  enum _type_id { _distance, _angle };
   using distance = numWrapper<float, _distance>;
   using angle = numWrapper<float, _angle>;
 

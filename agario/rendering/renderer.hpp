@@ -19,7 +19,7 @@
 
 #include "rendering/Canvas.hpp"
 #include "rendering/shader.hpp"
-
+#include "core/renderables.hpp"
 
 #define NUM_GRID_LINES 11
 

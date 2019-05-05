@@ -3,6 +3,7 @@
 #define GL_SILENCE_DEPRECATION
 
 #include "rendering/platform.hpp"
+#include "core/color.hpp"
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
@@ -18,22 +19,6 @@ namespace agario {
   class RenderingException : public std::runtime_error {
     using runtime_error::runtime_error;
   };
-
-  enum color {
-    red, orange, yellow, green, blue, purple, last
-  };
-
-  GLfloat red_color[] = {1.0, 0.0, 0.0};
-  GLfloat blue_color[] = {0.0, 0.0, 1.0};
-  GLfloat green_color[] = {0.0, 1.0, 0.0};
-  GLfloat orange_color[] = {1.0, 0.65, 0.0};
-  GLfloat purple_color[] = {0.6, 0.2, 0.8};
-  GLfloat yellow_color[] = {1.0, 1.0, 0.0};
-  GLfloat black_color[] = {0.0, 0.0, 0.0};
-
-  agario::color random_color() {
-    return static_cast<enum color>(rand() % agario::color::last);
-  }
 
   template<unsigned NSides>
   class Circle {
@@ -140,7 +125,6 @@ namespace agario {
     }
 
     ~RenderableBall() override {
-//      std::cout << "~RenderableBall()" << std::endl;
       if (_initialized) {
         glDeleteVertexArrays(1, &circle.vao);
         glDeleteBuffers(1, &circle.vbo);

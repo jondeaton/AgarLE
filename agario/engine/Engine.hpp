@@ -103,7 +103,6 @@ namespace agario {
      * since the previous game tick.
      */
     void tick(std::chrono::duration<double> elapsed_seconds) {
-
       for (auto &pair : state.players)
         tick_player(*pair.second, elapsed_seconds);
 
@@ -215,8 +214,8 @@ namespace agario {
     }
 
     void check_boundary_collisions(Ball &ball) {
-      ball.x = std::clamp<agario::distance>(ball.x, 0, _arena_width);
-      ball.y = std::clamp<agario::distance>(ball.y, 0, _arena_height);
+      ball.x = clamp<agario::distance>(ball.x, 0, _arena_width);
+      ball.y = clamp<agario::distance>(ball.y, 0, _arena_height);
     }
 
     /**
