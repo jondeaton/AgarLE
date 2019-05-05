@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(Agario CXX)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 
-set(DEBUG_FLAGS "-g -O0 -Wall -Wextra -pedantic")
-set(RELEASE_FLAGS "-O3")
+set(DEBUG_FLAGS "-g -O0 -fpermissive -fsized-deallocation")
+set(RELEASE_FLAGS "-O3 -fpermissive")
 set(BENCH_FLAGS "-Ofast -fno-omit-frame-pointer")
 
 # To configure for "release", then run cmake with:
@@ -70,11 +70,11 @@ add_library(agario STATIC ${AGARIO_SRC})
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 find_library(GLFW REQUIRED)
-find_package(GLM REQUIRED)
+#find_package(GLM REQUIRED)
 
-include_directories(${GLM_INCLUDE_DIRS})
-link_directories(${GLM_LIBRARY_DIRS})
-add_definitions(${GLM_DEFINITIONS})
+#include_directories(${GLM_INCLUDE_DIRS})
+#link_directories(${GLM_LIBRARY_DIRS})
+#add_definitions(${GLM_DEFINITIONS})
 
 include_directories(client engine ${OPENGL_INCLUDE_DIR})
 
@@ -87,7 +87,7 @@ set(AGARIO_CLIENT_SRC
         rendering/shader.hpp)
 
 add_executable(client ${AGARIO_CLIENT_SRC} ${AGARIO_BOT_SRC} client/main.cpp)
-target_link_libraries(client agario glfw ${OPENGL_LIBRARIES})
+target_link_libraries(client agario glfw ${OPENGL_LIBRARIES} glm)
 
 include_directories(server)
 set(AGARIO_SERVER_SRC
