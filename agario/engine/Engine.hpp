@@ -115,40 +115,6 @@ namespace agario {
       _ticks++;
     }
 
-    void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
-      auto dt = elapsed_seconds.count();
-
-      for (auto &cell : player.cells) {
-        cell.velocity.dx = 3 * (player.target.x - cell.x);
-        cell.velocity.dy = 3 * (player.target.y - cell.y);
-
-        // clip speed
-        auto speed_limit = max_speed(cell.mass());
-        cell.velocity.clamp_speed(0, speed_limit);
-
-        cell.move(dt);
-        cell.splitting_velocity.decelerate(SPLIT_DECELERATION, dt);
-
-        check_boundary_collisions(cell);
-      }
-
-      // make sure not to move two of players own cells into one another
-      check_player_self_collisions(player);
-    }
-
-    void move_foods(std::chrono::duration<double> elapsed_seconds) {
-      auto dt = elapsed_seconds.count();
-
-      for (auto &food : state.foods) {
-        if (food.velocity.magnitude() == 0) continue;
-
-        food.decelerate(FOOD_DECEL, dt);
-        food.move(dt);
-
-        check_boundary_collisions(food);
-      }
-    }
-
     int total_players() { return state.players.size(); }
 
     int total_pellets() { return state.pellets.size(); }
@@ -189,6 +155,14 @@ namespace agario {
         state.viruses.emplace_back(random_location());
     }
 
+    /**
+     * "ticks" the given player, which involves moving the player's cells and checking
+     * for collisions between the player and all other entities in the arena
+     * Also performs any player actions (i.e. splitting or feeling) decrements
+     * the cooldown timers on the player actions
+     * @param player the player to tick
+     * @param elapsed_seconds the amount of (game) time since the last game tick
+     */
     void tick_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
 
       if (_ticks % 10 == 0) // increases frame rate a lot
@@ -213,6 +187,51 @@ namespace agario {
       recombine_cells(player);
     }
 
+    /**
+     * Moves all of the cells of the given player by an amount proportional
+     * to the elapsed time since the last tick, given by elapsed_seconds
+     * @param player the player to move
+     * @param elapsed_seconds time since the last game tick
+     */
+    void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
+      auto dt = elapsed_seconds.count();
+
+      for (auto &cell : player.cells) {
+        cell.velocity.dx = 3 * (player.target.x - cell.x);
+        cell.velocity.dy = 3 * (player.target.y - cell.y);
+
+        // clip speed
+        auto speed_limit = max_speed(cell.mass());
+        cell.velocity.clamp_speed(0, speed_limit);
+
+        cell.move(dt);
+        cell.splitting_velocity.decelerate(SPLIT_DECELERATION, dt);
+
+        check_boundary_collisions(cell);
+      }
+
+      // make sure not to move two of players own cells into one another
+      check_player_self_collisions(player);
+    }
+
+    void move_foods(std::chrono::duration<double> elapsed_seconds) {
+      auto dt = elapsed_seconds.count();
+
+      for (auto &food : state.foods) {
+        if (food.velocity.magnitude() == 0) continue;
+
+        food.decelerate(FOOD_DECEL, dt);
+        food.move(dt);
+
+        check_boundary_collisions(food);
+      }
+    }
+
+    /**
+     * Constrains the location of `ball` to be inside the boundaries
+     * of the arena
+     * @param ball the ball to keep inside the arena
+     */
     void check_boundary_collisions(Ball &ball) {
       ball.x = clamp<agario::distance>(ball.x, 0, _arena_width);
       ball.y = clamp<agario::distance>(ball.y, 0, _arena_height);
@@ -265,6 +284,12 @@ namespace agario {
       cell_a.y -= (target_dist - dist) * y_ratio / 2;
     }
 
+    /**
+     * checks for collisions between the given cell and
+     * all of the pellets in the game, removing those pellets
+     * from the game which the cell eats
+     * @param cell the cell which is doing the eating
+     */
     void eat_pellets(Cell &cell) {
       auto prev_size = total_pellets();
 
@@ -468,11 +493,11 @@ namespace agario {
     }
 
     float split_speed(agario::mass mass) {
-      return 3 * max_speed(mass);
+      return clamp(3 * (std::pow(max_speed(mass), 1.2)), 20.0, 130.0);
     }
 
     float max_speed(agario::mass mass) {
-      return CELL_MAX_SPEED / sqrt((float) mass);
+      return CELL_MAX_SPEED / std::sqrt((float) mass);
     }
 
     template<typename T>

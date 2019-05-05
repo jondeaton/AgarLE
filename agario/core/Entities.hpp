@@ -52,7 +52,11 @@ namespace agario {
   private:
   };
 
-
+  /**
+   * This (super-unreadable) struct allows for the `Virus` class to override the
+   * _create_vertices virtual method of RenderableBall, which allows it to
+   * have a different visual appearance (wavy border)
+   */
   template<bool r, unsigned NumSides>
   struct oVirus : virtual public RenderableMovingBall<NumSides> {
     void _create_vertices() override {
