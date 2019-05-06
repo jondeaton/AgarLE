@@ -5,5 +5,5 @@ Date: 1/27/19
 Author: Jon Deaton (jdeaton@stanford.edu)
 """
 
-from gym_agario.envs.agario_env import AgarioEnv
-# can import another environment here
+from gym_agario.envs.AgarioFull import AgarioFull
+from gym_agario.envs.AgarioScreen import AgarioScreen

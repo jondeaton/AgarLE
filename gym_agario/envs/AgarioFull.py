@@ -27,6 +27,14 @@ class AgarioFull(gym.Env):
             spaces.MultiBinary(1), # split?
             spaces.MultiBinary(1))) # feed?
 
+        self.observation_space = {
+            "viruses": spaces.Space(shape=(None, 2)),
+            "foods": spaces.Space(shape=(None, 2)),
+            "pellets": spaces.Space(shape=(None, 2)),
+            "agent": spaces.Space(shape=(None, 5)),
+            "others": spaces.Space(shape=(None, 5))
+        }
+
         self._env = agario_full_env.Environment()
 
         self.prev_status = 0
