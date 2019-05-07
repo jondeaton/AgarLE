@@ -69,7 +69,8 @@ namespace agario {
         reward step() {
           auto &player = engine.player(pid);
 
-          auto mass_before = player.mass();
+          auto mass_before = static_cast<int>(player.mass());
+
           for (int i = 0; i < _num_frames; i++) {
             if (player.dead()) {
               _done = true;
@@ -78,7 +79,12 @@ namespace agario {
             engine.tick(step_dt);
             _store_observation(player, i);
           }
-          return player.mass() - mass_before;
+
+          // mass has to be cast as a signed integer (so that reward can be negative)
+          auto mass_now = static_cast<int>(player.mass());
+          auto reward = mass_now - mass_before;
+
+          return reward;
         }
 
         const Observation &get_state() const { return _observation; }

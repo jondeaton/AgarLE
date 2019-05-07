@@ -126,7 +126,7 @@ namespace agario { namespace env { namespace full {
         reward step() {
           auto &player = engine.player(pid);
 
-          auto mass_before = player.mass();
+          auto mass_before = static_cast<int>(player.mass());
           for (int i = 0; i < _num_frames; i++) {
             if (player.dead()) {
               _done = true;
@@ -135,7 +135,8 @@ namespace agario { namespace env { namespace full {
             engine.tick(step_dt);
           }
 
-          auto reward = player.mass() - mass_before;
+          auto mass_now = static_cast<int>(player.mass());
+          auto reward = mass_now - mass_before;
           return reward;
         }
 
