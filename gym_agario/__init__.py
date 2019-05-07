@@ -7,8 +7,8 @@ Author: Jon Deaton (jdeaton@stanford.edu)
 
 from gym.envs.registration import register
 
-register(id='agario-full',
+register(id='agario-full-v0',
          entry_point='gym_agario.envs:AgarioFull')
 
-register(id='agario-screen',
+register(id='agario-screen-v0',
          entry_point='gym_foo.envs:AgarioScreen')
