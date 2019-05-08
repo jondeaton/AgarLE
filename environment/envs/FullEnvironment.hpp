@@ -119,7 +119,7 @@ namespace agario {
 
       public:
 
-        explicit Environment(unsigned frames_per_step, unsigned arena_size,
+        explicit Environment(unsigned frames_per_step, unsigned arena_size, bool pellet_regen,
                              unsigned num_pellets, unsigned num_viruses, unsigned num_bots) :
           engine(arena_size, arena_size, num_pellets, num_viruses),
           _num_frames(frames_per_step), _num_bots(num_bots), _done(false),

@@ -28,9 +28,10 @@ namespace agario {
     typedef Pellet <renderable> Pellet;
     typedef Virus <renderable> Virus;
 
-    Engine(distance arena_width, distance arena_height, int num_pellets, int num_viruses) :
+    Engine(distance arena_width, distance arena_height, int num_pellets, int num_viruses, bool pellet_regen=true) :
       _arena_width(arena_width), _arena_height(arena_height),
       _num_pellets(num_pellets), _num_virus(num_viruses),
+      _pellet_regen(pellet_regen),
       _ticks(0), next_pid(0) {
       std::srand(std::chrono::system_clock::now().time_since_epoch().count());
     }
@@ -114,7 +115,9 @@ namespace agario {
 
       move_foods(elapsed_seconds);
 
-      add_pellets(_num_pellets - state.pellets.size());
+      if (_pellet_regen) {
+        add_pellets(_num_pellets - state.pellets.size());
+      }
       add_viruses(_num_virus - state.viruses.size());
       _ticks++;
     }
@@ -142,6 +145,7 @@ namespace agario {
 
     int _num_pellets;
     int _num_virus;
+    int _pellet_regen;
 
     void add_pellets(int n) {
       for (int p = 0; p < n; p++)
