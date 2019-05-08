@@ -4,6 +4,22 @@ This project presents a performant re-implementation of the popular online multi
 game agar.io and a Python interface suitable for reinforcement learning.
 
 
+# Set up
+
+Build the agario C++ environment
+
+    mkdir build
+    cmake -DCMAKE_BUILD_TYPE=Release ..
+    make agario_full_env
+
+Install it in global location for python import
+
+    cp environment/agario_* ~/.local/lib/python3.7/site-packages/
+
+Install gym_agario
+
+    python setup.py install
+
 # todo
 - Learning Environment
   - image isn't centered on player
