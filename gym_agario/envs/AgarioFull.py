@@ -13,7 +13,7 @@ from collections import namedtuple
 
 import agario_full_env
 
-Observation = namedtuple('Observation', ['viruses', 'foods', 'pellets', 'agent', 'others'])
+Observation = namedtuple('Observation', ['pellets', 'viruses', 'foods', 'agent', 'others'])
 
 class AgarioFull(gym.Env):
     metadata = {'render.modes': ['human']}
@@ -28,14 +28,22 @@ class AgarioFull(gym.Env):
                                           spaces.MultiBinary(1)))
 
         self.observation_space = spaces.Dict({
+            "pellets": spaces.Space(shape=(None, 2)),
             "viruses": spaces.Space(shape=(None, 2)),
             "foods": spaces.Space(shape=(None, 2)),
-            "pellets": spaces.Space(shape=(None, 2)),
             "agent": spaces.Space(shape=(None, 5)),
             "others": spaces.Space(shape=(None, None, 5))
         })
 
-        self._env = agario_full_env.Environment(4)
+        frames_per_step = 4
+        arena_size = 50
+        pellet_regen = False
+        num_pellets = 110
+        num_viruses = 0
+        num_bots = 0
+
+        self._env = agario_full_env.Environment(frames_per_step, arena_size, pellet_regen,
+                                                num_pellets, num_viruses, num_bots)
 
         self.prev_status = 0
         self.status = 0
@@ -60,7 +68,7 @@ class AgarioFull(gym.Env):
         reward = self._env.step()
         state = self._env.get_state()
 
-        observation = Observation(viruses=state[0], pellets=state[1],
+        observation = Observation(pellets=state[0], viruses=state[1],
                                        foods=state[2], agent=state[3], others=state[4:])
 
         episode_over = self._env.done()

@@ -10,7 +10,9 @@
 
 #define DEFAULT_DT (1.0 / 60)
 
-namespace agario { namespace env { namespace full {
+namespace agario {
+  namespace env {
+    namespace full {
 
       typedef double reward;
 
@@ -22,20 +24,20 @@ namespace agario { namespace env { namespace full {
         explicit Observation(const Player &player, const GameState &game_state) {
           // todo: please refactor :(
 
+          int num_pellets = game_state.pellets.size();
+          _data.push_back(new float[2 * num_pellets]);
+          _store_pellets(game_state, _data[0]);
+          _shapes.push_back({num_pellets, 2});
+
           int num_viruses = game_state.viruses.size();
           _data.push_back(new float[2 * num_viruses]);
-          _store_viruses(game_state, _data[0]);
+          _store_viruses(game_state, _data[1]);
           _shapes.push_back({num_viruses, 2});
 
           int num_foods = game_state.foods.size();
           _data.push_back(new float[2 * num_foods]);
-          _store_foods(game_state, _data[1]);
+          _store_foods(game_state, _data[2]);
           _shapes.push_back({num_foods, 2});
-
-          int num_pellets = game_state.pellets.size();
-          _data.push_back(new float[2 * num_pellets]);
-          _store_pellets(game_state, _data[2]);
-          _shapes.push_back({num_pellets, 2});
 
           int num_cells = player.cells.size();
           _data.push_back(new float[5 * num_cells]);
@@ -67,6 +69,15 @@ namespace agario { namespace env { namespace full {
         std::vector<float *> _data;
         std::vector<std::vector<int>> _shapes;
 
+        void _store_pellets(const GameState &game_state, float *buffer) {
+          int i = 0;
+          for (auto &pellet : game_state.pellets) {
+            buffer[i * 2 + 0] = (float) pellet.x;
+            buffer[i * 2 + 1] = (float) pellet.y;
+            i++;
+          }
+        }
+
         void _store_viruses(const GameState &game_state, float *buffer) {
           int i = 0;
           for (auto &virus : game_state.viruses) {
@@ -81,15 +92,6 @@ namespace agario { namespace env { namespace full {
           for (auto &food : game_state.foods) {
             buffer[i * 2 + 0] = (float) food.x;
             buffer[i * 2 + 1] = (float) food.y;
-            i++;
-          }
-        }
-
-        void _store_pellets(const GameState &game_state, float *buffer) {
-          int i = 0;
-          for (auto &pellet : game_state.pellets) {
-            buffer[i * 2 + 0] = (float) pellet.x;
-            buffer[i * 2 + 1] = (float) pellet.y;
             i++;
           }
         }
@@ -117,12 +119,21 @@ namespace agario { namespace env { namespace full {
 
       public:
 
-        explicit Environment(int frames_per_step) :
-          engine(), _num_frames(frames_per_step), _done(false), step_dt(DEFAULT_DT) {
+        explicit Environment(unsigned frames_per_step, unsigned arena_size, bool pellet_regen,
+                             unsigned num_pellets, unsigned num_viruses, unsigned num_bots) :
+          engine(arena_size, arena_size, num_pellets, num_viruses),
+          _num_frames(frames_per_step), _num_bots(num_bots), _done(false),
+          step_dt(DEFAULT_DT) {
           pid = engine.template add_player<Player>("agent");
           reset();
         }
 
+        /**
+         * Steps the environment forward by several game frames
+         * @return the reward accumulated by the player during those
+         * frames, which is equal to the difference in it's mass before
+         * and after the step
+         */
         reward step() {
           auto &player = engine.player(pid);
 
@@ -140,6 +151,12 @@ namespace agario { namespace env { namespace full {
           return reward;
         }
 
+        /**
+         * Returns the current state of the world without
+         * advancing through time
+         * @return An Obervation object containing all of the
+         * locations of every entity in the current state of the game world
+         */
         const Observation get_state() const {
           auto &player = engine.get_player(pid);
           return Observation(player, engine.get_game_state());
@@ -147,6 +164,15 @@ namespace agario { namespace env { namespace full {
 
         void render() {}
 
+        /**
+         * Specifies the next action for the agent to take
+         * but does not step the game forwards in time. This
+         * just specifies what action will be taken by
+         * the agent on the next call to step
+         * @param dx from 0 to 1 specifying x direction to go in
+         * @param dy from 0 to 1 specifying y direction go to in
+         * @param action {0, 1, 2} meaning, none, split, feed
+         */
         void take_action(float dx, float dy, int action) {
           auto &player = engine.player(pid);
 
@@ -157,6 +183,9 @@ namespace agario { namespace env { namespace full {
           player.target = agario::Location(target_x, target_y);
         }
 
+        /**
+         * Resets the environment by resetting the game enging
+         */
         void reset() {
           engine.reset();
           pid = engine.template add_player<Player>("agent");
@@ -171,18 +200,23 @@ namespace agario { namespace env { namespace full {
         agario::pid pid;
 
         int _num_frames;
+        int _num_bots;
+
         bool _done;
         std::chrono::duration<float> step_dt;
 
+        /**
+         * adds the specified number of bots to the game
+         */
         void add_bots() {
-          for (int i = 0; i < 10; i++)
+          for (int i = 0; i < _num_bots / 2; i++) {
             engine.template add_player<HungryBot>("hungry");
-
-          for (int i = 0; i < 25; i++)
             engine.template add_player<HungryShyBot>("shy");
+          }
         }
+
       };
 
-    }
-  }
-}
+    } // namespace full
+  } // namespace env
+} // namespace agario

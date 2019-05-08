@@ -28,13 +28,33 @@ namespace agario {
     typedef Pellet <renderable> Pellet;
     typedef Virus <renderable> Virus;
 
-    explicit Engine(distance arena_width, distance arena_height) :
+    Engine(distance arena_width, distance arena_height, int num_pellets, int num_viruses, bool pellet_regen=true) :
       _arena_width(arena_width), _arena_height(arena_height),
+      _num_pellets(num_pellets), _num_virus(num_viruses),
+      _pellet_regen(pellet_regen),
       _ticks(0), next_pid(0) {
       std::srand(std::chrono::system_clock::now().time_since_epoch().count());
     }
-
+    Engine(distance arena_width, distance arena_height) : Engine(arena_width, arena_height, 1000, 25) { }
     Engine() : Engine(DEFAULT_ARENA_WIDTH, DEFAULT_ARENA_HEIGHT) {}
+
+    /**
+ * Total game ticks
+ * @return the number of ticks that have elapsed in the game
+ */
+    agario::tick ticks() const { return _ticks; }
+    const std::vector<Player> &players() const { return state.players; }
+    const std::vector<Pellet> &pellets() const { return state.pellets; }
+    const std::vector<Food> &foods() const { return state.foods; }
+    const std::vector<Virus> &viruses() const { return state.viruses; }
+    agario::GameState<renderable> &game_state() { return state; }
+    const agario::GameState<renderable> &get_game_state() const { return state; }
+    agario::distance arena_height() const { return _arena_height; }
+    agario::distance arena_width() const { return _arena_width; }
+    int total_players() { return state.players.size(); }
+    int total_pellets() { return state.pellets.size(); }
+    int total_viruses() { return state.viruses.size(); }
+    int total_foods() { return state.foods.size(); }
 
     template <typename P>
     agario::pid add_player(const std::string &name) {
@@ -68,18 +88,9 @@ namespace agario {
     }
 
     void initialize_game() {
-      add_pellets(NUM_PELLETS);
-      add_viruses(NUM_VIRUSES);
+      add_pellets(_num_pellets);
+      add_viruses(_num_virus);
     }
-
-    const std::vector<Player> &players() const { return state.players; }
-    const std::vector<Pellet> &pellets() const { return state.pellets; }
-    const std::vector<Food> &foods() const { return state.foods; }
-    const std::vector<Virus> &viruses() const { return state.viruses; }
-    agario::GameState<renderable> &game_state() { return state; }
-    const agario::GameState<renderable> &get_game_state() const { return state; }
-    agario::distance arena_height() const { return _arena_height; }
-    agario::distance arena_width() const { return _arena_width; }
 
     /**
      * Resets a player to the starting position
@@ -89,12 +100,6 @@ namespace agario {
       player(pid).cells.clear();
       player(pid).add_cell(random_location(), CELL_MIN_SIZE);
     }
-
-    /**
-     * Total game ticks
-     * @return the number of ticks that have elapsed in the game
-     */
-    agario::tick ticks() const { return _ticks; }
 
     /**
      * Performs a single game tick, moving all entities, performing
@@ -110,24 +115,17 @@ namespace agario {
 
       move_foods(elapsed_seconds);
 
-      add_pellets(NUM_PELLETS - state.pellets.size());
-      add_viruses(NUM_VIRUSES - state.viruses.size());
+      if (_pellet_regen) {
+        add_pellets(_num_pellets - state.pellets.size());
+      }
+      add_viruses(_num_virus - state.viruses.size());
       _ticks++;
     }
-
-    int total_players() { return state.players.size(); }
-
-    int total_pellets() { return state.pellets.size(); }
-
-    int total_viruses() { return state.viruses.size(); }
-
-    int total_foods() { return state.foods.size(); }
 
     Engine(const Engine &) = delete; // no copy constructor
     Engine &operator=(const Engine &) = delete; // no copy assignments
     Engine(Engine &&) = delete; // no move constructor
     Engine &operator=(Engine &&) = delete; // no move assignment
-
 
     agario::Location random_location() {
       auto x = random < agario::distance > (_arena_width);
@@ -145,13 +143,17 @@ namespace agario {
     agario::tick _ticks;
     agario::pid next_pid;
 
-    void add_pellets(int num_pellets) {
-      for (int p = 0; p < num_pellets; p++)
+    int _num_pellets;
+    int _num_virus;
+    int _pellet_regen;
+
+    void add_pellets(int n) {
+      for (int p = 0; p < n; p++)
         state.pellets.emplace_back(random_location());
     }
 
-    void add_viruses(int num_virus) {
-      for (int v = 0; v < num_virus; v++)
+    void add_viruses(int n) {
+      for (int v = 0; v < n; v++)
         state.viruses.emplace_back(random_location());
     }
 
