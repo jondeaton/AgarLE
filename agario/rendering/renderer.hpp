@@ -19,7 +19,7 @@
 
 #include "rendering/Canvas.hpp"
 #include "rendering/shader.hpp"
-
+#include "core/renderables.hpp"
 
 #define NUM_GRID_LINES 11
 
@@ -86,8 +86,14 @@ namespace agario {
       shader.setMat4("view_transform", view_projection(player));
     }
 
+    /**
+     * The z-coordinate distance away from the playing arena from which to
+     * view the game as rendered from the perspective of the given player
+     * @param player the player to render the game relative to
+     * @return  z-coordinate for the camera positiooning
+     */
     GLfloat camera_z(const Player &player) {
-      return 150 + player.mass() / 10.0;
+      return clamp(100 + player.mass() / 10.0, 100.0, 900.0);
     }
 
     glm::mat4 perspective_projection(const Player &player) {

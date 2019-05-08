@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(Agario CXX)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 
-set(DEBUG_FLAGS "-g -O0 -Wall -Wextra -pedantic")
-set(RELEASE_FLAGS "-O3")
+set(DEBUG_FLAGS "-g -O0 -fpermissive -fsized-deallocation")
+set(RELEASE_FLAGS "-O3 -fpermissive")
 set(BENCH_FLAGS "-Ofast -fno-omit-frame-pointer")
 
 # To configure for "release", then run cmake with:
@@ -36,16 +36,15 @@ endif()
 include_directories(".")
 
 set(AGARIO_CORE_SRC
-        core/core.hpp
-        core/Player.hpp
-        core/utils.hpp          core/utils.cpp
-        core/Ball.hpp
-        core/types.hpp
-        core/num_wrapper.hpp
-        core/Entities.hpp)
+        core/core.hpp           core/utils.hpp
+        core/types.hpp          core/num_wrapper.hpp
+        core/color.hpp
+        core/Entities.hpp       core/Ball.hpp
+        core/Player.hpp)
 
 set(AGARIO_BOT_SRC
         bots/bots.hpp
+        bots/ExampleBot.hpp
         bots/RandomBot.hpp
         bots/HungryBot.hpp
         bots/HungryShyBot.hpp)
@@ -65,12 +64,10 @@ set(AGARIO_RENDERING_SRC
 
 set(AGARIO_SRC ${AGARIO_CORE_SRC} ${AGARIO_ENGINE_SRC})
 
-add_library(agario STATIC ${AGARIO_SRC})
-
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 find_library(GLFW REQUIRED)
-find_package(GLM REQUIRED)
+find_package(glm REQUIRED)
 
 include_directories(${GLM_INCLUDE_DIRS})
 link_directories(${GLM_LIBRARY_DIRS})
@@ -87,13 +84,12 @@ set(AGARIO_CLIENT_SRC
         rendering/shader.hpp)
 
 add_executable(client ${AGARIO_CLIENT_SRC} ${AGARIO_BOT_SRC} client/main.cpp)
-target_link_libraries(client agario glfw ${OPENGL_LIBRARIES})
+target_link_libraries(client ${OPENGL_LIBRARIES} glfw glm)
 
 include_directories(server)
 set(AGARIO_SERVER_SRC
         server/main.cpp)
 add_executable(server ${AGARIO_SERVER_SRC})
-target_link_libraries(server agario)
 
 include_directories(test)
 set(TEST_SRC

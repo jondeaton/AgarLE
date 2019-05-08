@@ -1,16 +1,22 @@
-#!/usr/bin/env python
 """
-File: AgarEnv
-Date: 1/27/19 
+File: ScreenEnvironment
+Date: 5/5/19 
 Author: Jon Deaton (jdeaton@stanford.edu)
 """
+
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 
-import agario_env
 
-class AgarioEnv(gym.Env):
+import gym
+from gym import error, spaces, utils
+
+from collections import namedtuple
+
+import agario_screen_env
+
+class AgarioScreen(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self):
@@ -19,11 +25,11 @@ class AgarioEnv(gym.Env):
         self.server_port = None
 
         self.action_space = spaces.Tuple((
-            spaces.Box(low=0, high=100, shape=2), # x, y target
+            spaces.Box(low=0, high=1, shape=2), # x, y target
             spaces.MultiBinary(1), # split?
             spaces.MultiBinary(1))) # feed?
 
-        self._env = agario_env.Environment()
+        self._env = agario_screen_env.Environment(4)
 
         self.prev_status = 0
         self.status = 0
@@ -68,7 +74,6 @@ class AgarioEnv(gym.Env):
         episode_over = self._env.done()
 
         return observation, reward, episode_over, {}
-
 
     def reset(self):
         self._env.reset()
