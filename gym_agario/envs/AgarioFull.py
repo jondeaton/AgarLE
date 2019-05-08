@@ -13,7 +13,7 @@ from collections import namedtuple
 
 import agario_full_env
 
-Observation = namedtuple('Observation', ['viruses', 'foods', 'pellets', 'agent', 'others'])
+Observation = namedtuple('Observation', ['pellets', 'viruses', 'foods', 'agent', 'others'])
 
 class AgarioFull(gym.Env):
     metadata = {'render.modes': ['human']}
@@ -28,9 +28,9 @@ class AgarioFull(gym.Env):
                                           spaces.MultiBinary(1)))
 
         self.observation_space = spaces.Dict({
+            "pellets": spaces.Space(shape=(None, 2)),
             "viruses": spaces.Space(shape=(None, 2)),
             "foods": spaces.Space(shape=(None, 2)),
-            "pellets": spaces.Space(shape=(None, 2)),
             "agent": spaces.Space(shape=(None, 5)),
             "others": spaces.Space(shape=(None, None, 5))
         })
@@ -68,7 +68,7 @@ class AgarioFull(gym.Env):
         reward = self._env.step()
         state = self._env.get_state()
 
-        observation = Observation(viruses=state[0], pellets=state[1],
+        observation = Observation(pellets=state[0], viruses=state[1],
                                        foods=state[2], agent=state[3], others=state[4:])
 
         episode_over = self._env.done()

@@ -24,20 +24,20 @@ namespace agario {
         explicit Observation(const Player &player, const GameState &game_state) {
           // todo: please refactor :(
 
+          int num_pellets = game_state.pellets.size();
+          _data.push_back(new float[2 * num_pellets]);
+          _store_pellets(game_state, _data[0]);
+          _shapes.push_back({num_pellets, 2});
+
           int num_viruses = game_state.viruses.size();
           _data.push_back(new float[2 * num_viruses]);
-          _store_viruses(game_state, _data[0]);
+          _store_viruses(game_state, _data[1]);
           _shapes.push_back({num_viruses, 2});
 
           int num_foods = game_state.foods.size();
           _data.push_back(new float[2 * num_foods]);
-          _store_foods(game_state, _data[1]);
+          _store_foods(game_state, _data[2]);
           _shapes.push_back({num_foods, 2});
-
-          int num_pellets = game_state.pellets.size();
-          _data.push_back(new float[2 * num_pellets]);
-          _store_pellets(game_state, _data[2]);
-          _shapes.push_back({num_pellets, 2});
 
           int num_cells = player.cells.size();
           _data.push_back(new float[5 * num_cells]);
@@ -69,6 +69,15 @@ namespace agario {
         std::vector<float *> _data;
         std::vector<std::vector<int>> _shapes;
 
+        void _store_pellets(const GameState &game_state, float *buffer) {
+          int i = 0;
+          for (auto &pellet : game_state.pellets) {
+            buffer[i * 2 + 0] = (float) pellet.x;
+            buffer[i * 2 + 1] = (float) pellet.y;
+            i++;
+          }
+        }
+
         void _store_viruses(const GameState &game_state, float *buffer) {
           int i = 0;
           for (auto &virus : game_state.viruses) {
@@ -83,15 +92,6 @@ namespace agario {
           for (auto &food : game_state.foods) {
             buffer[i * 2 + 0] = (float) food.x;
             buffer[i * 2 + 1] = (float) food.y;
-            i++;
-          }
-        }
-
-        void _store_pellets(const GameState &game_state, float *buffer) {
-          int i = 0;
-          for (auto &pellet : game_state.pellets) {
-            buffer[i * 2 + 0] = (float) pellet.x;
-            buffer[i * 2 + 1] = (float) pellet.y;
             i++;
           }
         }
