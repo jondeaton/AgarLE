@@ -6,7 +6,7 @@ game agar.io and a Python interface suitable for reinforcement learning.
 
 # todo
 - Learning Environment
-  - image isn't centered on player (!!!!)
+  - image isn't centered on player
   - make focused player some special color
   - get rid of dock icon (how?)
   - configurable width and height of screen
@@ -24,7 +24,6 @@ game agar.io and a Python interface suitable for reinforcement learning.
   - More efficient algorithms for entity collisions
   - Better solution to NumberWrapper (is there one?)
   - make speed and time new types?
-
 - Client-Server connection
   - GameState serialization
   - Server IO

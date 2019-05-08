@@ -123,6 +123,12 @@ namespace agario { namespace env { namespace full {
           reset();
         }
 
+        /**
+         * Steps the environment forward by several game frames
+         * @return the reward accumulated by the player during those
+         * frames, which is equal to the difference in it's mass before
+         * and after the step
+         */
         reward step() {
           auto &player = engine.player(pid);
 
@@ -140,6 +146,10 @@ namespace agario { namespace env { namespace full {
           return reward;
         }
 
+        /**
+         * Gets the current state of the game as an "observation" object
+         * @return Observation object expressing the full state of the game
+         */
         const Observation get_state() const {
           auto &player = engine.get_player(pid);
           return Observation(player, engine.get_game_state());
@@ -147,6 +157,12 @@ namespace agario { namespace env { namespace full {
 
         void render() {}
 
+        /**
+         * Takes an a
+         * @param dx
+         * @param dy
+         * @param action
+         */
         void take_action(float dx, float dy, int action) {
           auto &player = engine.player(pid);
 
@@ -175,10 +191,10 @@ namespace agario { namespace env { namespace full {
         std::chrono::duration<float> step_dt;
 
         void add_bots() {
-          for (int i = 0; i < 10; i++)
+          for (int i = 0; i < 0; i++)
             engine.template add_player<HungryBot>("hungry");
 
-          for (int i = 0; i < 25; i++)
+          for (int i = 0; i < 0; i++)
             engine.template add_player<HungryShyBot>("shy");
         }
       };
