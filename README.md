@@ -10,7 +10,6 @@ game agar.io and a Python interface suitable for reinforcement learning.
   - make focused player some special color
   - get rid of dock icon (how?)
   - configurable width and height of screen
-  - make the action target relative to position
 - Game Mechanics Tweaking
   - small cells can push big cells
   - Feeding viruses causing them to duplicate

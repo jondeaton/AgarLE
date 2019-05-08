@@ -147,8 +147,12 @@ namespace agario { namespace env { namespace full {
 
         void render() {}
 
-        void take_action(float target_x, float target_y, int action) {
+        void take_action(float dx, float dy, int action) {
           auto &player = engine.player(pid);
+
+          auto target_x = player.x() + 2 * (dx - 0.5) * 10;
+          auto target_y = player.y() + 2 * (dy - 0.5) * 10;
+
           player.action = static_cast<agario::action>(action);
           player.target = agario::Location(target_x, target_y);
         }
