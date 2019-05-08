@@ -3,7 +3,8 @@
 #include <math.h>
 
 #include "core/types.hpp"
-#include "settings.hpp"
+
+#define CELL_EAT_MARGIN 1.1
 
 namespace agario {
 
@@ -63,7 +64,8 @@ namespace agario {
 
     MovingBall() = delete;
 
-    MovingBall(Location &loc, Velocity &v) : Ball(loc), velocity(v) {}
+    template<typename Loc, typename Vel>
+    MovingBall(Loc &&loc, Vel &&vel) : Ball(loc), velocity(vel) {}
 
     float speed() const { return velocity.speed(); }
 

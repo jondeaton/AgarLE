@@ -8,6 +8,7 @@
 #include "core/Ball.hpp"
 #include "core/types.hpp"
 #include "core/Entities.hpp"
+#include "core/settings.hpp"
 #include "utils.hpp"
 
 #include <assert.h>
@@ -20,7 +21,7 @@ namespace agario {
 
   public:
 
-    typedef Cell <renderable> Cell;
+    typedef Cell<renderable> Cell;
 
     Player() = delete;
 
@@ -31,9 +32,11 @@ namespace agario {
       add_cell(loc, CELL_MIN_SIZE);
     }
 
+    template<typename Loc>
+    Player(agario::pid pid, std::string name, Loc &&loc) : Player(pid, name, loc, random_color()) {}
     Player(agario::pid pid, std::string name, agario::color color) : Player(pid, name, Location(0, 0), color) {}
-    Player(agario::pid pid, std::string name) : Player(pid, name, agario::color::blue) {}
-    Player(std::string name) : Player(-1, name, agario::color::blue) {}
+    Player(agario::pid pid, std::string name) : Player(pid, name, random_color()) {}
+    Player(std::string name) : Player(-1, name) {}
 
     std::vector<Cell> cells;
     agario::action action;
@@ -45,11 +48,17 @@ namespace agario {
       return _color;
     }
 
-    template<typename... Args>
-    void add_cell(Args &&... args) {
+    template<bool enable = renderable, typename... Args>
+    typename std::enable_if<enable, void>::type
+    add_cell(Args &&... args) {
       cells.emplace_back(std::forward<Args>(args)...);
-      if constexpr (renderable)
-        cells.back().color = _color;
+      cells.back().color = _color;
+    }
+
+    template<bool enable = renderable, typename... Args>
+    typename std::enable_if<!enable, void>::type
+     add_cell(Args &&... args) {
+      cells.emplace_back(std::forward<Args>(args)...);
     }
 
     bool dead() const { return cells.size() == 0; }
@@ -98,14 +107,34 @@ namespace agario {
 
     bool operator<(const Player &other) const { return mass() < other.mass(); }
 
-    typename std::enable_if<renderable, void>::type
-    draw(Shader &shader) {
+    template <typename T, bool enable = renderable>
+    typename std::enable_if<enable, void>::type
+    draw(T &shader) {
       for (auto &cell : cells)
         cell.draw(shader);
     }
 
     virtual void take_action(const GameState<renderable> &state) {
       static_cast<void>(state);
+    }
+
+    template <bool r = renderable>
+    typename std::enable_if<r, void>::type
+    add_cells(std::vector<Cell> &new_cells) {
+      for (auto &cell : new_cells)
+        cell.set_color(color());
+
+      cells.insert(std::end(cells),
+                   std::make_move_iterator(new_cells.begin()),
+                   std::make_move_iterator(new_cells.end()));
+    }
+
+    template <bool r = renderable>
+    typename std::enable_if<!r, void>::type
+    add_cells(std::vector<Cell> &new_cells) {
+      cells.insert(std::end(cells),
+                   std::make_move_iterator(new_cells.begin()),
+                   std::make_move_iterator(new_cells.end()));
     }
 
     // virtual destructor because it's polymorphic
@@ -121,5 +150,12 @@ namespace agario {
     agario::score _score;
     agario::color _color;
   };
+
+
+  template<bool r>
+  std::ostream &operator<<(std::ostream &os, const Player<r> &player) {
+    os << player.name() << " (" << player.pid() << "), " << " score: " << player.score();
+    return os;
+  }
 
 }

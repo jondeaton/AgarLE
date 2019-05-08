@@ -1,10 +1,7 @@
 #pragma once
 
-#define GL_SILENCE_DEPRECATION
-
-#include <GL/glew.h>
+#include "rendering/platform.hpp"
 #include <GLFW/glfw3.h>
-#include <OpenGL/OpenGL.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,13 +13,23 @@
 #include <math.h>
 #include <optional>
 
-#include "shader.hpp"
 #include "engine/GameState.hpp"
-#include "rendering/window.hpp"
 #include <core/Entities.hpp>
 #include <core/Player.hpp>
 
+#include "rendering/Canvas.hpp"
+#include "rendering/shader.hpp"
+#include "core/renderables.hpp"
+
 #define NUM_GRID_LINES 11
+
+const char* vertex_shader_src =
+#include "shaders/_vertex.glsl"
+  ;
+
+const char* fragment_shader_src =
+#include "shaders/_fragment.glsl"
+  ;
 
 namespace agario {
 
@@ -35,27 +42,32 @@ namespace agario {
     typedef Food<true> Food;
     typedef Virus<true> Virus;
 
-    explicit Renderer(std::shared_ptr<agario::Window> window,
-                      agario::distance arena_width, agario::distance arena_height) :
-      window(window),
+    explicit Renderer(std::shared_ptr<Canvas> canvas,
+                      agario::distance arena_width,
+                      agario::distance arena_height) :
+      canvas(std::move(canvas)),
       arena_width(arena_width), arena_height(arena_height),
       shader(), grid(arena_width, arena_height) {
-      shader.generate_shader("../rendering/vertex.glsl", "../rendering/fragment.glsl");
+
+      shader.compile_shaders(vertex_shader_src, fragment_shader_src);
       shader.use();
     }
 
     explicit Renderer(agario::distance arena_width, agario::distance arena_height) :
       Renderer(nullptr, arena_width, arena_height) {}
 
-    /// converts a screen position to a world position
-    /// \param xpos screen horizontal position
-    /// \param ypos screen vertical position
-    /// \return world location
+    /**
+     * converts a screen position to a world position
+     * @param player player to calculate position relative to
+     * @param xpos screen horizontal position (0 to screen_width - 1)
+     * @param ypos screen vertical position (0 to screen_height - 1)
+     * @return world location
+     */
     agario::Location to_target(Player &player, float xpos, float ypos) {
 
       // normalized device coordinates (from -1 to 1)
-      auto ndc_x = 2 * (xpos / window->width()) - 1;
-      auto ndc_y = 1 - 2 * (ypos / window->height());
+      auto ndc_x = 2 * (xpos / canvas->width()) - 1;
+      auto ndc_y = 1 - 2 * (ypos / canvas->height());
       auto loc = glm::vec4(ndc_x, ndc_y, 1.0, 1);
 
       auto perspective = perspective_projection(player);
@@ -74,12 +86,18 @@ namespace agario {
       shader.setMat4("view_transform", view_projection(player));
     }
 
+    /**
+     * The z-coordinate distance away from the playing arena from which to
+     * view the game as rendered from the perspective of the given player
+     * @param player the player to render the game relative to
+     * @return  z-coordinate for the camera positiooning
+     */
     GLfloat camera_z(const Player &player) {
-      return 150 + player.mass() / 10.0;
+      return clamp(100 + player.mass() / 10.0, 100.0, 900.0);
     }
 
     glm::mat4 perspective_projection(const Player &player) {
-      return glm::perspective(glm::radians(45.0f), window->aspect_ratio(), 0.1f, 1 + camera_z(player));
+      return glm::perspective(glm::radians(45.0f), canvas->aspect_ratio(), 0.1f, 1 + camera_z(player));
     }
 
     glm::mat4 view_projection(const Player &player) {
@@ -111,22 +129,14 @@ namespace agario {
 
       for (auto &virus : state.viruses)
         virus.draw(shader);
-
-      window->swap_buffers();
-      glfwPollEvents();
-    }
-
-    void terminate() {
-      glfwTerminate();
     }
 
     ~Renderer() {
-      window->destroy();
-      terminate();
+      glfwTerminate();
     }
 
   private:
-    std::shared_ptr<agario::Window> window;
+    std::shared_ptr<Canvas> canvas;
 
     agario::distance arena_width;
     agario::distance arena_height;

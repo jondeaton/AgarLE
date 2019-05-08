@@ -1,13 +1,13 @@
 #pragma once
 
-#define GLEW_STATIC
+#define GL_SILENCE_DEPRECATION
 
-#include <GL/glew.h>
+#include "rendering/platform.hpp"
+#include "core/color.hpp"
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 
 #include <core/Ball.hpp>
 #include <rendering/shader.hpp>
@@ -16,26 +16,9 @@
 
 namespace agario {
 
-
   class RenderingException : public std::runtime_error {
     using runtime_error::runtime_error;
   };
-
-  enum color {
-    red, orange, yellow, green, blue, purple, last
-  };
-
-  GLfloat red_color[] = {1.0, 0.0, 0.0};
-  GLfloat blue_color[] = {0.0, 0.0, 1.0};
-  GLfloat green_color[] = {0.0, 1.0, 0.0};
-  GLfloat orange_color[] = {1.0, 0.65, 0.0};
-  GLfloat purple_color[] = {0.6, 0.2, 0.8};
-  GLfloat yellow_color[] = {1.0, 1.0, 0.0};
-  GLfloat black_color[] = {0.0, 0.0, 0.0};
-
-  agario::color random_color() {
-    return static_cast<enum color>(rand() % agario::color::last);
-  }
 
   template<unsigned NSides>
   class Circle {
@@ -79,9 +62,9 @@ namespace agario {
     using Ball::Ball;
     agario::color color;
 
-    explicit RenderableBall(const Location &loc) : Ball(loc),
-                                                   color(agario::random_color()),
-                                                   _initialized(false) {}
+    template<typename Loc>
+    explicit RenderableBall(Loc &&loc) : Ball(loc), color(agario::random_color()),
+                                         _initialized(false) {}
 
     RenderableBall(agario::distance x, agario::distance y) :
       RenderableBall(Location(x, y)) {}
@@ -141,7 +124,7 @@ namespace agario {
       glBindVertexArray(0);
     }
 
-    ~RenderableBall() {
+    ~RenderableBall() override {
       if (_initialized) {
         glDeleteVertexArrays(1, &circle.vao);
         glDeleteBuffers(1, &circle.vbo);
@@ -188,28 +171,16 @@ namespace agario {
   class RenderableMovingBall : public RenderableBall<NSides>, public MovingBall {
   public:
 
-    // inherit move constructor from renderable ball
+    // inherit move constructor from RenderableBall
     using RenderableBall<NSides>::RenderableBall;
 
-    RenderableMovingBall(distance x, distance y) : Ball(x, y),
-                                                   RenderableBall<NSides>(x, y),
-                                                   MovingBall(x, y) {}
+    template<typename Loc, typename Vel>
+    RenderableMovingBall(Loc &&loc, Vel &&vel) : Ball(loc),
+                                                 RenderableBall<NSides>(loc),
+                                                 MovingBall(loc, vel) {}
 
-    explicit RenderableMovingBall(Location &&loc) : Ball(loc),
-                                                    RenderableBall<NSides>(loc),
-                                                    MovingBall(loc) {}
-
-    explicit RenderableMovingBall(Location &loc) : Ball(loc),
-                                                   RenderableBall<NSides>(loc),
-                                                   MovingBall(loc) {}
-
-    RenderableMovingBall(Location &loc, Velocity &vel) : Ball(loc),
-                                                         RenderableBall<NSides>(loc),
-                                                         MovingBall(loc, vel) {}
-
-    RenderableMovingBall(Location &&loc, Velocity &vel) : Ball(loc),
-                                                          RenderableBall<NSides>(loc),
-                                                          MovingBall(loc, vel) {}
+    template<typename Loc>
+    explicit RenderableMovingBall(Loc &&loc) : RenderableMovingBall(loc, Velocity()) {}
 
     // move constructor
     RenderableMovingBall(RenderableMovingBall &&rmb) noexcept :

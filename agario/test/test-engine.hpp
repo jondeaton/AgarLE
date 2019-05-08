@@ -78,7 +78,7 @@ namespace {
     void SetUp() { }
     void TestDown() { }
 
-    agario::Engine engine;
+    agario::Engine<false> engine;
   };
 
   TEST_F(EngineTest, create_engine) {

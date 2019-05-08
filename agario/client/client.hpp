@@ -15,6 +15,11 @@
 #include <memory>
 #include <bots/HungryBot.hpp>
 
+#define WINDOW_NAME "AgarIO"
+#define DEFAULT_SCREEN_WIDTH 640
+#define DEFAULT_SCREEN_HEIGHT 480
+
+
 namespace agario {
 
   class Client {
@@ -52,31 +57,49 @@ namespace agario {
     }
 
     void add_bots() {
-//      for (int i = 0; i < 5; i++)
-//        engine.add_player<bot::RandomBot<true>>("rando");
-
       for (int i = 0; i < 10; i++)
-        engine.add_player<bot::HungryBot<true>>("hungry");
+        engine.add_player<bot::HungryBot<true>>("HungryBot");
 
       for (int i = 0; i < 25; i++)
-        engine.add_player<bot::HungryShyBot<true>>("shy");
+        engine.add_player<bot::HungryShyBot<true>>("HungryShyBot");
     }
 
     void initialize_renderer() {
-      window = std::make_shared<agario::Window>();
+      window = std::make_shared<Window>(WINDOW_NAME, DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT);
       renderer = std::make_unique<agario::Renderer>(window,
                                                     engine.arena_width(),
                                                     engine.arena_height());
     }
 
-    void game_loop() {
+    void play() {
       if (renderer == nullptr) initialize_renderer();
 
       auto beginning = std::chrono::system_clock::now();
-      int count = 0;
+      auto ticks_before = engine.ticks();
 
+      game_loop();
+
+      auto now = std::chrono::system_clock::now();
+      std::chrono::duration<double> total_time = now - beginning;
+
+      std::cout << "Game time: " << total_time.count() << " sec." << std::endl;
+
+      float fps = (engine.ticks() - ticks_before) / total_time.count();
+      std::cout << "Average FPS: " << fps << std::endl;
+
+      std::cout << "Leaderboard:" << std::endl;
+      std::cout << engine.game_state() << std::endl;
+
+      window->destroy();
+    }
+
+    void game_loop() {
       auto before = std::chrono::system_clock::now();
       while (!window->should_close()) {
+
+        auto now = std::chrono::system_clock::now();
+        auto dt = now - before;
+        before = now;
 
         auto &player = engine.player(player_pid);
 
@@ -89,19 +112,11 @@ namespace agario {
         process_input();
         renderer->render_screen(player, engine.game_state());
 
-        auto now = std::chrono::system_clock::now();
-        auto dt = now - before;
+        glfwPollEvents();
+        window->swap_buffers();
 
-        count++;
         engine.tick(dt);
-
-        before = std::chrono::system_clock::now();
       }
-      auto now = std::chrono::system_clock::now();
-      std::chrono::duration<double> total_time = now - beginning;
-
-      float fps = count / total_time.count();
-      std::cout << "Average FPS: " << fps << std::endl;
     }
 
   private:
@@ -115,7 +130,7 @@ namespace agario {
 
     // todo: change these into regular pointers?
     std::unique_ptr<agario::Renderer> renderer;
-    std::shared_ptr<agario::Window> window;
+    std::shared_ptr<Window> window;
 
     void process_input() {
       GLFWwindow *win = window->pointer();

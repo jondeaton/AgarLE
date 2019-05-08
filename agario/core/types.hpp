@@ -2,21 +2,48 @@
 
 #include <cmath>
 #include <iostream>
+#include <chrono>
 
 #include "core/num_wrapper.hpp"
 
 namespace agario {
 
-  // todo: forward declared here becaues circular references
-  template<bool renderable>
-  class GameState;
+  /**
+   * All of the game types (renderable or not) need to be
+   * forward-declared right here because we need to be able to
+   * compile the non-renderable targets without any references to
+   * OpenGL libraries. This requires the renderable types to be
+   * declared but implementation defined elsewhere. Only when
+   * we actually build the targets that include renderable entities
+   * do we include the headers that reference OpenGL functions.
+   * This allows for compiling the non-renderable targets on
+   * machines without OpenGL
+   */
 
-  template<bool renderable>
-  class Player;
+  template<bool renderable> class GameState;
+  template<bool renderable> class Player;
+  template<bool renderable, unsigned NumSides> class Cell;
+  template<bool renderable, unsigned NumSides> class Food;
+  template<bool renderable, unsigned NumSides> class Virus;
+  template<bool renderable, unsigned NumSides> class Pellet;
 
-  enum _type_id {
-    _distance, _angle
-  };
+  class Ball;
+  class MovingBall;
+
+  template<unsigned NumSides> class RenderableBall;
+  template<unsigned NumSides> class RenderableMovingBall;
+
+  /**
+   * we need to wrap underlying floating point
+   * type for "distance" and "angle" using the
+   * "numWrapper" class because otherwise
+   * we would run into issues with ambiguous overloaded
+   * functions. These two types are distinguished
+   * by the enum _type_id so that they can have semantically
+   * different meanings. Overhead of the numWrapper
+   * class (hopefully) gets compiled away
+   */
+  enum _type_id { _distance, _angle };
   using distance = numWrapper<float, _distance>;
   using angle = numWrapper<float, _angle>;
 
@@ -52,13 +79,13 @@ namespace agario {
       return *this;
     }
 
-    agario::distance norm_sqr() const {
+    T norm_sqr() const {
       auto dx = std::abs(x);
       auto dy = std::abs(y);
       return dx * dx + dy * dy;
     }
 
-    agario::distance norm() const {
+    T norm() const {
       return std::sqrt(norm_sqr());
     }
 

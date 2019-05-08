@@ -10,13 +10,16 @@ namespace agario::bot {
    * This is an example Bot. Use it as a template to write other ones.
    */
   typedef agario::Player<renderable> Player;
+  static constexpr agario::color default_color = agario::color::yellow;
 
   public:
-    // constructors that mirror those declared in Player (don't touch)
+    // constructors that mirror those declared in Player (try not to touch these... it'll make you very sad)
     template<typename Loc>
     ExampleBot(agario::pid pid, std::string name, Loc &&loc, agario::color color) : Player(pid, name, loc, color) { }
+    template<typename Loc>
+    ExampleBot(agario::pid pid, std::string name, Loc &&loc) : ExampleBot(pid, name, loc, default_color) {}
     ExampleBot(agario::pid pid, std::string name, agario::color color) : ExampleBot(pid, name, Location(0, 0), color) {}
-    ExampleBot(agario::pid pid, std::string name) : ExampleBot(pid, name, agario::color::blue) {}
+    ExampleBot(agario::pid pid, std::string name) : ExampleBot(pid, name, default_color) {}
     ExampleBot(std::string name) : ExampleBot(-1, name) {}
     ExampleBot() : ExampleBot(typeid(*this).name())
 

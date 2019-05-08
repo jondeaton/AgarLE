@@ -1,16 +1,22 @@
-#!/usr/bin/env python
 """
-File: AgarEnv
-Date: 1/27/19 
+File: ScreenEnvironment
+Date: 5/5/19 
 Author: Jon Deaton (jdeaton@stanford.edu)
 """
+
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 
-from agario.client import AgarioClient
 
-class AgarioEnv(gym.Env):
+import gym
+from gym import error, spaces, utils
+
+from collections import namedtuple
+
+import agario_screen_env
+
+class AgarioScreen(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self):
@@ -19,11 +25,11 @@ class AgarioEnv(gym.Env):
         self.server_port = None
 
         self.action_space = spaces.Tuple((
-            spaces.Box(low=0, high=100, shape=2), # x, y target
+            spaces.Box(low=0, high=1, shape=2), # x, y target
             spaces.MultiBinary(1), # split?
             spaces.MultiBinary(1))) # feed?
 
-        self.client = AgarioClient()
+        self._env = agario_screen_env.Environment(4)
 
         self.prev_status = 0
         self.status = 0
@@ -40,8 +46,8 @@ class AgarioEnv(gym.Env):
 
         Returns
         -------
-        ob, reward, episode_over, info : tuple
-            ob (object) :
+        observation, reward, episode_over, info : tuple
+            observation (object) :
                 an environment-specific object representing your observation of
                 the environment.
             reward (float) :
@@ -60,26 +66,17 @@ class AgarioEnv(gym.Env):
                  However, official evaluations of your agent are not allowed to
                  use this for learning.
         """
-        self._take_action(action)
 
-        self.prev_status = self.self.status
-        self.status = self.client.step()
-        reward = self._get_reward()
-        ob = self.env.getState()
+        self._env.take_action(action)
 
-        episode_over = False # or something
+        reward = self._env.step()
+        observation = self._env.get_state()
+        episode_over = self._env.done()
 
-        return ob, reward, episode_over, {}
-
-    def _take_action(self, action):
-
-        self.client.act()
-
-    def _get_reward(self):
-        return self.status - self.prev_status
+        return observation, reward, episode_over, {}
 
     def reset(self):
-        pass
+        self._env.reset()
 
     def render(self, mode='human'):
-        pass
+        self._env.render()
