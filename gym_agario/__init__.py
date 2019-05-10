@@ -11,4 +11,4 @@ register(id='agario-full-v0',
          entry_point='gym_agario.envs:AgarioFull')
 
 register(id='agario-screen-v0',
-         entry_point='gym_foo.envs:AgarioScreen')
+         entry_point='gym_agario.envs:AgarioScreen')
