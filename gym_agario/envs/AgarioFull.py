@@ -37,8 +37,6 @@ class AgarioFull(gym.Env):
             "others":  spaces.Space(shape=(None, None, 5))
         })
 
-        print(f"Number of viruses: {num_viruses}")
-
         self._env = agario_full_env.Environment(frames_per_step, arena_size, pellet_regen,
                                                 num_pellets, num_viruses, num_bots)
 

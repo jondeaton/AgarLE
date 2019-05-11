@@ -176,8 +176,8 @@ namespace agario {
         void take_action(float dx, float dy, int action) {
           auto &player = engine.player(pid);
 
-          auto target_x = player.x() + 2 * (dx - 0.5) * 10;
-          auto target_y = player.y() + 2 * (dy - 0.5) * 10;
+          auto target_x = player.x() + 2 * (dx - 0.5) * 50;
+          auto target_y = player.y() + 2 * (dy - 0.5) * 50;
 
           player.action = static_cast<agario::action>(action);
           player.target = agario::Location(target_x, target_y);
