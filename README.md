@@ -3,7 +3,9 @@
 This project presents a performant re-implementation of the popular online multi-player
 game agar.io and a Python interface suitable for reinforcement learning.
 
-<img width="460" align="rcenter" alt="screenshot" src="https://user-images.githubusercontent.com/15920014/57587859-dbb31400-74c0-11e9-8f47-3e39113b99b4.png">
+<p align="center">
+<img width="460" alt="screenshot" src="https://user-images.githubusercontent.com/15920014/57587859-dbb31400-74c0-11e9-8f47-3e39113b99b4.png">
+</p>
 
 # Set up and installation
 
