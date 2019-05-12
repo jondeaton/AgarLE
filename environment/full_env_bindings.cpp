@@ -6,12 +6,18 @@
 #include <iostream>
 #include "envs/FullEnvironment.hpp"
 
+#ifdef RENDERABLE
+static constexpr bool renderable = true;
+#else
+static constexpr bool renderable = false;
+#endif
+
 namespace py = pybind11;
 
 PYBIND11_MODULE(agario_full_env, module) {
   using namespace pybind11::literals;module.
     doc() = "Agario Learning Environment (Full)";
-  typedef agario::env::full::Environment<false> FullEnvironment;
+  typedef agario::env::full::Environment<renderable> FullEnvironment;
 
   pybind11::class_<FullEnvironment>(module, "Environment")
     .def(pybind11::init<unsigned, unsigned, bool, unsigned, unsigned, unsigned>())

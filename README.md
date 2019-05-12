@@ -20,6 +20,11 @@ Install gym_agario
 
     python setup.py install
 
+
+If you want to have the agario_full_env with the screen appear then use this
+
+    cmake -DCMAKE_BUILD_TYPE=Release -DDEFINE_RENDERABLE=ON ..
+
 # todo
 - Learning Environment
   - image isn't centered on player
