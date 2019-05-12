@@ -4,7 +4,6 @@
 #include <pybind11/numpy.h>
 
 #include <iostream>
-
 #include "envs/FullEnvironment.hpp"
 
 namespace py = pybind11;
@@ -44,6 +43,7 @@ PYBIND11_MODULE(agario_full_env, module) {
     })
     .def("done", &FullEnvironment::done)
     .def("take_action", &FullEnvironment::take_action, "x"_a, "y"_a, "act"_a)
-    .def("reset", &FullEnvironment::reset);
+    .def("reset", &FullEnvironment::reset)
+    .def("render", &FullEnvironment::render);
 
 }

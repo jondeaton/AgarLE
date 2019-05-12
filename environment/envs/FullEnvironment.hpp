@@ -8,6 +8,18 @@
 
 #include "engine/GameState.hpp"
 
+#ifdef RENDERABLE
+
+#include "core/renderables.hpp"
+#include "rendering/window.hpp"
+#include "rendering/renderer.hpp"
+static bool _renderable = true;
+
+#else
+static bool _renderable = false;
+#endif
+
+
 #define DEFAULT_DT (1.0 / 60)
 
 namespace agario {
@@ -126,6 +138,14 @@ namespace agario {
           step_dt(DEFAULT_DT) {
           pid = engine.template add_player<Player>("agent");
           reset();
+
+          /* I would use if constexpr from C++17 here but thats not an option */
+#ifdef RENDERABLE
+          window = std::make_shared<Window>("Agar.io Environment", 512, 512);
+          renderer = std::make_unique<agario::Renderer>(window,
+                                                        engine.arena_width(),
+                                                        engine.arena_height());
+#endif
         }
 
         /**
@@ -154,7 +174,7 @@ namespace agario {
         /**
          * Returns the current state of the world without
          * advancing through time
-         * @return An Obervation object containing all of the
+         * @return An Observation object containing all of the
          * locations of every entity in the current state of the game world
          */
         const Observation get_state() const {
@@ -162,7 +182,15 @@ namespace agario {
           return Observation(player, engine.get_game_state());
         }
 
-        void render() {}
+        void render() {
+#ifdef RENDERABLE
+          auto &player = engine.player(pid);
+          renderer->render_screen(player, engine.game_state());
+
+          glfwPollEvents();
+          window->swap_buffers();
+#endif
+        }
 
         /**
          * Specifies the next action for the agent to take
@@ -176,8 +204,8 @@ namespace agario {
         void take_action(float dx, float dy, int action) {
           auto &player = engine.player(pid);
 
-          auto target_x = player.x() + 2 * (dx - 0.5) * 50;
-          auto target_y = player.y() + 2 * (dy - 0.5) * 50;
+          auto target_x = player.x() + dx * 10;
+          auto target_y = player.y() + dy * 10;
 
           player.action = static_cast<agario::action>(action);
           player.target = agario::Location(target_x, target_y);
@@ -197,6 +225,12 @@ namespace agario {
 
       private:
         Engine<renderable> engine;
+
+#ifdef RENDERABLE
+        std::unique_ptr<agario::Renderer> renderer;
+        std::shared_ptr<Window> window;
+#endif
+
         agario::pid pid;
 
         int _num_frames;
