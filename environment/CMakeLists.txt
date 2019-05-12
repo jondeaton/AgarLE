@@ -4,6 +4,12 @@ project (AvarioEnv)
 include_directories(".")
 add_subdirectory(pybind11)
 
+option(DEFINE_RENDERABLE "Renderable" OFF) # Enabled by default
+if(DEFINE_RENDERABLE)
+    message("Renderable")
+    add_definitions(-DRENDERABLE)
+endif(DEFINE_RENDERABLE)
+
 set(AGARIO_FULL_ENV_SROUCE
         full_env_bindings.cpp
         envs/FullEnvironment.hpp)

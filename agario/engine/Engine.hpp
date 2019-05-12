@@ -128,8 +128,8 @@ namespace agario {
     Engine &operator=(Engine &&) = delete; // no move assignment
 
     agario::Location random_location() {
-      auto x = random < agario::distance > (_arena_width);
-      auto y = random < agario::distance > (_arena_height);
+      auto x = random<agario::distance>(_arena_width);
+      auto y = random<agario::distance>(_arena_height);
       return Location(x, y);
     }
 

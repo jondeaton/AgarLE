@@ -12,5 +12,4 @@ setup(name='GymAgario',
       install_requires=['gym', "numpy"],
       packages=["gym_agario", "gym_agario.envs"],
       long_description=long_description,
-      platform="macOS,Linux",
       license="MIT")

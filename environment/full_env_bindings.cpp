@@ -4,15 +4,20 @@
 #include <pybind11/numpy.h>
 
 #include <iostream>
-
 #include "envs/FullEnvironment.hpp"
+
+#ifdef RENDERABLE
+static constexpr bool renderable = true;
+#else
+static constexpr bool renderable = false;
+#endif
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(agario_full_env, module) {
   using namespace pybind11::literals;module.
     doc() = "Agario Learning Environment (Full)";
-  typedef agario::env::full::Environment<false> FullEnvironment;
+  typedef agario::env::full::Environment<renderable> FullEnvironment;
 
   pybind11::class_<FullEnvironment>(module, "Environment")
     .def(pybind11::init<unsigned, unsigned, bool, unsigned, unsigned, unsigned>())
@@ -44,6 +49,7 @@ PYBIND11_MODULE(agario_full_env, module) {
     })
     .def("done", &FullEnvironment::done)
     .def("take_action", &FullEnvironment::take_action, "x"_a, "y"_a, "act"_a)
-    .def("reset", &FullEnvironment::reset);
+    .def("reset", &FullEnvironment::reset)
+    .def("render", &FullEnvironment::render);
 
 }

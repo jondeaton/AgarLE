@@ -18,7 +18,9 @@ Observation = namedtuple('Observation', ['pellets', 'viruses', 'foods', 'agent',
 class AgarioFull(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self):
+    def __init__(self, frames_per_step=4, arena_size=1000,
+                 num_pellets=1000, num_viruses=25, num_bots=25,
+                 pellet_regen=True):
         self.viewer = None
         self.server_process = None
         self.server_port = None
@@ -30,17 +32,10 @@ class AgarioFull(gym.Env):
         self.observation_space = spaces.Dict({
             "pellets": spaces.Space(shape=(None, 2)),
             "viruses": spaces.Space(shape=(None, 2)),
-            "foods": spaces.Space(shape=(None, 2)),
-            "agent": spaces.Space(shape=(None, 5)),
-            "others": spaces.Space(shape=(None, None, 5))
+            "foods":   spaces.Space(shape=(None, 2)),
+            "agent":   spaces.Space(shape=(None, 5)),
+            "others":  spaces.Space(shape=(None, None, 5))
         })
-
-        frames_per_step = 4
-        arena_size = 50
-        pellet_regen = False
-        num_pellets = 110
-        num_viruses = 0
-        num_bots = 0
 
         self._env = agario_full_env.Environment(frames_per_step, arena_size, pellet_regen,
                                                 num_pellets, num_viruses, num_bots)
