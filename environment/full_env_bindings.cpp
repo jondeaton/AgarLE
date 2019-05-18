@@ -20,7 +20,7 @@ PYBIND11_MODULE(agario_full_env, module) {
 
   typedef agario::env::FullEnvironment<renderable> FullEnvironment;
 
-  pybind11::class_<FullEnvironment>(module, "Environment")
+  pybind11::class_<FullEnvironment>(module, "FullEnvironment")
     .def(pybind11::init<int, int, bool, int, int, int>())
     .def("step", &FullEnvironment::step)
     .def("get_state", [](const FullEnvironment &env) {

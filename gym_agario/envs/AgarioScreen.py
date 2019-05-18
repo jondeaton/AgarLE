@@ -6,30 +6,35 @@ Author: Jon Deaton (jdeaton@stanford.edu)
 
 import gym
 from gym import error, spaces, utils
-from gym.utils import seeding
-
-
-import gym
-from gym import error, spaces, utils
+import agario_screen_env
 
 from collections import namedtuple
-
-import agario_screen_env
 
 class AgarioScreen(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self):
+    def __init__(self, frames_per_step=4, arena_size=1000,
+                 num_pellets=1000, num_viruses=25, num_bots=25,
+                 pellet_regen=True, screen_len=256):
         self.viewer = None
         self.server_process = None
         self.server_port = None
 
-        self.action_space = spaces.Tuple((
-            spaces.Box(low=0, high=1, shape=2), # x, y target
-            spaces.MultiBinary(1), # split?
-            spaces.MultiBinary(1))) # feed?
+        self.action_space = spaces.Tuple((spaces.Box(low=0, high=1, shape=(2,)),
+                                          spaces.MultiBinary(1),
+                                          spaces.MultiBinary(1)))
 
-        self._env = agario_screen_env.Environment(4)
+        self.observation_space = spaces.Dict({
+            "pellets": spaces.Space(shape=(None, 2)),
+            "viruses": spaces.Space(shape=(None, 2)),
+            "foods":   spaces.Space(shape=(None, 2)),
+            "agent":   spaces.Space(shape=(None, 5)),
+            "others":  spaces.Space(shape=(None, None, 5))
+        })
+
+        self._env = agario_screen_env.ScreenEnvironment(frames_per_step, arena_size, pellet_regen,
+                                                        num_pellets, num_viruses, num_bots,
+                                                        screen_len, screen_len)
 
         self.prev_status = 0
         self.status = 0
@@ -67,7 +72,7 @@ class AgarioScreen(gym.Env):
                  use this for learning.
         """
 
-        self._env.take_action(action)
+        self._env.take_action(*action)
 
         reward = self._env.step()
         observation = self._env.get_state()

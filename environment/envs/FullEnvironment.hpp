@@ -106,8 +106,8 @@ namespace agario {
 #ifdef RENDERABLE
         window = std::make_shared<Window>("Agar.io Environment", 512, 512);
         renderer = std::make_unique<agario::Renderer>(window,
-                                                      engine.arena_width(),
-                                                      engine.arena_height());
+                                                      this->engine.arena_width(),
+                                                      this->engine.arena_height());
 #endif
       }
 
@@ -124,8 +124,8 @@ namespace agario {
 
       void render() {
 #ifdef RENDERABLE
-        auto &player = engine.player(pid);
-        renderer->render_screen(player, engine.game_state());
+        auto &player = this->engine.player(this->pid);
+        renderer->render_screen(player, this->engine.game_state());
 
         glfwPollEvents();
         window->swap_buffers();

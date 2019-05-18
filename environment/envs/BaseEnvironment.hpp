@@ -41,7 +41,6 @@ namespace agario {
          */
         reward step() {
           auto &player = engine.player(pid);
-
           auto mass_before = static_cast<int>(player.mass());
           for (int i = 0; i < _num_frames; i++) {
             if (player.dead()) {

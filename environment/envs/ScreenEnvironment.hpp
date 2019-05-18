@@ -45,15 +45,15 @@ namespace agario {
       int num_frames() const { return _num_frames; }
 
       std::vector<int> shape() const {
-        return {_num_frames, _width, _height, 3};
+        return {_num_frames, _width, _height, PIXEL_LEN};
       }
 
       std::vector<ssize_t> strides() const {
         return {
-          _width * _height * 3 * dtype_size,
-                   _height * 3 * dtype_size,
-                             3 * dtype_size,
-                                 dtype_size
+          _width * _height * PIXEL_LEN * dtype_size,
+                   _height * PIXEL_LEN * dtype_size,
+                             PIXEL_LEN * dtype_size,
+                                         dtype_size
         };
       }
 
@@ -94,6 +94,12 @@ namespace agario {
       // stores current frame into buffer containing the next observation
       void _partial_observation(Player &player, int frame_index) override {
         renderer.render_screen(player, this->engine.game_state());
+
+//        // todo: remove, this is for debugging
+//        glfwPollEvents();
+//        frame_buffer->swap_buffers();
+
+
         void *data = _observation.frame_data(frame_index);
         frame_buffer->copy(data);
       }

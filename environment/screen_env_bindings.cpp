@@ -18,7 +18,7 @@ PYBIND11_MODULE(agario_screen_env, module) {
 
   typedef agario::env::ScreenEnvironment<true> ScreenEnvironment;
 
-  pybind11::class_<ScreenEnvironment>(module, "Environment")
+  pybind11::class_<ScreenEnvironment>(module, "ScreenEnvironment")
     .def(pybind11::init<int, int, bool, int, int, int, screen_len, screen_len>())
     .def("step", &ScreenEnvironment::step)
     .def("get_state", [](const ScreenEnvironment &env) {

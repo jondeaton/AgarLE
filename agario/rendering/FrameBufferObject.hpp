@@ -85,7 +85,7 @@ public:
 
   void copy(void *data) {
     glReadBuffer(GL_COLOR_ATTACHMENT0);
-    glReadPixels(0, 0, _width, _height, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glReadPixels(_width / 2, _height / 2, _width, _height, GL_RGB, GL_UNSIGNED_BYTE, data);
   }
 
   void swap_buffers() const { glfwSwapBuffers(window); }
