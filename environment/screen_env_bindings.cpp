@@ -20,9 +20,9 @@ PYBIND11_MODULE(agario_screen_env, module) {
   constexpr unsigned NumFrames = 4;
   constexpr unsigned observation_size = NumFrames * Width * Height * PIXEL_SIZE;
 
-  typedef agario::env::screen::Environment<true, Width, Height> ScreenEnvironment;
+  typedef agario::env::screen::ScreenEnvironment<true> ScreenEnvironment;
   pybind11::class_<ScreenEnvironment>(module, "Environment")
-    .def(pybind11::init<int>())
+    .def(pybind11::init<unsigned, unsigned, unsigned>())
     .def("step", &ScreenEnvironment::step)
     .def("get_state", [](const ScreenEnvironment &env) {
 
@@ -33,15 +33,14 @@ PYBIND11_MODULE(agario_screen_env, module) {
                                   Height * PIXEL_SIZE, PIXEL_SIZE * sizeof(std::uint8_t),
                                   1 * sizeof(std::uint8_t)};
 
-      auto arr = py::array_t<std::uint8_t>(py::buffer_info(data, sizeof(std::uint8_t),
-                                                           py::format_descriptor<std::uint8_t>::format(),
-                                                           4, shape, strides));
+      auto format = py::format_descriptor<std::uint8_t>::format();
+      auto buffer = py::buffer_info(data, sizeof(std::uint8_t), format, shape.size(), shape, strides);
+      auto arr = py::array_t<std::uint8_t>(buffer);
       return arr;
     })
     .def("done", &ScreenEnvironment::done)
     .def("take_action", &ScreenEnvironment::take_action, "x"_a, "y"_a, "act"_a)
     .def("reset", &ScreenEnvironment::reset);
-
 
 }
 

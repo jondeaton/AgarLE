@@ -12,6 +12,7 @@ endif(DEFINE_RENDERABLE)
 
 set(AGARIO_FULL_ENV_SROUCE
         full_env_bindings.cpp
+        envs/BaseEnvironment.hpp
         envs/FullEnvironment.hpp)
 
 pybind11_add_module(agario_full_env ${AGARIO_FULL_ENV_SROUCE})
@@ -33,6 +34,7 @@ if (OpenGL_FOUND)
 
     set(AGARIO_SCREEN_ENV_SOURCE
             screen_env_bindings.cpp
+            envs/BaseEnvironment.hpp
             envs/ScreenEnvironment.hpp)
 
     pybind11_add_module(agario_screen_env ${AGARIO_SCREEN_ENV_SOURCE})

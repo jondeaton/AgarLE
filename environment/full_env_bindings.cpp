@@ -35,17 +35,13 @@ PYBIND11_MODULE(agario_full_env, module) {
         std::vector<int> strides = {(int) (shape[1] * sizeof(float)),
                                     sizeof(float)};
 
-        auto buffer = py::buffer_info(data, sizeof(float),
-                                      py::format_descriptor<float>::format(),
-                                      2, shape, strides);
-
+        auto format = py::format_descriptor<float>::format();
+        auto buffer = py::buffer_info(data, sizeof(float), format, shape.size(), shape, strides);
         auto arr = py::array_t<float>(buffer);
-
         data_list.append(arr);
       }
 
-      return
-        data_list;
+      return data_list;
     })
     .def("done", &FullEnvironment::done)
     .def("take_action", &FullEnvironment::take_action, "x"_a, "y"_a, "act"_a)
