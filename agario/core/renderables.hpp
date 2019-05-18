@@ -216,7 +216,7 @@ namespace agario {
       arena_width(arena_width), arena_height(arena_height), z(z), _initialized(false) {}
 
     void draw(Shader &shader) {
-      if (!_initialized) _initialize();
+      if (!_initialized) _initialize(); // lazy initialization
 
       shader.setVec4("color", color[0], color[1], color[2], 1.0);
 

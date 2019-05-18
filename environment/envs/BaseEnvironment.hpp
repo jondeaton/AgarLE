@@ -8,6 +8,7 @@
 
 #include "engine/GameState.hpp"
 
+// 60 frames per second: the default amount of time between frames of the game
 #define DEFAULT_DT (1.0 / 60)
 
 namespace agario {
@@ -16,19 +17,15 @@ namespace agario {
       typedef double reward;
 
       template<bool renderable>
-      class Observation { };
-
-      template<bool renderable>
       class BaseEnvironment {
         typedef agario::Player<renderable> Player;
-        typedef Observation<renderable> Observation;
         typedef agario::bot::HungryBot<renderable> HungryBot;
         typedef agario::bot::HungryShyBot<renderable> HungryShyBot;
 
       public:
 
-        explicit BaseEnvironment(unsigned frames_per_step, unsigned arena_size, bool pellet_regen,
-                             unsigned num_pellets, unsigned num_viruses, unsigned num_bots) :
+        explicit BaseEnvironment(int frames_per_step, int arena_size, bool pellet_regen,
+                             int num_pellets, int num_viruses, int num_bots) :
           engine(arena_size, arena_size, num_pellets, num_viruses, pellet_regen),
           _num_frames(frames_per_step), _num_bots(num_bots), _done(false),
           step_dt(DEFAULT_DT) {
@@ -52,7 +49,7 @@ namespace agario {
               break;
             }
             engine.tick(step_dt);
-            _partial_observation(player, i);
+            this->_partial_observation(player, i);
           }
 
           auto mass_now = static_cast<int>(player.mass());
@@ -80,7 +77,7 @@ namespace agario {
         }
 
         /**
-         * Resets the environment by resetting the game enging
+         * Resets the environment by resetting the game engine
          */
         void reset() {
           engine.reset();
@@ -90,6 +87,8 @@ namespace agario {
         }
 
         bool done() const { return _done; }
+
+        int frames_per_step() const { return _num_frames; }
 
       protected:
         Engine<renderable> engine;

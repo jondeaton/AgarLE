@@ -15,20 +15,28 @@ static constexpr bool renderable = false;
 namespace py = pybind11;
 
 PYBIND11_MODULE(agario_full_env, module) {
-  using namespace pybind11::literals;module.
-    doc() = "Agario Learning Environment (Full)";
-  typedef agario::env::full::Environment<renderable> FullEnvironment;
+  using namespace pybind11::literals;
+  module.doc() = "Agario Learning Environment (Full)";
+
+  typedef agario::env::FullEnvironment<renderable> FullEnvironment;
 
   pybind11::class_<FullEnvironment>(module, "Environment")
-    .def(pybind11::init<unsigned, unsigned, bool, unsigned, unsigned, unsigned>())
+    .def(pybind11::init<int, int, bool, int, int, int>())
     .def("step", &FullEnvironment::step)
     .def("get_state", [](const FullEnvironment &env) {
       auto &observation = env.get_state();
+
+      // return type is list of numpy arrays
       py::list data_list;
 
       const auto &data_vec = observation.data();
       const auto &shapes = observation.shapes();
 
+      /**
+       * for each data buffer stored in the observation
+       * make a numpy array out of it and append it to the
+       * list of numpy arrays
+       */
       for (int i = 0; i < data_vec.size(); i++) {
         void *data = (void *) data_vec[i];
         std::vector<int> shape = shapes[i];

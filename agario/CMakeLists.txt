@@ -56,6 +56,7 @@ set(AGARIO_ENGINE_SRC
         core/settings.hpp)
 
 set(AGARIO_RENDERING_SRC
+        rendering/types.hpp
         rendering/platform.hpp
         rendering/renderer.hpp
         rendering/shader.hpp

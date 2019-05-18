@@ -10,7 +10,7 @@ class FBOException : public std::runtime_error {
 };
 
 void glfw_error_callback(int error, const char *description) {
-  (void) error;
+  static_cast<void>(error);
   throw FBOException(description);
 }
 
@@ -19,7 +19,7 @@ public:
 
   static constexpr GLenum target = GL_RENDERBUFFER;
 
-  FrameBufferObject(unsigned width, unsigned height) :
+  FrameBufferObject(screen_len width, screen_len height) :
     _width(width), _height(height),
     fbo(0), rbo_depth(0), rbo_color(0),
     window(nullptr) {
@@ -97,8 +97,8 @@ public:
   }
 
 private:
-  const unsigned _width;
-  const unsigned _height;
+  const screen_len _width;
+  const screen_len _height;
 
   GLuint fbo;
   GLuint rbo_depth;
