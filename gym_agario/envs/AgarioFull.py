@@ -68,7 +68,15 @@ class AgarioFull(gym.Env):
 
         episode_over = self._env.done()
 
-        return observation, reward, episode_over, {}
+        info = {
+            'num_pellets': len(state[0]),
+            'num_viruses': len(state[1]),
+            'num_foods': len(state[2]),
+            'agent_mass':  sum(cell_info[4] for cell_info in state[3]),
+            'num_opponents': len(state) - 4,
+        }
+
+        return observation, reward, episode_over, info
 
     def reset(self):
         """

@@ -10,6 +10,7 @@
 
 #ifdef RENDERABLE
 
+#include "rendering/platform.hpp"
 #include "core/renderables.hpp"
 #include "rendering/window.hpp"
 #include "rendering/renderer.hpp"
