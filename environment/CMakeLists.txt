@@ -6,7 +6,7 @@ add_subdirectory(pybind11)
 
 option(DEFINE_RENDERABLE "Renderable" OFF) # Enabled by default
 if(DEFINE_RENDERABLE)
-    message("Renderable")
+    message("Compiling full environment as renderable")
     add_definitions(-DRENDERABLE)
 endif(DEFINE_RENDERABLE)
 
@@ -17,6 +17,10 @@ set(AGARIO_FULL_ENV_SROUCE
 
 pybind11_add_module(agario_full_env ${AGARIO_FULL_ENV_SROUCE})
 target_include_directories(agario_full_env PRIVATE "../agario")
+if(DEFINE_RENDERABLE)
+    # link OpenGL libraries if full_env needs to be renderable
+    target_link_libraries(agario_full_env PUBLIC ${OPENGL_LIBRARIES} glm glfw)
+endif(DEFINE_RENDERABLE)
 
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
