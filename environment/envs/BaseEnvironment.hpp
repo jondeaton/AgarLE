@@ -89,6 +89,8 @@ namespace agario {
 
         int frames_per_step() const { return _num_frames; }
 
+        virtual void render() { };
+
       protected:
         Engine<renderable> engine;
         agario::pid pid;

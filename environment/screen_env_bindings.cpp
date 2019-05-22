@@ -35,7 +35,8 @@ PYBIND11_MODULE(agario_screen_env, module) {
     })
     .def("done", &ScreenEnvironment::done)
     .def("take_action", &ScreenEnvironment::take_action, "x"_a, "y"_a, "act"_a)
-    .def("reset", &ScreenEnvironment::reset);
+    .def("reset", &ScreenEnvironment::reset)
+    .def("render", &ScreenEnvironment::render);
 
 }
 
