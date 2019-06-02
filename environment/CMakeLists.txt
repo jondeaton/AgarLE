@@ -11,12 +11,22 @@ if(DEFINE_RENDERABLE)
 endif(DEFINE_RENDERABLE)
 
 set(AGARIO_FULL_ENV_SROUCE
-        full_env_bindings.cpp
+        bindings/full_env_bindings.cpp
         envs/BaseEnvironment.hpp
         envs/FullEnvironment.hpp)
 
 pybind11_add_module(agario_full_env ${AGARIO_FULL_ENV_SROUCE})
 target_include_directories(agario_full_env PRIVATE "../agario")
+
+
+set(AGARIO_GRID_ENV_SOURCE
+        bindings/grid_env_bindings.cpp
+        envs/BaseEnvironment.hpp
+        envs/GridEnvironment.hpp)
+
+pybind11_add_module(agario_grid_env ${AGARIO_GRID_ENV_SOURCE})
+target_include_directories(agario_grid_env PRIVATE "../agario")
+
 
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
@@ -33,7 +43,7 @@ if (OpenGL_FOUND)
     include_directories(${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIR})
 
     set(AGARIO_SCREEN_ENV_SOURCE
-            screen_env_bindings.cpp
+            bindings/screen_env_bindings.cpp
             envs/BaseEnvironment.hpp
             envs/ScreenEnvironment.hpp)
 
