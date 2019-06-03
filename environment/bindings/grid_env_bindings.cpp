@@ -31,7 +31,7 @@ PYBIND11_MODULE(agario_grid_env, module) {
     .def("step", &GridEnvironment::step)
     .def("get_state", [](const GridEnvironment &env) {
 
-      auto &observation = env.get_state();
+      auto observation = env.get_state();
       auto data = (void *) observation.data();
       auto shape = observation.shape();
       auto strides = observation.strides();
