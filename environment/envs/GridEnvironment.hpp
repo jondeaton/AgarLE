@@ -40,12 +40,12 @@ namespace agario {
        * to store cells, others, viruses and pellets with the remaining arguments
        */
       explicit GridObservation(const Player &player, const GameState &game_state,
-        int grid_size, bool cells, bool others, bool viruses, bool pellets) {
+        int grid_size, bool cells, bool others, bool viruses, bool pellets) :
+        _grid_size(grid_size), _view_size(50) , _state(game_state) {
+        // todo: change view size depending on player
 
         _make_shapes(grid_size, cells, others, viruses, pellets);
         _data = new T[length()];
-
-        _view_size = 50; // todo: change view size depending on player
 
         int i = 0;
         if (pellets) {
@@ -96,6 +96,8 @@ namespace agario {
       std::vector<int> _shape;
       std::vector<ssize_t> _strides;
       int _view_size;
+      int _grid_size;
+      const GameState &_state;
 
       /* crates the shape and strides to represent the multi-dimensional array */
       void _make_shapes (int grid_size, bool cells, bool others, bool viruses, bool pellets) {
@@ -108,75 +110,48 @@ namespace agario {
         };
       }
 
-      /*
-       * store the given entities in the data array at layer 
-       */
+      /* store the given entities in the data array at layer  */
       template<typename U>
-      void _store_entities(const std::vector<U> &entities, const Player &player, int i) {
-        int num = entities.size();
-        int index = i * _strides[0];
-        float box_size = _view
+      void _store_entities(const std::vector<U> &entities, const Player &player, int channel) {
+        int grid_x, grid_y;
         for (auto &entity : entities) {
-          auto loc_rel = entity.location() - player.location();
-          int grid_x = loc_rel.x 
-
-        }
-
-
-        /*
-         for entity in entities:
-            grid_x = int((entity[0] - loc[0]) / self.box_size) + self.grid_size // 2
-            grid_y = int((entity[1] - loc[1]) / self.box_size) + self.grid_size // 2
-            value = 1 if len(entity) <= 2 else entity[-1]
-
-            if 0 <= grid_x < self.grid_size and 0 <= grid_y < self.grid_size:
-                entity_features[grid_x][grid_y] += value
-
-                */
-      }
-
-      void _add_out_of_bounds(const Player &player, int i) {
-        /*
-         """ adds sentinel_value to out of bounds locations """
-        for i in range(self.grid_size):
-            for j in range(self.grid_size):
-                x_diff = i - int(self.grid_size / 2)
-                y_diff = j - int(self.grid_size / 2)
-
-                x_loc = x_diff * self.box_size + loc[0]
-                y_loc = y_diff * self.box_size + loc[1]
-
-                # if in bounds, increment
-                if not (0 <= x_loc < self.arena_size and 0 <= y_loc < self.arena_size):
-                    entity_features[i][j] = sentinel_value
-
-         */
-
-      }
-
-      template<typename T>
-      void _copy_entities(const std::vector<T> &entities, float *buffer) {
-        int i = 0;
-        for (auto &e : entities) {
-          buffer[i * 2 + 0] = static_cast<float>(e.x);
-          buffer[i * 2 + 1] = static_cast<float>(e.y);
-          i++;
+          _world_to_grid (entity.location() - player.location(), grid_x, grid_y);
+          if (0 <= grid_x && grid_x < _grid_size && 0 <= grid_y && grid_y < _grid_size)
+            _data[_index(channel, grid_x, grid_y)] = entity.mass();
         }
       }
 
-      // Cell specialization
-      void _copy_entities(const std::vector<Cell> &cells, float *buffer) {
-        int i = 0;
-        for (auto &cell : cells) {
-          buffer[i * 5 + 0] = (float) cell.x;
-          buffer[i * 5 + 1] = (float) cell.y;
-          buffer[i * 5 + 2] = (float) cell.velocity.dx;
-          buffer[i * 5 + 3] = (float) cell.velocity.dy;
-          buffer[i * 5 + 4] = (float) cell.mass();
-          i++;
-        }
+      void _add_out_of_bounds(const Player &player, int channel) {
+        int centering = _grid_size / 2;
+        for (int i = 0; i < _grid_size; i++)
+          for (int j = 0; j < _grid_size; j++) {
+            auto loc = _grid_to_world (i, j);
+            if (0 > loc.x || loc.x > _state.arena_width || loc.y < 0 || loc.y > _state.arena_height)
+              _data[_index(channel, i, j)] = -1;
+          }
       }
 
+      /* converts world coordinates to grid coordinates */
+      void _world_to_grid (const Location &loc, int &grid_x, int &grid_y) {
+        int centering = _grid_size / 2;
+        grid_x = static_cast<int>(_grid_size * loc.x / _view_size) + centering;
+        grid_y = static_cast<int>(_grid_size * loc.y / _view_size) + centering;
+      }
+
+      Location _grid_to_world (int grid_x, int grid_y) {
+        int centering = _grid_size / 2;
+
+        auto x_diff = grid_x - centering;
+        auto y_diff = grid_y - centering;
+
+        auto x_loc = x_diff * _view_size / _grid_size;
+        auto y_loc = y_diff * _view_size / _grid_size;
+        return Location(x_loc, y_loc);
+      }
+
+      int _index (int c, int x, int y) {
+        return _strides[0] * c + _strides[1] * x + _strides[2] * y;
+      }
     };
 
 

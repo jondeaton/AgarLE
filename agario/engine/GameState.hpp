@@ -17,6 +17,12 @@ namespace agario {
     std::vector<agario::Food<renderable>> foods;
     std::vector<agario::Virus<renderable>> viruses;
 
+    agario::distance arena_width;
+    agario::distance arena_height;
+
+    explicit GameState (agario::distance arena_width, agario::distance arena_height) :
+      arena_width(arena_width), arena_height(arena_height) { }
+
     void clear() {
       players.clear();
       pellets.clear();

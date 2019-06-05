@@ -23,13 +23,13 @@ namespace agario {
   public:
 
     typedef Player <renderable> Player;
-    typedef Cell <renderable> Cell;
-    typedef Food <renderable> Food;
+    typedef Cell   <renderable> Cell;
+    typedef Food   <renderable> Food;
     typedef Pellet <renderable> Pellet;
-    typedef Virus <renderable> Virus;
+    typedef Virus  <renderable> Virus;
 
     Engine(distance arena_width, distance arena_height, int num_pellets, int num_viruses, bool pellet_regen=true) :
-      _arena_width(arena_width), _arena_height(arena_height),
+      state (arena_width, arena_height),
       _num_pellets(num_pellets), _num_virus(num_viruses),
       _pellet_regen(pellet_regen),
       _ticks(0), next_pid(0) {
@@ -49,8 +49,8 @@ namespace agario {
     const std::vector<Virus> &viruses() const { return state.viruses; }
     agario::GameState<renderable> &game_state() { return state; }
     const agario::GameState<renderable> &get_game_state() const { return state; }
-    agario::distance arena_height() const { return _arena_height; }
-    agario::distance arena_width() const { return _arena_width; }
+    agario::distance arena_width() const { return state.arena_width; }
+    agario::distance arena_height() const { return state.arena_height; }
     int total_players() { return state.players.size(); }
     int total_pellets() { return state.pellets.size(); }
     int total_viruses() { return state.viruses.size(); }
@@ -128,17 +128,14 @@ namespace agario {
     Engine &operator=(Engine &&) = delete; // no move assignment
 
     agario::Location random_location() {
-      auto x = random<agario::distance>(_arena_width);
-      auto y = random<agario::distance>(_arena_height);
+      auto x = random<agario::distance>(arena_width());
+      auto y = random<agario::distance>(arena_height());
       return Location(x, y);
     }
 
   private:
 
     agario::GameState<renderable> state;
-
-    distance _arena_width;
-    distance _arena_height;
 
     agario::tick _ticks;
     agario::pid next_pid;
@@ -235,8 +232,8 @@ namespace agario {
      * @param ball the ball to keep inside the arena
      */
     void check_boundary_collisions(Ball &ball) {
-      ball.x = clamp<agario::distance>(ball.x, 0, _arena_width);
-      ball.y = clamp<agario::distance>(ball.y, 0, _arena_height);
+      ball.x = clamp<agario::distance>(ball.x, 0, arena_width());
+      ball.y = clamp<agario::distance>(ball.y, 0, arena_height());
     }
 
     /**
