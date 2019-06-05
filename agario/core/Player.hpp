@@ -154,7 +154,7 @@ namespace agario {
 
   template<bool r>
   std::ostream &operator<<(std::ostream &os, const Player<r> &player) {
-    os << player.name() << " (" << player.pid() << "), " << " score: " << player.score();
+    os << player.name() << "(" << player.pid() << ")";
     return os;
   }
 
