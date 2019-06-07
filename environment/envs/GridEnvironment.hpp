@@ -73,7 +73,7 @@ namespace agario {
           }
           channel++;
         }
-        
+
         for (int i = 0; i < _shape[0]; i++)
           _mark_out_of_bounds(player, i, game_state.arena_width, game_state.arena_height);
       }
@@ -104,9 +104,9 @@ namespace agario {
 
       /* move assignment */
       GridObservation &operator=(GridObservation &&obs) noexcept {
-        _data      = std::move(obs._data);
-        _shape     = std::move(obs._shape);
-        _strides   = std::move(obs._strides);
+        _data = std::move(obs._data);
+        _shape = std::move(obs._shape);
+        _strides = std::move(obs._strides);
         _view_size = std::move(obs._view_size);
         _grid_size = std::move(obs._grid_size);
         obs._data = nullptr;
@@ -175,7 +175,10 @@ namespace agario {
       }
 
       int _index(int c, int x, int y) {
-        return _strides[0] * c + _strides[1] * x + _strides[2] * y;
+        int channel_stride = _grid_size * _grid_size;
+        int x_stride = _grid_size;
+        int y_stride = 1;
+        return channel_stride * c + x_stride * x + y_stride * y;
       }
     };
 

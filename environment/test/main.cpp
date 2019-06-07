@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <test/grid-test.hpp>
 
 namespace { }
 

@@ -1,8 +1,15 @@
 cmake_minimum_required(VERSION 3.5)
 project (AvarioEnv)
 
+set(CMAKE_CXX_STANDARD 14)
+
 include_directories(".")
 add_subdirectory(pybind11)
+
+IF(APPLE)
+    # Fix linking on 10.14+. See https://stackoverflow.com/questions/54068035
+    link_directories(/usr/local/lib)
+ENDIF()
 
 option(DEFINE_RENDERABLE "Renderable" OFF) # Enabled by default
 if(DEFINE_RENDERABLE)
@@ -61,6 +68,7 @@ if (GTEST_FOUND)
     include_directories(test ${GTEST_INDLUCE_DIRS})
 
     add_executable(test-envs ${TEST_SRC} ${AGARIO_GRID_ENV_SOURCE})
+    target_include_directories(test-envs PRIVATE "../agario")
     target_link_libraries(test-envs gtest pthread)
     #    target_compile_options(test-engine PUBLIC ${TEST_FLAGS})
 else()

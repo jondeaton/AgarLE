@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
-project(Agario CXX)
+cmake_policy(SET CMP0048 NEW)
+
+project(Agario
+        VERSION 0.1
+        DESCRIPTION "Agar.io Game Engine"
+        HOMEPAGE_URL "https://github.com/jondeaton/AgarLE"
+        LANGUAGES CXX)
+
 set(CMAKE_CXX_STANDARD 14)
 
 set(DEBUG_FLAGS "-g -O0 -fpermissive -fsized-deallocation")

@@ -25,9 +25,22 @@ namespace {
     GridEnvironment env;
   };
 
-  TEST_F(EnvTest, create_engine) {
+  TEST_F(EnvTest, create_env) {
     SetUp();
-    EXPECT_TRUE(true);
+  }
+
+  TEST_F(EnvTest, step) {
+    SetUp();
+    env.take_action(0, 0, 0);
+    auto r = env.step();
+  }
+
+  TEST_F(EnvTest, get_state) {
+    SetUp();
+    env.take_action(0, 0, 0);
+    auto r = env.step();
+
+    auto state = env.get_state();
   }
 
 }
