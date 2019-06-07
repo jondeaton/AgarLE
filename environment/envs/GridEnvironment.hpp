@@ -10,6 +10,7 @@
 #include "envs/BaseEnvironment.hpp"
 
 #define DEFAULT_GRID_SIZE 128
+#define VIEW_SIZE 50
 
 #ifdef RENDERABLE
 
@@ -35,48 +36,53 @@ namespace agario {
       typedef Food<renderable> Food;
 
     public:
+      typedef T dtype;
+
       /* Construct a grid observation from the perspective of `player` for the 
        * given game state `game_state`. Specify the size of the grid whether
        * to store cells, others, viruses and pellets with the remaining arguments
        */
       explicit GridObservation(const Player &player, const GameState &game_state,
-        int grid_size, bool cells, bool others, bool viruses, bool pellets) :
-        _grid_size(grid_size), _view_size(50) , _state(game_state) {
+                               int grid_size, bool cells, bool others, bool viruses, bool pellets) :
+        _grid_size(grid_size), _view_size(VIEW_SIZE) {
         // todo: change view size depending on player
 
         _make_shapes(grid_size, cells, others, viruses, pellets);
         _data = new T[length()];
 
-        int i = 0;
+        int channel = 0;
         if (pellets) {
-          _store_entities<Pellet>(game_state.pellets, player, i);
-          i++;
+          _store_entities<Pellet>(game_state.pellets, player, channel);
+          channel++;
         }
 
         if (viruses) {
-          _store_entities<Virus>(game_state.viruses, player, i);
-          i++;
+          _store_entities<Virus>(game_state.viruses, player, channel);
+          channel++;
         }
 
         if (cells) {
-          _store_entities<Cell>(player.cells, player, i);
-          i++;
+          _store_entities<Cell>(player.cells, player, channel);
+          channel++;
         }
 
         if (others) {
           for (auto &pair : game_state.players) {
-            auto &other_player = *pair.second;
-            _store_entities<Cell>(other_player.cells);
+            Player &other_player = *pair.second;
+            _store_entities<Cell>(other_player.cells, player, channel);
           }
-          i++;
+          channel++;
         }
+        
+        for (int i = 0; i < _shape[0]; i++)
+          _mark_out_of_bounds(player, i, game_state.arena_width, game_state.arena_height);
       }
-      
+
       /* data buffer, mulit-dim array shape and sizes*/
-      const std::int32_t * &data() const { return _data; }
+      const T *data() const { return _data; }
       std::vector<int> shape() const { return _shape; }
-      std::vector<ssize_t> strides () const { return _strides; }
-      
+      std::vector<ssize_t> strides() const { return _strides; }
+
       /* full length of data array */
       int length() const {
         int len = 1;
@@ -85,60 +91,79 @@ namespace agario {
         return len;
       }
 
-      // todo: move, copy constructors/assignment
+      GridObservation(const GridObservation &) = delete; // no copy constructor
+      GridObservation &operator=(const GridObservation &) = delete; // no copy assignments
+
+      /* move constructor */
+      GridObservation(GridObservation &&obs) noexcept :
+        _data(std::move(obs._data)), _shape(std::move(obs._shape)),
+        _strides(std::move(obs._strides)), _view_size(std::move(obs._view_size)),
+        _grid_size(obs._grid_size) {
+        obs._data = nullptr;
+      };
+
+      /* move assignment */
+      GridObservation &operator=(GridObservation &&obs) noexcept {
+        _data      = std::move(obs._data);
+        _shape     = std::move(obs._shape);
+        _strides   = std::move(obs._strides);
+        _view_size = std::move(obs._view_size);
+        _grid_size = std::move(obs._grid_size);
+        obs._data = nullptr;
+        return *this;
+      };
 
       ~GridObservation() {
         delete[] _data;
       }
 
     private:
-      std::uint8_t *_data;
+      T *_data;
       std::vector<int> _shape;
       std::vector<ssize_t> _strides;
       int _view_size;
       int _grid_size;
-      const GameState &_state;
 
       /* crates the shape and strides to represent the multi-dimensional array */
-      void _make_shapes (int grid_size, bool cells, bool others, bool viruses, bool pellets) {
+      void _make_shapes(int grid_size, bool cells, bool others, bool viruses, bool pellets) {
         int num_layers = static_cast<int>(cells + others + viruses + pellets);
-        _shape = { num_layers, grid_size, grid_size };
+        _shape = {num_layers, grid_size, grid_size};
         _strides = {
-          grid_size * grid_size * sizeof(T),
-                      grid_size * sizeof(T),
-                                  sizeof(T)
+          grid_size * grid_size * (long) sizeof(T),
+          grid_size * (long) sizeof(T),
+          (long) sizeof(T)
         };
       }
 
-      /* store the given entities in the data array at layer  */
+      /* store the given entities in the data array at layer */
       template<typename U>
       void _store_entities(const std::vector<U> &entities, const Player &player, int channel) {
         int grid_x, grid_y;
         for (auto &entity : entities) {
-          _world_to_grid (entity.location() - player.location(), grid_x, grid_y);
+          _world_to_grid(entity.location() - player.location(), grid_x, grid_y);
           if (0 <= grid_x && grid_x < _grid_size && 0 <= grid_y && grid_y < _grid_size)
             _data[_index(channel, grid_x, grid_y)] = entity.mass();
         }
       }
 
-      void _add_out_of_bounds(const Player &player, int channel) {
+      void _mark_out_of_bounds(const Player &player, int channel, int arena_width, int arena_height) {
         int centering = _grid_size / 2;
         for (int i = 0; i < _grid_size; i++)
           for (int j = 0; j < _grid_size; j++) {
-            auto loc = _grid_to_world (i, j);
-            if (0 > loc.x || loc.x > _state.arena_width || loc.y < 0 || loc.y > _state.arena_height)
+            auto loc = _grid_to_world(i, j);
+            if (0 > loc.x || loc.x > arena_width || loc.y < 0 || loc.y > arena_height)
               _data[_index(channel, i, j)] = -1;
           }
       }
 
       /* converts world coordinates to grid coordinates */
-      void _world_to_grid (const Location &loc, int &grid_x, int &grid_y) {
+      void _world_to_grid(const Location &loc, int &grid_x, int &grid_y) {
         int centering = _grid_size / 2;
         grid_x = static_cast<int>(_grid_size * loc.x / _view_size) + centering;
         grid_y = static_cast<int>(_grid_size * loc.y / _view_size) + centering;
       }
 
-      Location _grid_to_world (int grid_x, int grid_y) {
+      Location _grid_to_world(int grid_x, int grid_y) {
         int centering = _grid_size / 2;
 
         auto x_diff = grid_x - centering;
@@ -149,25 +174,26 @@ namespace agario {
         return Location(x_loc, y_loc);
       }
 
-      int _index (int c, int x, int y) {
+      int _index(int c, int x, int y) {
         return _strides[0] * c + _strides[1] * x + _strides[2] * y;
       }
     };
 
 
-    template<bool renderable>
+    template<typename T, bool renderable>
     class GridEnvironment : public BaseEnvironment<renderable> {
       typedef agario::Player<renderable> Player;
-      typedef GridObservation<int, renderable> GridObservation;
+      typedef GridObservation<T, renderable> GridObservation;
 
     public:
+      typedef T dtype;
       typedef BaseEnvironment<renderable> Super;
 
       explicit GridEnvironment(int frames_per_step, int arena_size, bool pellet_regen,
                                int num_pellets, int num_viruses, int num_bots) :
-                               _grid_size(DEFAULT_GRID_SIZE),
-                               _observe_cells(true),   _observe_others(true),
-                               _observe_viruses(true), _observe_pellets(true),
+        _grid_size(DEFAULT_GRID_SIZE),
+        _observe_cells(true), _observe_others(true),
+        _observe_viruses(true), _observe_pellets(true),
         Super(frames_per_step, arena_size, pellet_regen, num_pellets, num_viruses, num_bots) {
 
         /* I would use if constexpr from C++17 here but that's not an option */
@@ -194,10 +220,15 @@ namespace agario {
        * @return An Observation object containing all of the
        * locations of every entity in the current state of the game world
        */
-      const GridObservation get_state() const {
+      GridObservation &&get_state() const {
         auto &player = this->engine.get_player(this->pid);
-        return GridObservation(player, this->engine.get_game_state(),
-          _grid_size, _observe_cells, _observe_others, _observe_viruses, _observe_pellets);
+        std::cout << "making observation" << std::endl;
+        GridObservation observation(player, this->engine.get_game_state(),
+                                    _grid_size, _observe_cells, _observe_others,
+                                    _observe_viruses, _observe_pellets);
+        std::cout << "made observation. moving..." << std::endl;
+
+        return std::move(observation);
       }
 
       void render() {

@@ -1,29 +1,22 @@
-#!/usr/bin/env python
 """
-File: AgarEnv
-Date: 1/27/19 
+File: AgarioGrid
+Date: 6/7/19 
 Author: Jon Deaton (jdeaton@stanford.edu)
 """
 
+
 import gym
 from gym import error, spaces, utils
-import numpy as np
 
-from collections import namedtuple
+import agario_grid_env
 
-import agario_full_env
-
-Observation = namedtuple('Observation', ['pellets', 'viruses', 'foods', 'agent', 'others'])
-
-class AgarioFull(gym.Env):
+class GridEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, frames_per_step=4, arena_size=1000,
-                 num_pellets=1000, num_viruses=25, num_bots=25,
-                 pellet_regen=True):
-        self.viewer = None
-        self.server_process = None
-        self.server_port = None
+    def __init__(self, frames_per_step=4, arena_size=1000, num_pellets=1000,
+                 num_viruses=25, num_bots=25, pellet_regen=True, grid_size=128,
+                 observe_cells=True, observe_others=True, observe_viruses=True,
+                 observe_pellets=True):
 
         self.action_space = spaces.Tuple((spaces.Box(low=0, high=1, shape=(2,)),
                                           spaces.MultiBinary(1),
@@ -37,14 +30,15 @@ class AgarioFull(gym.Env):
             "others":  spaces.Space(shape=(None, None, 5))
         })
 
-        self._env = agario_full_env.FullEnvironment(frames_per_step, arena_size, pellet_regen,
-                                                num_pellets, num_viruses, num_bots)
-
-        self.prev_status = 0
-        self.status = 0
-
-    def __del__(self):
-        pass
+        args = (frames_per_step, arena_size, pellet_regen, num_pellets, num_viruses, num_bots)
+        self._env = agario_grid_env.GridEnvironment(*args)
+        self._env.configure_observation({
+            "grid_size": grid_size,
+            "cells": observe_cells,
+            "others": observe_others,
+            "viruses": observe_viruses,
+            "pellets": observe_pellets
+        })
 
     def step(self, action):
         """ take an action in the environment, advancing the environment
@@ -62,13 +56,9 @@ class AgarioFull(gym.Env):
 
         reward = self._env.step()
         state = self._env.get_state()
-
-        observation = Observation(pellets=state[0], viruses=state[1],
-                                       foods=state[2], agent=state[3], others=state[4:])
-
         episode_over = self._env.done()
 
-        return observation, reward, episode_over, {}
+        return state, reward, episode_over, {}
 
     def reset(self):
         """
@@ -79,3 +69,6 @@ class AgarioFull(gym.Env):
 
     def render(self, mode='human'):
         self._env.render()
+
+    def __del__(self):
+        pass

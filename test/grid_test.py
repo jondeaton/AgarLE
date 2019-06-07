@@ -1,6 +1,6 @@
 """
-File: full_test
-Date: 5/18/19 
+File: grid_test
+Date: 6/7/19 
 Author: Jon Deaton (jdeaton@stanford.edu)
 """
 
@@ -16,17 +16,31 @@ env_config = {
     'num_pellets': 1000,
     'num_viruses': 25,
     'num_bots': 25,
-    'pellet_regen': True
+    'pellet_regen': True,
+    'grid_size': 128,
+    'observe_cells': True,
+    'observe_others': True,
+    'observe_viruses': True,
+    'observe_pellets': True
 }
 
-class FullGymTest(unittest.TestCase):
+class GridGymTest(unittest.TestCase):
 
     def test_creation(self):
-        env = gym.make("agario-full-v0", **env_config)
+        env = gym.make("agario-grid-v0", **env_config)
         assert isinstance(env, gym.Env)
 
+    def test_shape(self):
+        env = gym.make("agario-grid-v0", **env_config)
+        state, reward, done, info = env.step((0.0, 0.0, 0))
+
+        self.assertIsInstance(state, np.ndarray)
+        self.assertEqual(state.dtype, np.int, "data type: %s" % state.dtype)
+        self.assertEqual(state.shape, (4, 128, 128))
+
+
     def test_step(self):
-        env = gym.make("agario-full-v0", **env_config)
+        env = gym.make("agario-grid-v0", **env_config)
         next_state, reward, done, info = env.step((0.0, 0.0, 0))
 
         self.assertIsInstance(next_state, list)
@@ -35,7 +49,7 @@ class FullGymTest(unittest.TestCase):
         self.assertIsInstance(info, dict)
 
     def test_steps(self):
-        env = gym.make("agario-full-v0", **env_config)
+        env = gym.make("agario-grid-v0", **env_config)
         for _ in range(10):
             next_state, reward, done, info = env.step((0.0, 0.0, 0))
 

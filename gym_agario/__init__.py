@@ -8,7 +8,10 @@ Author: Jon Deaton (jdeaton@stanford.edu)
 from gym.envs.registration import register
 
 register(id='agario-full-v0',
-         entry_point='gym_agario.envs.AgarioFull:AgarioFull')
+         entry_point='gym_agario.envs.FullEnv:FullEnv')
 
 register(id='agario-screen-v0',
-         entry_point='gym_agario.envs.AgarioScreen:AgarioScreen')
+         entry_point='gym_agario.envs.ScreenEnv:ScreenEnv')
+
+register(id='agario-grid-v0',
+         entry_point='gym_agario.envs.GridEnv:GridEnv')
