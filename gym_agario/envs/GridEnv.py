@@ -7,6 +7,7 @@ Author: Jon Deaton (jdeaton@stanford.edu)
 
 import gym
 from gym import error, spaces, utils
+import numpy as np
 
 import agario_grid_env
 
@@ -17,27 +18,23 @@ class GridEnv(gym.Env):
                  num_viruses=25, num_bots=25, pellet_regen=True, grid_size=128,
                  observe_cells=True, observe_others=True, observe_viruses=True,
                  observe_pellets=True):
-
-        self.action_space = spaces.Tuple((spaces.Box(low=0, high=1, shape=(2,)),
+        super(GridEnv, self).__init__()
+        self.action_space = spaces.Tuple((spaces.Box(low=-1, high=1, shape=(2,)),
                                           spaces.MultiBinary(1),
                                           spaces.MultiBinary(1)))
 
-        self.observation_space = spaces.Dict({
-            "pellets": spaces.Space(shape=(None, 2)),
-            "viruses": spaces.Space(shape=(None, 2)),
-            "foods":   spaces.Space(shape=(None, 2)),
-            "agent":   spaces.Space(shape=(None, 5)),
-            "others":  spaces.Space(shape=(None, None, 5))
-        })
+        num_channels = int(observe_cells + observe_others + observe_viruses + observe_pellets)
+        self.observation_space = spaces.Box(-np.inf, np.inf, (num_channels, grid_size, grid_size), dtype=np.int32)
 
+        # create and configure environment
         args = (frames_per_step, arena_size, pellet_regen, num_pellets, num_viruses, num_bots)
         self._env = agario_grid_env.GridEnvironment(*args)
         self._env.configure_observation({
             "grid_size": grid_size,
-            "cells": observe_cells,
-            "others": observe_others,
-            "viruses": observe_viruses,
-            "pellets": observe_pellets
+            "observe_cells": observe_cells,
+            "observe_others": observe_others,
+            "observe_viruses": observe_viruses,
+            "observe_pellets": observe_pellets
         })
 
     def step(self, action):

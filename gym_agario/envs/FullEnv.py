@@ -21,6 +21,8 @@ class FullEnv(gym.Env):
     def __init__(self, frames_per_step=4, arena_size=1000,
                  num_pellets=1000, num_viruses=25, num_bots=25,
                  pellet_regen=True):
+        super(FullEnv, self).__init__()
+
         self.viewer = None
         self.server_process = None
         self.server_port = None

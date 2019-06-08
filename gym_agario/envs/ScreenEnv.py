@@ -16,6 +16,8 @@ class ScreenEnv(gym.Env):
     def __init__(self, frames_per_step=4, arena_size=1000,
                  num_pellets=1000, num_viruses=25, num_bots=25,
                  pellet_regen=True, screen_len=256):
+        super(ScreenEnv, self).__init__()
+
         self.viewer = None
         self.server_process = None
         self.server_port = None
