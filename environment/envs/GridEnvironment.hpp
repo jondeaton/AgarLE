@@ -10,7 +10,7 @@
 #include "envs/BaseEnvironment.hpp"
 
 #define DEFAULT_GRID_SIZE 128
-#define VIEW_SIZE 50
+#define VIEW_SIZE 30
 
 #ifdef RENDERABLE
 
@@ -45,8 +45,6 @@ namespace agario {
       explicit GridObservation(const Player &player, const GameState &game_state,
                                int grid_size, bool cells, bool others, bool viruses, bool pellets) :
         _grid_size(grid_size), _view_size(VIEW_SIZE) {
-        // todo: change view size depending on player
-
         _make_shapes(grid_size, cells, others, viruses, pellets);
         _data = new T[length()];
 
@@ -152,10 +150,12 @@ namespace agario {
         int centering = _grid_size / 2;
         for (int i = 0; i < _grid_size; i++)
           for (int j = 0; j < _grid_size; j++) {
+
             auto loc = _grid_to_world(i, j);
             int index = _index(channel, i, j);
             bool in_bounds = 0 <= loc.x && loc.x < arena_width && 0 <= loc.y && loc.y < arena_height;
             _data[index] = in_bounds ? 0 : -1;
+
           }
       }
 

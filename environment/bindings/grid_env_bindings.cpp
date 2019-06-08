@@ -29,10 +29,10 @@ PYBIND11_MODULE(agario_grid_env, module) {
     .def("configure_observation", [](GridEnvironment &env, py::dict config) {
 
       int grid_size = config.contains("grid_size") ? config["grid_size"].cast<int>() : DEFAULT_GRID_SIZE;
-      bool cells    = config.contains("observe_cells")     ? config["observe_cells"].cast<bool>()    : true;
-      bool others   = config.contains("observe_others")    ? config["observe_others"].cast<bool>()   : true;
-      bool viruses  = config.contains("observe_viruses")   ? config["observe_viruses"].cast<bool>()  : true;
-      bool pellets  = config.contains("observe_pellets")   ? config["observe_pellets"].cast<bool>()  : true;
+      bool cells    = config.contains("observe_cells")   ? config["observe_cells"].cast<bool>()   : true;
+      bool others   = config.contains("observe_others")  ? config["observe_others"].cast<bool>()  : true;
+      bool viruses  = config.contains("observe_viruses") ? config["observe_viruses"].cast<bool>() : true;
+      bool pellets  = config.contains("observe_pellets") ? config["observe_pellets"].cast<bool>() : true;
 
       env.configure_observation(grid_size, cells, others, viruses, pellets);
     })

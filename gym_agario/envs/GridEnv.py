@@ -52,8 +52,12 @@ class GridEnv(gym.Env):
         self._env.take_action(x, y, game_act)
 
         reward = self._env.step()
-        state = self._env.get_state()
         episode_over = self._env.done()
+
+        if episode_over:
+            state = None
+        else:
+            state = self._env.get_state()
 
         return state, reward, episode_over, {}
 
