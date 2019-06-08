@@ -50,6 +50,9 @@ namespace agario {
         _make_shapes(grid_size, cells, others, viruses, pellets);
         _data = new T[length()];
 
+        for (int i = 0; i < _shape[0]; i++)
+          _mark_out_of_bounds(player, i, game_state.arena_width, game_state.arena_height);
+
         int channel = 0;
         if (pellets) {
           _store_entities<Pellet>(game_state.pellets, player, channel);
@@ -73,9 +76,6 @@ namespace agario {
           }
           channel++;
         }
-
-        for (int i = 0; i < _shape[0]; i++)
-          _mark_out_of_bounds(player, i, game_state.arena_width, game_state.arena_height);
       }
 
       /* data buffer, mulit-dim array shape and sizes*/
@@ -141,8 +141,10 @@ namespace agario {
         int grid_x, grid_y;
         for (auto &entity : entities) {
           _world_to_grid(entity.location() - player.location(), grid_x, grid_y);
-          if (0 <= grid_x && grid_x < _grid_size && 0 <= grid_y && grid_y < _grid_size)
-            _data[_index(channel, grid_x, grid_y)] = entity.mass();
+
+          int index = _index(channel, grid_x, grid_y);
+          if (_inside_grid(grid_x, grid_y))
+            _data[index] = entity.mass();
         }
       }
 
@@ -151,8 +153,9 @@ namespace agario {
         for (int i = 0; i < _grid_size; i++)
           for (int j = 0; j < _grid_size; j++) {
             auto loc = _grid_to_world(i, j);
-            if (0 > loc.x || loc.x > arena_width || loc.y < 0 || loc.y > arena_height)
-              _data[_index(channel, i, j)] = -1;
+            int index = _index(channel, i, j);
+            bool in_bounds = 0 <= loc.x && loc.x < arena_width && 0 <= loc.y && loc.y < arena_height;
+            _data[index] = in_bounds ? 0 : -1;
           }
       }
 
@@ -179,6 +182,10 @@ namespace agario {
         int x_stride = _grid_size;
         int y_stride = 1;
         return channel_stride * c + x_stride * x + y_stride * y;
+      }
+
+      bool _inside_grid(int grid_x, int grid_y) {
+        return 0 <= grid_x && grid_x < _grid_size && 0 <= grid_y && grid_y < _grid_size;
       }
     };
 

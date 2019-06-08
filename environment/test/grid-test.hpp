@@ -20,7 +20,7 @@ namespace {
   protected:
     EnvTest() : env(4, 1000, true, 1000, 25, 25) { }
     void SetUp() override { }
-    void TestDown() { }
+    void TearDown() override { }
 
     GridEnvironment env;
   };
@@ -39,7 +39,6 @@ namespace {
     SetUp();
     env.take_action(0, 0, 0);
     auto r = env.step();
-
     auto state = env.get_state();
   }
 

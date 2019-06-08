@@ -34,30 +34,24 @@ class GridGymTest(unittest.TestCase):
         env = gym.make("agario-grid-v0", **env_config)
         state, reward, done, info = env.step((0.0, 0.0, 0))
 
-        self.assertIsInstance(state, np.ndarray)
-        self.assertEqual(state.dtype, np.int, "data type: %s" % state.dtype)
-        self.assertEqual(state.shape, (4, 128, 128))
-
-
-    def test_step(self):
-        env = gym.make("agario-grid-v0", **env_config)
-        next_state, reward, done, info = env.step((0.0, 0.0, 0))
-
-        self.assertIsInstance(next_state, list)
-        self.assertIsInstance(reward, float)
-        self.assertIsInstance(done, bool)
-        self.assertIsInstance(info, dict)
+        self.assertValidState(state)
 
     def test_steps(self):
         env = gym.make("agario-grid-v0", **env_config)
         for _ in range(10):
-            next_state, reward, done, info = env.step((0.0, 0.0, 0))
+            state, reward, done, info = env.step((0.0, 0.0, 0))
 
-            self.assertIsInstance(next_state, list)
-            self.assertIsInstance(reward, float)
-            self.assertIsInstance(done, bool)
-            self.assertIsInstance(info, dict)
+            self.assertValidState(state)
 
+    def assertValidState(self, state):
+        self.assertIsInstance(state, np.ndarray)
+        self.assertEqual(state.dtype, np.int32, "data type: %s" % state.dtype)
+        self.assertEqual(state.shape, (4, 128, 128))
+
+        self.assertGreaterEqual(state.min(), -1)
+        self.assertLess(state.max(), 1000)
+
+        self.assertLess(state.min(), state.max()) # not all just one value
 
 if __name__ == "__main__":
     unittest.main()
