@@ -98,7 +98,7 @@ namespace agario {
       GridObservation(GridObservation &&obs) noexcept :
         _data(std::move(obs._data)), _shape(std::move(obs._shape)),
         _strides(std::move(obs._strides)), _view_size(std::move(obs._view_size)),
-        _grid_size(obs._grid_size) {
+        _grid_size(std::move(obs._grid_size)) {
         obs._data = nullptr;
       };
 
@@ -223,15 +223,12 @@ namespace agario {
        * @return An Observation object containing all of the
        * locations of every entity in the current state of the game world
        */
-      GridObservation &&get_state() const {
+      GridObservation get_state() const {
         auto &player = this->engine.get_player(this->pid);
-        std::cout << "making observation" << std::endl;
         GridObservation observation(player, this->engine.get_game_state(),
                                     _grid_size, _observe_cells, _observe_others,
                                     _observe_viruses, _observe_pellets);
-        std::cout << "made observation. moving..." << std::endl;
-
-        return std::move(observation);
+        return observation; // return-value-optimization
       }
 
       void render() {

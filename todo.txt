@@ -1,5 +1,4 @@
 - Learning Environment
-  - image isn't centered on player
   - make focused player some special color
   - get rid of dock icon (how?)
   - configurable width and height of screen
