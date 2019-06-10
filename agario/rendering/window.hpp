@@ -19,8 +19,9 @@ void glfw_error_callback(int error, const char *description) {
 class Window : public Canvas {
 public:
 
-  Window(const std::string &window_name, int screen_width, int screen_height) :
-    screen_width(screen_width), screen_height(screen_height),
+  Window(const std::string &window_name, screen_len screen_width, screen_len screen_height) :
+    screen_width(screen_width),
+    screen_height(screen_height),
     _destroy(false) {
 
     glfwSetErrorCallback(glfw_error_callback);
@@ -78,15 +79,15 @@ public:
 
 private:
 
-  static void window_resize_callback(GLFWwindow *window, int width, int height) {
+  static void window_resize_callback(GLFWwindow *window, screen_len width, screen_len height) {
     auto win = static_cast<Window *>(glfwGetWindowUserPointer(window));
     win->screen_width = width;
     win->screen_height = height;
   }
 
   GLFWwindow *window;
-  int screen_width;
-  int screen_height;
+  screen_len screen_width;
+  screen_len screen_height;
   bool _destroy;
 };
 

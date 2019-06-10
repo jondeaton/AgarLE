@@ -35,20 +35,14 @@ namespace agario {
 
   class Renderer {
   public:
-
     typedef Player<true> Player;
-    typedef Cell<true> Cell;
-    typedef Pellet<true> Pellet;
-    typedef Food<true> Food;
-    typedef Virus<true> Virus;
-
+    
     explicit Renderer(std::shared_ptr<Canvas> canvas,
                       agario::distance arena_width,
                       agario::distance arena_height) :
-      canvas(std::move(canvas)),
+      _canvas(std::move(canvas)),
       arena_width(arena_width), arena_height(arena_height),
       shader(), grid(arena_width, arena_height) {
-
       shader.compile_shaders(vertex_shader_src, fragment_shader_src);
       shader.use();
     }
@@ -66,8 +60,8 @@ namespace agario {
     agario::Location to_target(Player &player, float xpos, float ypos) {
 
       // normalized device coordinates (from -1 to 1)
-      auto ndc_x = 2 * (xpos / canvas->width()) - 1;
-      auto ndc_y = 1 - 2 * (ypos / canvas->height());
+      auto ndc_x = 2 * (xpos / _canvas->width()) - 1;
+      auto ndc_y = 1 - 2 * (ypos / _canvas->height());
       auto loc = glm::vec4(ndc_x, ndc_y, 1.0, 1);
 
       auto perspective = perspective_projection(player);
@@ -96,10 +90,25 @@ namespace agario {
       return clamp(100 + player.mass() / 10.0, 100.0, 900.0);
     }
 
+    /**
+     * projection matrix for viewing the world
+     * from the perspective of the given player
+     * @param player player to make projection matrix for
+     * @return 4x4 projection matrix
+     */
     glm::mat4 perspective_projection(const Player &player) {
-      return glm::perspective(glm::radians(45.0f), canvas->aspect_ratio(), 0.1f, 1 + camera_z(player));
+      auto angle = glm::radians(45.0f);
+      auto znear = 0.1f;
+      auto zfar = 1 + camera_z(player);
+      return glm::perspective(angle, _canvas->aspect_ratio(), znear, zfar);
     }
 
+    /**
+     * the view projection from which the game world is
+     * viewed from the perspective of the given player
+     * @param player the player to get the view projection relative to
+     * @return 4x4 view projection matrix
+     */
     glm::mat4 view_projection(const Player &player) {
       return glm::lookAt(
         glm::vec3(player.x(), player.y(), camera_z(player)), // Camera location in World Space
@@ -108,6 +117,12 @@ namespace agario {
       );
     }
 
+    /**
+     * renders a single frame of the game from the perspective
+     * of the given player.
+     * @param player player to reneder the game for
+     * @param state current state of the game
+     */
     void render_screen(Player &player, agario::GameState<true> &state) {
       shader.use();
 
@@ -131,12 +146,20 @@ namespace agario {
         virus.draw(shader);
     }
 
+    /**
+     * Sets the canvas to render to
+     * @param canvas pointer to a canvas to render to
+     */
+    void set_canvas(std::shared_ptr<Canvas> canvas) {
+      _canvas = std::move(canvas);
+    }
+
     ~Renderer() {
       glfwTerminate();
     }
 
   private:
-    std::shared_ptr<Canvas> canvas;
+    std::shared_ptr<Canvas> _canvas;
 
     agario::distance arena_width;
     agario::distance arena_height;

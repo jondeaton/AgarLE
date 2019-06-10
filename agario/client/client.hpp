@@ -128,7 +128,6 @@ namespace agario {
 
     agario::Engine<true> engine;
 
-    // todo: change these into regular pointers?
     std::unique_ptr<agario::Renderer> renderer;
     std::shared_ptr<Window> window;
 
