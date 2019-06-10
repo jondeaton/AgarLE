@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
-project(AgarLE CXX)
+cmake_policy(SET CMP0048 NEW)
+
+project(AgarLE
+        VERSION 0.1
+        DESCRIPTION "Agar.io Learning Environment"
+        HOMEPAGE_URL "https://github.com/jondeaton/AgarLE"
+        LANGUAGES CXX)
+
 set(CMAKE_CXX_STANDARD 14)
 
 # To configure for "release", then run cmake with:

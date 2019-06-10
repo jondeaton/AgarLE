@@ -26,7 +26,7 @@ class FullGymTest(unittest.TestCase):
         assert isinstance(env, gym.Env)
 
     def test_step(self):
-        env = gym.make("agario-screen-v0", **env_config)
+        env = gym.make("agario-full-v0", **env_config)
         next_state, reward, done, info = env.step((0.0, 0.0, 0))
 
         self.assertIsInstance(next_state, list)
@@ -35,7 +35,7 @@ class FullGymTest(unittest.TestCase):
         self.assertIsInstance(info, dict)
 
     def test_steps(self):
-        env = gym.make("agario-screen-v0", **env_config)
+        env = gym.make("agario-full-v0", **env_config)
         for _ in range(10):
             next_state, reward, done, info = env.step((0.0, 0.0, 0))
 
