@@ -1,4 +1,4 @@
-<img width="320" alt="Screen Shot 2019-07-01 at 5 13 18 PM" src="https://user-images.githubusercontent.com/15920014/60447378-a5258a00-9c23-11e9-8b14-6fa85f470d63.png">
+<img width="380" alt="Screen Shot 2019-07-01 at 5 13 18 PM" src="https://user-images.githubusercontent.com/15920014/60447827-9d1a1a00-9c24-11e9-8a8b-a8043e8e1302.png">
 
 The Agar.io Learning Environment (AgarLE) is a performant implementation of the popular online multi-player
 game agar.io along with an [OpenAI Gym](https://gym.openai.com/) interface suitable for reinforcement learning in Python.
