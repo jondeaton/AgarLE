@@ -23,6 +23,9 @@ if (GTEST_FOUND)
     add_test(NAME GameEngine
              COMMAND agario/test-engine)
 
+    add_test(NAME GameEngine-Renderable
+             COMMAND agario/test-engine-renderable)
+
     add_test(NAME LearningEnvironment
              COMMAND environment/test-envs)
 

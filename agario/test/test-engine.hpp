@@ -3,6 +3,8 @@
 #include <gtest/gtest.h>
 #include <engine/Engine.hpp>
 
+#include <test/renderable.hpp>
+
 namespace {
 
   class EngineTest : public testing::Test {
@@ -11,7 +13,7 @@ namespace {
     void SetUp() {}
     void TearDown() {}
 
-    agario::Engine<false> engine;
+    agario::Engine<renderable> engine;
   };
 
   TEST_F(EngineTest, Construct) {

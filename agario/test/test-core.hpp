@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <engine/Engine.hpp>
+#include <test/renderable.hpp>
 
 namespace {
 
@@ -10,7 +11,7 @@ namespace {
     agario::distance y = 125;
     agario::mass mass = 25;
 
-    agario::Cell<false> cell(x, y, mass);
+    agario::Cell<renderable> cell(x, y, mass);
     EXPECT_EQ(cell.x, x);
     EXPECT_EQ(cell.y, y);
     EXPECT_EQ(cell.mass(), mass);
@@ -21,7 +22,7 @@ namespace {
     agario::distance y = 125;
     agario::mass mass = 25;
 
-    agario::Cell<false> cell(x, y, mass);
+    agario::Cell<renderable> cell(x, y, mass);
     EXPECT_EQ(cell.x, x);
     EXPECT_EQ(cell.y, y);
     EXPECT_EQ(cell.mass(), mass);
@@ -29,7 +30,7 @@ namespace {
 
   TEST(Player, ConstructNoPid) {
     std::string name = "TestName";
-    agario::Player<false> player(name);
+    agario::Player<renderable> player(name);
     EXPECT_EQ(player.name(), name);
     EXPECT_EQ(player.pid(), agario::pid(-1));
   }
@@ -37,7 +38,7 @@ namespace {
   TEST(Player, Construct) {
     agario::pid pid = 120;
     std::string name = "TestPlayer";
-    agario::Player<false> player(pid, name);
+    agario::Player<renderable> player(pid, name);
 
     EXPECT_EQ(player.pid(), pid) << "Player pid did not match";
     EXPECT_EQ(player.name(), name) << "Player name incorrect";
@@ -50,7 +51,7 @@ namespace {
     agario::pid pid = 120;
     std::string name = "TestPlayer";
     agario::color color = agario::color::yellow;
-    agario::Player<false> player(pid, name, color);
+    agario::Player<renderable> player(pid, name, color);
 
     EXPECT_EQ(player.pid(), pid) << "Player pid did not match";
     EXPECT_EQ(player.name(), name) << "Player name incorrect";
@@ -58,13 +59,13 @@ namespace {
   }
 
   TEST(Player, StartsDead) {
-    agario::Player<false> player(0, "TestPlayer");
+    agario::Player<renderable> player(0, "TestPlayer");
     EXPECT_TRUE(player.dead());
     EXPECT_EQ(player.cells.size(), 0ul);
   }
 
   TEST(Player, AddCell) {
-    agario::Player<false> player(0, "TestPlayer");
+    agario::Player<renderable> player(0, "TestPlayer");
 
     agario::distance x = 100;
     agario::distance y = 125;
@@ -79,7 +80,7 @@ namespace {
   }
 
   TEST(Player, Kill) {
-    agario::Player<false> player(0, "TestPlayer");
+    agario::Player<renderable> player(0, "TestPlayer");
     ASSERT_TRUE(player.dead());
     player.add_cell(agario::Location(0, 0), 0);
     ASSERT_FALSE(player.dead());
@@ -89,7 +90,7 @@ namespace {
   }
 
   TEST(Player, SimpleLocation) {
-    agario::Player<false> player(0, "TestPlayer");
+    agario::Player<renderable> player(0, "TestPlayer");
 
     EXPECT_EQ(player.cells.size(), 0ul);
 
@@ -103,7 +104,7 @@ namespace {
   }
 
   TEST(Player, Location) {
-    agario::Player<false> player(0, "TestPlayer");
+    agario::Player<renderable> player(0, "TestPlayer");
 
     ASSERT_EQ(player.cells.size(), 0ul);
 

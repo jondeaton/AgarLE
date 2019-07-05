@@ -103,6 +103,7 @@ include_directories(test)
 set(TEST_SRC
         test/test-engine.hpp
         test/test-core.hpp
+        test/renderable.hpp
         test/main.cpp)
 
 find_package(gtest)
@@ -114,7 +115,18 @@ if (GTEST_FOUND)
     add_executable(test-engine ${TEST_SRC} ${AGARIO_SRC})
     target_link_libraries(test-engine pthread gtest)
 
-#    target_compile_options(test-engine PUBLIC ${TEST_FLAGS})
+    find_package(OpenGL REQUIRED)
+    if (OpenGL_FOUND)
+        add_executable(test-engine-renderable ${TEST_SRC} ${AGARIO_SRC})
+        target_include_directories(test-engine-renderable PRIVATE ${OPENGL_INCLUDE_DIR})
+
+        target_link_libraries(test-engine-renderable pthread gtest ${OPENGL_LIBRARIES} glm glfw)
+        target_compile_definitions(test-engine-renderable PUBLIC RENDERABLE)
+
+    else()
+        message("OpenGL not found")
+    endif()
+
 else()
     message("Google Test not found")
 endif()

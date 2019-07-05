@@ -6,11 +6,13 @@
 #include <iostream>
 #include "envs/FullEnvironment.hpp"
 
+static constexpr bool renderable =
 #ifdef RENDERABLE
-static constexpr bool renderable = true;
+ true
 #else
-static constexpr bool renderable = false;
+  false
 #endif
+  ;
 
 namespace py = pybind11;
 
