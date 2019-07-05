@@ -14,10 +14,9 @@ namespace {
     agario::Engine<false> engine;
   };
 
-  TEST_F(EngineTest, create_engine) {
+  TEST_F(EngineTest, Construct) {
     SetUp();
     EXPECT_TRUE(true);
   }
-
 
 }

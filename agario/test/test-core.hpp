@@ -5,7 +5,7 @@
 
 namespace {
 
-  TEST(Cell, MakeCell) {
+  TEST(Cell, Construct) {
     agario::distance x = 100;
     agario::distance y = 125;
     agario::mass mass = 25;
@@ -16,7 +16,7 @@ namespace {
     EXPECT_EQ(cell.mass(), mass);
   }
 
-  TEST(Cell, CustomCell) {
+  TEST(Cell, PositionMass) {
     agario::distance x = 100;
     agario::distance y = 125;
     agario::mass mass = 25;
@@ -27,7 +27,14 @@ namespace {
     EXPECT_EQ(cell.mass(), mass);
   }
 
-  TEST(Player, ConstructPlayer) {
+  TEST(Player, ConstructNoPid) {
+    std::string name = "TestName";
+    agario::Player<false> player(name);
+    EXPECT_EQ(player.name(), name);
+    EXPECT_EQ(player.pid(), agario::pid(-1));
+  }
+
+  TEST(Player, Construct) {
     agario::pid pid = 120;
     std::string name = "TestPlayer";
     agario::Player<false> player(pid, name);
@@ -39,7 +46,18 @@ namespace {
     EXPECT_EQ(player.cells.size(), 0ul) << "Player constructed with cells";
   }
 
-  TEST(Player, PlayerStartsDead) {
+  TEST(Player, ConstructColor) {
+    agario::pid pid = 120;
+    std::string name = "TestPlayer";
+    agario::color color = agario::color::yellow;
+    agario::Player<false> player(pid, name, color);
+
+    EXPECT_EQ(player.pid(), pid) << "Player pid did not match";
+    EXPECT_EQ(player.name(), name) << "Player name incorrect";
+    EXPECT_EQ(player.color(), color) << "Player color did not match";
+  }
+
+  TEST(Player, StartsDead) {
     agario::Player<false> player(0, "TestPlayer");
     EXPECT_TRUE(player.dead());
     EXPECT_EQ(player.cells.size(), 0ul);

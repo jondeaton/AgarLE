@@ -113,6 +113,7 @@ if (GTEST_FOUND)
 
     add_executable(test-engine ${TEST_SRC} ${AGARIO_SRC})
     target_link_libraries(test-engine pthread gtest)
+
 #    target_compile_options(test-engine PUBLIC ${TEST_FLAGS})
 else()
     message("Google Test not found")
