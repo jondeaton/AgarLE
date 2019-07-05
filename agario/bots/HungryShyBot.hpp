@@ -12,13 +12,10 @@ namespace agario {
       static constexpr agario::color default_color = agario::color::purple;
     public:
       typedef agario::Player<renderable> Player;
-      template<typename Loc>
-      HungryShyBot(agario::pid pid, std::string name, Loc &&loc, agario::color color) : Player(pid, name, loc, color) {}
-      template<typename Loc>
-      HungryShyBot(agario::pid pid, std::string name, Loc &&loc) : HungryShyBot(pid, name, loc, default_color) {}
-      HungryShyBot(agario::pid pid, std::string name, agario::color color) : HungryShyBot(pid, name, Location(0, 0), color) {}
-      HungryShyBot(agario::pid pid, std::string name) : HungryShyBot(pid, name, default_color) {}
-      HungryShyBot(std::string name) : HungryShyBot(-1, name) {}
+
+      HungryShyBot(agario::pid pid, const std::string &name, agario::color color) : Player(pid, name, color) {}
+      HungryShyBot(agario::pid pid, const std::string &name) : HungryShyBot(pid, name, default_color) {}
+      HungryShyBot(const std::string &name) : HungryShyBot(-1, name) {}
       HungryShyBot() : HungryShyBot(typeid(*this).name()) {}
 
       void take_action(const GameState<renderable> &state) override {

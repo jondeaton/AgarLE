@@ -14,13 +14,9 @@ namespace agario::bot {
 
   public:
     // constructors that mirror those declared in Player (try not to touch these... it'll make you very sad)
-    template<typename Loc>
-    ExampleBot(agario::pid pid, std::string name, Loc &&loc, agario::color color) : Player(pid, name, loc, color) { }
-    template<typename Loc>
-    ExampleBot(agario::pid pid, std::string name, Loc &&loc) : ExampleBot(pid, name, loc, default_color) {}
-    ExampleBot(agario::pid pid, std::string name, agario::color color) : ExampleBot(pid, name, Location(0, 0), color) {}
-    ExampleBot(agario::pid pid, std::string name) : ExampleBot(pid, name, default_color) {}
-    ExampleBot(std::string name) : ExampleBot(-1, name) {}
+    ExampleBot(agario::pid pid, const std::string &name, agario::color color) : Player(pid, name, color) { }
+    ExampleBot(agario::pid pid, const std::string &name) : ExampleBot(pid, name, default_color) {}
+    ExampleBot(const std::string &name) : ExampleBot(-1, name) {}
     ExampleBot() : ExampleBot(typeid(*this).name()) { }
 
     /**

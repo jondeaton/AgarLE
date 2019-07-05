@@ -58,10 +58,12 @@ namespace agario {
 
     template<typename P>
     agario::pid add_player(const std::string &name) {
-      auto player_ptr = std::make_shared<P>(next_pid, name, random_location());
-      auto p = state.players.insert(std::make_pair(next_pid, player_ptr));
-      next_pid++;
-      return p.first->second->pid();
+      auto pid = next_pid++;
+
+      auto player = std::make_shared<P>(pid, name);
+      auto p = state.players.insert(std::make_pair(pid, player));
+      _respawn(*player);
+      return pid;
     }
 
     Player &player(agario::pid pid) {
@@ -116,8 +118,8 @@ namespace agario {
     Engine &operator=(Engine &&) = delete; // no move assignment
 
     agario::Location random_location() {
-      auto x = random < agario::distance > (arena_width());
-      auto y = random < agario::distance > (arena_height());
+      auto x = random<agario::distance>(arena_width());
+      auto y = random<agario::distance>(arena_height());
       return Location(x, y);
     }
 
