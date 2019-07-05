@@ -21,7 +21,7 @@ namespace agario::bot {
     ExampleBot(agario::pid pid, std::string name, agario::color color) : ExampleBot(pid, name, Location(0, 0), color) {}
     ExampleBot(agario::pid pid, std::string name) : ExampleBot(pid, name, default_color) {}
     ExampleBot(std::string name) : ExampleBot(-1, name) {}
-    ExampleBot() : ExampleBot(typeid(*this).name())
+    ExampleBot() : ExampleBot(typeid(*this).name()) { }
 
     /**
      * Example take_action function. This function is called on the bot
@@ -47,7 +47,7 @@ namespace agario::bot {
 
       // example: do nothing, just stay where you are
       this->action = agario::action::none;  // don't split, don't feed (i.e. do nothing)
-      this->target = location(); // go towards where I already am
+      this->target = this->location(); // go towards where I already am
     }
 
   };

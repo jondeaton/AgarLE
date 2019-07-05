@@ -1,9 +1,8 @@
 #include <gtest/gtest.h>
 #include <test/test-engine.hpp>
+#include <test/test-core.hpp>
 
-namespace {
-
-}
+namespace { }
 
 int main(int argc, char *argv[]) {
   testing::InitGoogleTest(&argc, argv);

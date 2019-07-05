@@ -87,7 +87,7 @@ namespace agario {
       float fps = (engine.ticks() - ticks_before) / total_time.count();
       std::cout << "Average FPS: " << fps << std::endl;
 
-      std::cout << "Leaderboard:" << std::endl;
+      std::cout << "Leader-board:" << std::endl;
       std::cout << engine.game_state() << std::endl;
 
       window->destroy();
@@ -106,7 +106,7 @@ namespace agario {
         if (player.dead()) {
           std::cout << "Player \"" << player.name() << "\" (pid ";
           std::cout << player.pid() << ") died." << std::endl;
-          engine.reset_player(player_pid);
+          engine.respawn(player_pid);
         }
 
         process_input();
