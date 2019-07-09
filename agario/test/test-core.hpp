@@ -191,9 +191,20 @@ namespace {
       ASSERT_EQ(sub1 * -1, sub2) << "Subtraction inversion incorrect";
       ASSERT_EQ(sub1.x, x1 - x2) << "Subtraction x incorrect";
       ASSERT_EQ(sub1.y, y1 - y2) << "Subtraction y incorrect";
+
+      auto mul_s = s * i;
+      ASSERT_EQ(s * i, i * s) << "Multiplication not commutative";
+      ASSERT_FLOAT_EQ(mul_s.x, s.x * i);
+      ASSERT_FLOAT_EQ(mul_s.y, s.y * i);
+
+      auto div_s = s / (i + 0.1);
+      ASSERT_FLOAT_EQ(div_s.x, s.x / (i + 0.1));
+      ASSERT_FLOAT_EQ(div_s.y, s.y / (i + 0.1));
     }
   }
 
   /* =========== Velocity =========== */
+
+  // todo: similarly mind-numbing tests for Velocity class
 
 }

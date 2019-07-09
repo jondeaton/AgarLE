@@ -27,6 +27,7 @@ namespace agario {
     typedef Food<renderable> Food;
     typedef Pellet<renderable> Pellet;
     typedef Virus<renderable> Virus;
+    using GameState = GameState<renderable>;
 
     Engine(distance arena_width, distance arena_height,
            int num_pellets = DEFAULT_NUM_PELLETS, int num_viruses = DEFAULT_NUM_VIRUSES, bool pellet_regen = true) :
@@ -43,7 +44,7 @@ namespace agario {
      * @return the number of ticks that have elapsed in the game
      */
     agario::tick ticks() const { return _ticks; }
-    const std::vector<Player> &players() const { return state.players; }
+    const typename GameState::PlayerMap &players() const { return state.players; }
     const std::vector<Pellet> &pellets() const { return state.pellets; }
     const std::vector<Food> &foods() const { return state.foods; }
     const std::vector<Virus> &viruses() const { return state.viruses; }
@@ -51,10 +52,11 @@ namespace agario {
     const agario::GameState<renderable> &get_game_state() const { return state; }
     agario::distance arena_width() const { return state.arena_width; }
     agario::distance arena_height() const { return state.arena_height; }
-    int total_players() { return state.players.size(); }
-    int total_pellets() { return state.pellets.size(); }
-    int total_viruses() { return state.viruses.size(); }
-    int total_foods() { return state.foods.size(); }
+    int player_count() const { return state.players.size(); }
+    int pellet_count() const { return state.pellets.size(); }
+    int virus_count() const { return state.viruses.size(); }
+    int food_count() const { return state.foods.size(); }
+    bool pellet_regen() const { return _pellet_regen; };
 
     template<typename P>
     agario::pid add_player(const std::string &name) {
@@ -91,6 +93,12 @@ namespace agario {
 
     void respawn(agario::pid pid) { _respawn(player(pid)); }
 
+    agario::Location random_location() {
+      auto x = random<agario::distance>(arena_width());
+      auto y = random<agario::distance>(arena_height());
+      return Location(x, y);
+    }
+
     /**
      * Performs a single game tick, moving all entities, performing
      * collision detection and updating the game state accordingly
@@ -117,12 +125,6 @@ namespace agario {
     Engine(Engine &&) = delete; // no move constructor
     Engine &operator=(Engine &&) = delete; // no move assignment
 
-    agario::Location random_location() {
-      auto x = random<agario::distance>(arena_width());
-      auto y = random<agario::distance>(arena_height());
-      return Location(x, y);
-    }
-
   private:
 
     agario::GameState<renderable> state;
@@ -130,9 +132,7 @@ namespace agario {
     agario::tick _ticks;
     agario::pid next_pid;
 
-    int _num_pellets;
-    int _num_virus;
-    int _pellet_regen;
+    int _num_pellets, _num_virus, _pellet_regen;
 
     /**
      * Resets a player to the starting position
@@ -289,7 +289,7 @@ namespace agario {
      * @param cell the cell which is doing the eating
      */
     void eat_pellets(Cell &cell) {
-      auto prev_size = total_pellets();
+      auto prev_size = pellet_count();
 
       state.pellets.erase(
         std::remove_if(state.pellets.begin(), state.pellets.end(),
@@ -297,13 +297,13 @@ namespace agario {
                          return cell.can_eat(pellet) && cell.collides_with(pellet);
                        }),
         state.pellets.end());
-      auto num_eaten = prev_size - total_pellets();
+      auto num_eaten = prev_size - pellet_count();
       cell.increment_mass(num_eaten * PELLET_MASS);
     }
 
     void eat_food(Cell &cell) {
       if (cell.mass() < FOOD_MASS) return;
-      auto prev_size = total_foods();
+      auto prev_size = food_count();
 
       state.foods.erase(
         std::remove_if(state.foods.begin(), state.foods.end(),
@@ -311,7 +311,7 @@ namespace agario {
                          return cell.can_eat(pellet) && cell.collides_with(pellet);
                        }),
         state.foods.end());
-      auto num_eaten = prev_size - total_foods();
+      auto num_eaten = prev_size - food_count();
       cell.increment_mass(num_eaten * FOOD_MASS);
     }
 
@@ -504,7 +504,6 @@ namespace agario {
 
     template<typename T>
     T random(T max) { return random<T>(0, max); }
-
   };
 
 }

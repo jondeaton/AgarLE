@@ -45,7 +45,7 @@ namespace agario {
    */
   enum _type_id { _distance, _angle };
   using distance = numWrapper<float, _distance>;
-  using angle = numWrapper<float, _angle>;
+  using angle    = numWrapper<float, _angle>;
 
   typedef unsigned int mass;
   typedef unsigned int score;
@@ -54,6 +54,7 @@ namespace agario {
   typedef unsigned long tick;
 
   typedef std::chrono::steady_clock::time_point real_time;
+  typedef std::chrono::duration<double> time_delta;
 
   enum action {
     none = 0, feed = 1, split = 2
@@ -143,18 +144,18 @@ namespace agario {
     return v;
   }
 
-  typedef Coordinate<agario::distance> Location;
+  template<typename T>
+  inline Coordinate<T> operator*(distance norm, Coordinate<T> v) { return v * norm; }
 
+  typedef Coordinate<agario::distance> Location;
 
   class Velocity {
   public:
-    explicit Velocity() : dx(0), dy(0) {}
+    Velocity() : dx(0), dy(0) {}
+    Velocity(agario::distance dx, agario::distance dy) : dx(dx), dy(dy) {}
+    Velocity(agario::Location dir) : Velocity(dir.x, dir.y) {}
 
-    explicit Velocity(agario::Location dir) : dx(dir.x), dy(dir.y) {}
-
-    explicit Velocity(agario::distance dx, agario::distance dy) : dx(dx), dy(dy) {}
-
-    explicit Velocity(agario::angle angle, agario::distance speed) :
+    Velocity(agario::angle angle, agario::distance speed) :
       dx(speed * std::cos(angle)), dy(speed * std::sin(angle)) {}
 
     void set_speed(float new_speed) {
@@ -253,8 +254,7 @@ namespace agario {
       return *this;
     }
 
-    distance dx;
-    distance dy;
+    agario::distance dx, dy;
   };
 
   inline Velocity operator+(Velocity lhs, const Velocity &rhs) {
