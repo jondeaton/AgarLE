@@ -62,10 +62,14 @@ namespace agario {
   template<typename T>
   class Coordinate {
   public:
-    explicit Coordinate(T x, T y) : x(x), y(y) {}
+    Coordinate(T x, T y) : x(x), y(y) { }
+    Coordinate() : Coordinate(0, 0) { }
 
-    T x;
-    T y;
+//    template <typename U>
+//    Coordinate(std::initializer_list<T> li) : Coordinate(static_cast<T>(li[0]),
+//                                                         static_cast<T>(li[1])) { }
+
+    T x, y;
 
     Coordinate &operator+=(const Coordinate &rhs) {
       x += rhs.x;

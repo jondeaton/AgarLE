@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
-#include <test/test-engine.hpp>
 #include <test/test-core.hpp>
+#include <test/test-entities.hpp>
+#include <test/test-engine.hpp>
 
 namespace { }
 

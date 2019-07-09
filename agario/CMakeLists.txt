@@ -101,8 +101,9 @@ add_executable(server ${AGARIO_SERVER_SRC})
 
 include_directories(test)
 set(TEST_SRC
-        test/test-engine.hpp
         test/test-core.hpp
+        test/test-entities.hpp
+        test/test-engine.hpp
         test/renderable.hpp
         test/main.cpp)
 
