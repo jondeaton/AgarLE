@@ -153,7 +153,7 @@ namespace agario {
     }
 
     agario::Velocity splitting_velocity;
-    agario::time _recombine_timer;
+    agario::real_time _recombine_timer;
 
   private:
     agario::mass _mass;

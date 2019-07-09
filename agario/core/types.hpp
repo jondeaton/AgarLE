@@ -53,7 +53,7 @@ namespace agario {
   typedef unsigned short pid;
   typedef unsigned long tick;
 
-  typedef std::chrono::steady_clock::time_point time;
+  typedef std::chrono::steady_clock::time_point real_time;
 
   enum action {
     none = 0, feed = 1, split = 2
@@ -64,10 +64,6 @@ namespace agario {
   public:
     Coordinate(T x, T y) : x(x), y(y) { }
     Coordinate() : Coordinate(0, 0) { }
-
-//    template <typename U>
-//    Coordinate(std::initializer_list<T> li) : Coordinate(static_cast<T>(li[0]),
-//                                                         static_cast<T>(li[1])) { }
 
     T x, y;
 
@@ -109,6 +105,16 @@ namespace agario {
   template<typename T>
   std::ostream &operator<<(std::ostream &os, const Coordinate<T> &c) {
     return os << "(" << c.x << ", " << c.y << ")";
+  }
+
+  template<typename T>
+  bool operator==(const Coordinate<T> &lhs, const Coordinate<T> &rhs) {
+    return lhs.x == rhs.x && lhs.y == rhs.y;
+  }
+
+  template<typename T>
+  bool operator!=(const Coordinate<T> &lhs, const Coordinate<T> &rhs) {
+    return !(lhs == rhs);
   }
 
   template<typename T>
