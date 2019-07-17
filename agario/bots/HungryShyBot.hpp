@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Player.hpp"
+#include <bots/Bot.hpp>
 
 #define SHY_RADIUS 25
 
@@ -8,12 +9,13 @@ namespace agario {
   namespace bot {
 
     template<bool renderable>
-    class HungryShyBot : public agario::Player<renderable> {
+    class HungryShyBot : public Bot<renderable> {
       static constexpr agario::color default_color = agario::color::purple;
     public:
+      typedef Bot<renderable> Bot;
       typedef agario::Player<renderable> Player;
 
-      HungryShyBot(agario::pid pid, const std::string &name, agario::color color) : Player(pid, name, color) {}
+      HungryShyBot(agario::pid pid, const std::string &name, agario::color color) : Bot(pid, name, color) {}
       HungryShyBot(agario::pid pid, const std::string &name) : HungryShyBot(pid, name, default_color) {}
       explicit HungryShyBot(const std::string &name) : HungryShyBot(-1, name) {}
       explicit HungryShyBot(agario::pid pid) : HungryShyBot(pid, "HungryShyBot") {}
@@ -38,14 +40,7 @@ namespace agario {
         }
 
         // no cells are too close for comfort... forage for foods
-        distance min_distance = agario::distance::max();
-        for (auto &pellet : state.pellets) {
-          distance dist = pellet.location().distance_to(this->location());
-          if (dist < min_distance) {
-            this->target = pellet.location(); // i can haz cheeseburger?
-            min_distance = dist;
-          }
-        }
+        this->target = this->nearest_pellet(state);
       }
 
     };

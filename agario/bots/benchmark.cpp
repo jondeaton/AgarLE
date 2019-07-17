@@ -212,9 +212,10 @@ int main(int argc, char *argv[]) {
   using namespace agario::bot;
   using HungryBot = HungryBot<RENDERABLE>;
   using HungryShyBot = HungryShyBot<RENDERABLE>;
+  using AggressiveBot = AggressiveBot<RENDERABLE>;
 
   // configure which bots to evaluate in this template pack
-  BotEvaluator<HungryBot, HungryShyBot> evaluator(NUM_BOTS);
+  BotEvaluator<HungryBot, HungryShyBot, AggressiveBot> evaluator(NUM_BOTS);
   evaluator.run(NUM_GAMES);
 
   std::cout << evaluator.stats() << std::endl;

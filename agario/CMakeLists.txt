@@ -51,10 +51,11 @@ set(AGARIO_CORE_SRC
 
 set(AGARIO_BOT_SRC
         bots/bots.hpp
+        bots/Bot.hpp
         bots/ExampleBot.hpp
-        bots/RandomBot.hpp
         bots/HungryBot.hpp
-        bots/HungryShyBot.hpp)
+        bots/HungryShyBot.hpp
+        bots/AggressiveBot.hpp)
 
 set(AGARIO_ENGINE_SRC
         ${AGARIO_BOT_SRC}
