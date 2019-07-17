@@ -31,7 +31,8 @@ namespace agario {
     }
 
     Player(agario::pid pid, const std::string &name) : Player(pid, name, random_color()) {}
-    Player(const std::string &name) : Player(-1, name) {}
+    explicit Player(const std::string &name) : Player(-1, name) {}
+    explicit Player(agario::pid pid) : Player(pid, "unnamed") {}
 
     std::vector<Cell> cells;
     agario::action action;

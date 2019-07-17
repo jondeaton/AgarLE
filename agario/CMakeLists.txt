@@ -105,7 +105,8 @@ add_executable(server ${AGARIO_SERVER_SRC})
 # ============================================================
 
 add_executable(bot-compare bots/benchmark.cpp)
-
+target_include_directories(bot-compare PRIVATE "..")
+target_link_libraries(bot-compare util)
 
 # ============================================================
 # Testing

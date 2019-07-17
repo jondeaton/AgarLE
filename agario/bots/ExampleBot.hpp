@@ -16,8 +16,8 @@ namespace agario::bot {
     // constructors that mirror those declared in Player (try not to touch these... it'll make you very sad)
     ExampleBot(agario::pid pid, const std::string &name, agario::color color) : Player(pid, name, color) { }
     ExampleBot(agario::pid pid, const std::string &name) : ExampleBot(pid, name, default_color) {}
-    ExampleBot(const std::string &name) : ExampleBot(-1, name) {}
-    ExampleBot() : ExampleBot(typeid(*this).name()) { }
+    explicit ExampleBot(const std::string &name) : ExampleBot(-1, name) {}
+    explicit ExampleBot(agario::pid pid) : ExampleBot(pid, "ExampleBot") { }
 
     /**
      * Example take_action function. This function is called on the bot

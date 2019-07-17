@@ -60,10 +60,15 @@ namespace agario {
     bool pellet_regen() const { return _pellet_regen; };
 
     template<typename P>
-    agario::pid add_player(const std::string &name) {
+    agario::pid add_player(const std::string &name = std::string()) {
       auto pid = next_pid++;
 
-      auto player = std::make_shared<P>(pid, name);
+      std::shared_ptr<P> player = name.empty() ?
+        std::make_shared<P>(pid)
+      :
+        std::make_shared<P>(pid, name);
+
+
       auto p = state.players.insert(std::make_pair(pid, player));
       _respawn(*player);
       return pid;

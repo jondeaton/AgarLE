@@ -5,16 +5,22 @@
 #include <engine/Engine.hpp>
 #include <bots/bots.hpp>
 
+#include <utils/thread-pool.h>
+#include <utils/ostreamlock.h>
+#include <mutex>
+
 #define RENDERABLE false
 
-#define NUM_GAMES 1
+#define NUM_GAMES 10
 #define NUM_BOTS 7
-#define GAME_DURATION 1.0 // minutes
+#define GAME_DURATION 3.0 // minutes
 
-#define TICK_FREQUENCY 60 // ticks per second
+#define TICK_FREQUENCY 30 // ticks per second
 #define TICK_DURATION (1.0 / TICK_FREQUENCY)
 
 #define TICKS_PER_GAME static_cast<int>(60 * GAME_DURATION * TICK_FREQUENCY)
+
+#define NUM_THREADS 4
 
 namespace agario {
   namespace bot {
@@ -106,11 +112,24 @@ namespace agario {
 
     std::ostream &operator<<(std::ostream &os, const GamesRecap& recaps) {
       auto names = recaps.names();
+
+      // fin the longest name
+      std::vector<unsigned long> lens;
+      std::transform(names.begin(), names.end(), std::back_inserter(lens),
+        [](const std::string &name){ return name.length(); });
+      auto longest = *std::max_element(lens.begin(), lens.end());
+
+      os << std::setw(longest) << "Name";
+      os << std::setw(5) << "Avg.";
+      os << std::setw(5) << "Max.";
+      os << std::setw(5) << "Min." << std::endl;
+      os << std::setfill('=') << std::setw(40) << "" << std::setfill(' ') << std::endl;
+
       for (auto &name : names) {
-        os << name << "\t";
-        os << recaps.macro_average(name) << "\t";
-        os << recaps.macro_minimum(name) << "\t";
-        os << recaps.macro_maximum(name) << std::endl;
+        os << std::setw(longest) << name;
+        os << std::setw(5) << (int) recaps.macro_average(name);
+        os << std::setw(5) << (int) recaps.macro_maximum(name);
+        os << std::setw(5) << (int) recaps.macro_minimum(name) << std::endl;
       }
       return os;
     }
@@ -118,7 +137,8 @@ namespace agario {
     template<typename ...Ts>
     class BotEvaluator {
     public:
-      explicit BotEvaluator(int num_bots) : _num_bots(num_bots) {}
+      explicit BotEvaluator(int num_bots) : _num_bots(num_bots),
+      pool(NUM_THREADS) {}
 
       /**
        * Executes `num_games` number of games, recording results
@@ -127,24 +147,34 @@ namespace agario {
        */
       void run(int num_games) {
         for (int game = 0; game < num_games; game++) {
-          std::cout << "Playing game " << game << std::endl;
-          engine.reset();
-          add_bots<Ts...>();
+          pool.schedule([=](){
+            std::cout << oslock << "Playing game " << game << std::endl << osunlock;
+            agario::Engine<RENDERABLE> engine;
+            engine.reset();
+            add_bots<Ts...>(engine);
 
-          agario::time_delta dt(TICK_DURATION);
-          for (int t = 0; t < TICKS_PER_GAME; t++)
-            engine.tick(dt);
+            agario::time_delta dt(TICK_DURATION);
+            for (int t = 0; t < TICKS_PER_GAME; t++)
+              engine.tick(dt);
 
-          record_scores(engine.get_game_state());
+            m.lock();
+            record_scores(engine.get_game_state());
+            m.unlock();
+          });
+
         }
+
+        pool.wait();
       }
 
       const GamesRecap &stats() { return recaps; }
 
     private:
       GamesRecap recaps;
-      agario::Engine<RENDERABLE> engine;
       int _num_bots;
+
+      ThreadPool pool;
+      std::mutex m;
 
       /**
        * Records statistics about the scores after a single game
@@ -161,18 +191,17 @@ namespace agario {
       }
 
       template <typename ...Us>
-      void add_bots() { _add_bots<Us...>(); }
+      void add_bots(agario::Engine<RENDERABLE> &engine) { _add_bots<Us...>(engine); }
 
-      template<> void add_bots<>() {} // recursive base case
+      template<> void add_bots<>(agario::Engine<RENDERABLE> &engine) {} // recursive base case
 
       /* add multiple kinds of bots, using the typeid as name */
       template <typename U, typename ...Us>
-      void _add_bots() {
+      void _add_bots(agario::Engine<RENDERABLE> &engine) {
         for (int i = 0; i < _num_bots; i++) {
-          std::string name = typeid(U).name();
-          engine.add_player<U>(name);
+          engine.add_player<U>();
         }
-        add_bots<Us...>();
+        add_bots<Us...>(engine);
       }
 
     };

@@ -15,8 +15,8 @@ namespace agario {
 
       HungryShyBot(agario::pid pid, const std::string &name, agario::color color) : Player(pid, name, color) {}
       HungryShyBot(agario::pid pid, const std::string &name) : HungryShyBot(pid, name, default_color) {}
-      HungryShyBot(const std::string &name) : HungryShyBot(-1, name) {}
-      HungryShyBot() : HungryShyBot(typeid(*this).name()) {}
+      explicit HungryShyBot(const std::string &name) : HungryShyBot(-1, name) {}
+      explicit HungryShyBot(agario::pid pid) : HungryShyBot(pid, "HungryShyBot") {}
 
       void take_action(const GameState<renderable> &state) override {
         this->action = agario::action::none; // no splitting or anything

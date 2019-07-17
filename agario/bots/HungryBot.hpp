@@ -13,7 +13,7 @@ namespace agario {
       HungryBot(agario::pid pid, const std::string &name, agario::color color) : Player(pid, name, color) {}
       HungryBot(agario::pid pid, const std::string &name) : HungryBot(pid, name, agario::color::blue) {}
       HungryBot(const std::string &name) : HungryBot(-1, name) {}
-      HungryBot() : HungryBot(typeid(*this).name()) {}
+      HungryBot(agario::pid pid) : HungryBot(pid, "HungryBot") {}
 
       void take_action(const GameState <renderable> &state) override {
         this->action = agario::action::none;
