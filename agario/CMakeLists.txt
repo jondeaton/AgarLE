@@ -99,6 +99,18 @@ set(AGARIO_SERVER_SRC
         server/main.cpp)
 add_executable(server ${AGARIO_SERVER_SRC})
 
+
+# ============================================================
+# Bot Benchmarking
+# ============================================================
+
+add_executable(bot-compare bots/benchmark.cpp)
+
+
+# ============================================================
+# Testing
+# ============================================================
+
 include_directories(test)
 set(TEST_SRC
         test/test-core.hpp

@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <algorithm>
+#include <sstream>
 #include <bots/HungryShyBot.hpp>
 
 #include "core/Player.hpp"
@@ -105,7 +106,7 @@ namespace agario {
      * @param elapsed_seconds the amount of time which has elapsed
      * since the previous game tick.
      */
-    void tick(std::chrono::duration<double> elapsed_seconds) {
+    void tick(const agario::time_delta &elapsed_seconds) {
       for (auto &pair : state.players)
         tick_player(*pair.second, elapsed_seconds);
 
@@ -161,7 +162,7 @@ namespace agario {
      * @param player the player to tick
      * @param elapsed_seconds the amount of (game) time since the last game tick
      */
-    void tick_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
+    void tick_player(Player &player, const agario::time_delta &elapsed_seconds) {
 
       if (_ticks % 10 == 0) // increases frame rate a lot
         player.take_action(state);
@@ -191,7 +192,7 @@ namespace agario {
      * @param player the player to move
      * @param elapsed_seconds time since the last game tick
      */
-    void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
+    void move_player(Player &player, const agario::time_delta &elapsed_seconds) {
       auto dt = elapsed_seconds.count();
 
       for (auto &cell : player.cells) {
@@ -212,7 +213,7 @@ namespace agario {
       check_player_self_collisions(player);
     }
 
-    void move_foods(std::chrono::duration<double> elapsed_seconds) {
+    void move_foods(const agario::time_delta &elapsed_seconds) {
       auto dt = elapsed_seconds.count();
 
       for (auto &food : state.foods) {
