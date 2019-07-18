@@ -125,6 +125,8 @@ namespace agario {
     }
 
     ~RenderableBall() override {
+      // If you get a "function not found" compilation error
+      // right here its probably because you didn't link OpenGL
       if (_initialized) {
         glDeleteVertexArrays(1, &circle.vao);
         glDeleteBuffers(1, &circle.vbo);

@@ -13,7 +13,6 @@
     - splitting into bottom left corner breaks the game
 
 - Refactoring
-  - Performance benchmarks for game tick cost
   - More efficient algorithms for entity collisions
   - Better solution to NumberWrapper (is there one?)
   - make speed and time new types?

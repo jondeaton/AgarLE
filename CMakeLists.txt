@@ -15,6 +15,7 @@ set(CMAKE_CXX_STANDARD 14)
 add_subdirectory(agario)
 add_subdirectory(environment)
 add_subdirectory(utils)
+add_subdirectory(bench)
 
 find_package(gtest)
 if (GTEST_FOUND)

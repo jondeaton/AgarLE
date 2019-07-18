@@ -10,7 +10,6 @@ namespace agario {
 
     template<bool renderable>
     class AggressiveBot : public Bot<renderable> {
-      /* this is an example Bot. Use it as a template to write other ones. */
       typedef Bot<renderable> Bot;
       typedef agario::Player<renderable> Player;
       static constexpr agario::color default_color = agario::color::red;
