@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rendering/types.hpp"
+#include "agario/rendering/types.hpp"
 
 class Canvas {
 public:

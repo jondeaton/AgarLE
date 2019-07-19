@@ -1,19 +1,18 @@
 #pragma once
 
-#include "rendering/renderer.hpp"
-#include "rendering/window.hpp"
+#include <agario/rendering/renderer.hpp>
+#include <agario/rendering/window.hpp>
 
-#include "core/renderables.hpp"
-#include "engine/Engine.hpp"
+#include <agario/core/renderables.hpp>
+#include <agario/engine/Engine.hpp>
 
-#include "bots/bots.hpp"
+#include <agario/bots/bots.hpp>
 
 #include <chrono>
 
 #include <string>
 #include <ctime>
 #include <memory>
-#include <bots/HungryBot.hpp>
 
 #define WINDOW_NAME "AgarIO"
 #define DEFAULT_SCREEN_WIDTH 640

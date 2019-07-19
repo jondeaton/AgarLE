@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/Player.hpp"
-#include <bots/Bot.hpp>
+#include <agario/core/Player.hpp>
+#include <agario/bots/Bot.hpp>
 
 #define SHY_RADIUS 25
 

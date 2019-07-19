@@ -1,13 +1,14 @@
-#include <iostream>
-#include <sstream>
-#include <map>
 
-#include <engine/Engine.hpp>
-#include <bots/bots.hpp>
+#include <agario/engine/Engine.hpp>
+#include <agario/bots/bots.hpp>
 
 #include <utils/thread-pool.h>
 #include <utils/ostreamlock.h>
+
 #include <mutex>
+#include <iostream>
+#include <sstream>
+#include <map>
 
 #include <cxxopts.hpp>
 

@@ -4,12 +4,12 @@
 #include <algorithm>
 #include <vector>
 
-#include "core/types.hpp"
-#include "core/Ball.hpp"
-#include "core/types.hpp"
-#include "core/Entities.hpp"
-#include "core/settings.hpp"
-#include "utils.hpp"
+#include "agario/core/types.hpp"
+#include "agario/core/Ball.hpp"
+#include "agario/core/types.hpp"
+#include "agario/core/Entities.hpp"
+#include "agario/core/settings.hpp"
+#include "agario/core/utils.hpp"
 
 #include <assert.h>
 #include <type_traits>

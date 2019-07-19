@@ -1,10 +1,10 @@
 #pragma once
 
-#include "core/Ball.hpp"
-#include "core/types.hpp"
-#include "core/utils.hpp"
-#include "core/settings.hpp"
-#include "core/color.hpp"
+#include "agario/core/Ball.hpp"
+#include "agario/core/types.hpp"
+#include "agario/core/utils.hpp"
+#include "agario/core/settings.hpp"
+#include "agario/core/color.hpp"
 
 #define PELLET_MASS 1
 #define FOOD_MASS 10

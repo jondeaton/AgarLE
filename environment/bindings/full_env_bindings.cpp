@@ -4,7 +4,7 @@
 #include <pybind11/numpy.h>
 
 #include <iostream>
-#include "envs/FullEnvironment.hpp"
+#include "environment/envs/FullEnvironment.hpp"
 
 static constexpr bool renderable =
 #ifdef RENDERABLE

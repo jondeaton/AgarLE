@@ -10,5 +10,5 @@ if(APPLE)
 endif()
 
 add_executable(agario-bench ${BENCH_SOURCE})
-target_include_directories(agario-bench PRIVATE ".." "../agario")
+target_include_directories(agario-bench PRIVATE "..")
 target_link_libraries(agario-bench PRIVATE benchmark pthread)

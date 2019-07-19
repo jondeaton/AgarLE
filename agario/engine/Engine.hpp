@@ -5,13 +5,12 @@
 #include <chrono>
 #include <algorithm>
 #include <sstream>
-#include <bots/HungryShyBot.hpp>
 
-#include "core/Player.hpp"
-#include "core/settings.hpp"
-#include "core/types.hpp"
-#include "core/Entities.hpp"
-#include "GameState.hpp"
+#include "agario/core/Player.hpp"
+#include "agario/core/settings.hpp"
+#include "agario/core/types.hpp"
+#include "agario/core/Entities.hpp"
+#include "agario/engine/GameState.hpp"
 
 namespace agario {
 

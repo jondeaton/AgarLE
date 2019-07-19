@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-#include "envs/ScreenEnvironment.hpp"
+#include "environment/envs/ScreenEnvironment.hpp"
 
 // there are three numbers in each pixel (RGB)
 #define PIXEL_LEN 3

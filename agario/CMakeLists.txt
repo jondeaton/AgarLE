@@ -40,7 +40,7 @@ else()
     set(CMAKE_CXX_FLAGS "${DEBUG_FLAGS}")
 endif()
 
-include_directories(".")
+include_directories("." "..")
 
 set(AGARIO_CORE_SRC
         core/core.hpp           core/utils.hpp

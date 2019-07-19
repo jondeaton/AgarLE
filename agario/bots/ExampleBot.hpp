@@ -1,19 +1,21 @@
 #pragma once
 
-#include "core/Player.hpp"
+#include <agario/core/Player.hpp>
+#include <agario/bots/Bot.hpp>
 
 namespace agario {
   namespace bot {
 
     template<bool renderable>
-    class ExampleBot : public agario::Player<renderable> {
+    class ExampleBot : public Bot<renderable> {
       /* this is an example Bot. Use it as a template to write other ones. */
       typedef agario::Player<renderable> Player;
+      typedef Bot<renderable> Bot;
       static constexpr agario::color default_color = agario::color::yellow;
 
     public:
       // constructors that mirror those declared in Player (try not to touch these... it'll make you very sad)
-      ExampleBot(agario::pid pid, const std::string &name, agario::color color) : Player(pid, name, color) {}
+      ExampleBot(agario::pid pid, const std::string &name, agario::color color) : Bot(pid, name, color) {}
       ExampleBot(agario::pid pid, const std::string &name) : ExampleBot(pid, name, default_color) {}
       explicit ExampleBot(const std::string &name) : ExampleBot(-1, name) {}
       explicit ExampleBot(agario::pid pid) : ExampleBot(pid, "ExampleBot") {}

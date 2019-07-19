@@ -2,15 +2,16 @@
 
 #define GL_SILENCE_DEPRECATION
 
-#include "rendering/platform.hpp"
-#include "core/color.hpp"
+#include "agario/rendering/platform.hpp"
+#include "agario/core/color.hpp"
+
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <core/Ball.hpp>
-#include <rendering/shader.hpp>
+#include <agario/core/Ball.hpp>
+#include <agario/rendering/shader.hpp>
 
 #define COLOR_LEN 3
 

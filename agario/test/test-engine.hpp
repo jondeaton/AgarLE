@@ -1,9 +1,9 @@
 #pragma once
 
 #include <gtest/gtest.h>
-#include <engine/Engine.hpp>
 
-#include <test/renderable.hpp>
+#include <agario/engine/Engine.hpp>
+#include <agario/test/renderable.hpp>
 
 namespace {
 

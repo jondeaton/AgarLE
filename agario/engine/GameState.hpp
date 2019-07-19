@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/Ball.hpp"
-#include "core/Entities.hpp"
-#include "core/Player.hpp"
+#include "agario/core/Ball.hpp"
+#include "agario/core/Entities.hpp"
+#include "agario/core/Player.hpp"
 
 #include <vector>
 #include <unordered_map>

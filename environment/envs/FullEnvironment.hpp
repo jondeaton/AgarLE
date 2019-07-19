@@ -1,13 +1,13 @@
 #pragma once
 
-#include <engine/Engine.hpp>
-#include <core/types.hpp>
-#include <core/Entities.hpp>
-#include <core/Ball.hpp>
-#include <bots/bots.hpp>
+#include <agario/engine/Engine.hpp>
+#include <agario/core/types.hpp>
+#include <agario/core/Entities.hpp>
+#include <agario/core/Ball.hpp>
+#include <agario/bots/bots.hpp>
+#include "agario/engine/GameState.hpp"
 
-#include "engine/GameState.hpp"
-#include "envs/BaseEnvironment.hpp"
+#include "environment/envs/BaseEnvironment.hpp"
 
 #ifdef RENDERABLE
 

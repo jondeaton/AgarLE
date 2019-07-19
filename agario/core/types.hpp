@@ -4,7 +4,7 @@
 #include <iostream>
 #include <chrono>
 
-#include "core/num_wrapper.hpp"
+#include "agario/core/num_wrapper.hpp"
 
 namespace agario {
 

@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
-#include <test/test-core.hpp>
-#include <test/test-entities.hpp>
-#include <test/test-engine.hpp>
+
+#include <agario/test/test-core.hpp>
+#include <agario/test/test-entities.hpp>
+#include <agario/test/test-engine.hpp>
 
 namespace { }
 

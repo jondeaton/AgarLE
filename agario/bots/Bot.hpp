@@ -1,7 +1,7 @@
 #pragma once
 
-#include <engine/GameState.hpp>
-#include "core/Player.hpp"
+#include <agario/engine/GameState.hpp>
+#include <agario/core/Player.hpp>
 
 namespace agario {
   namespace bot {

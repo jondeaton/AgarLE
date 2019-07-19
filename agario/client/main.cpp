@@ -1,8 +1,7 @@
 #include <iostream>
 
-
 #include <cxxopts.hpp>
-#include "client.hpp"
+#include "agario/client/client.hpp"
 
 cxxopts::Options options() {
 
