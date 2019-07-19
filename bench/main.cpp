@@ -7,6 +7,7 @@
 static void CreateEngine(benchmark::State& state) {
   for (auto _ : state) {
     agario::Engine<false> engine;
+    benchmark::DoNotOptimize(engine);
   }
 }
 BENCHMARK(CreateEngine);

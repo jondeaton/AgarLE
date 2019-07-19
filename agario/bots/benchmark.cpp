@@ -9,18 +9,10 @@
 #include <utils/ostreamlock.h>
 #include <mutex>
 
+#include <cxxopts.hpp>
+
 #define RENDERABLE false
 
-#define NUM_GAMES 10
-#define NUM_BOTS 7
-#define GAME_DURATION 3.0 // minutes
-
-#define TICK_FREQUENCY 30 // ticks per second
-#define TICK_DURATION (1.0 / TICK_FREQUENCY)
-
-#define TICKS_PER_GAME static_cast<int>(60 * GAME_DURATION * TICK_FREQUENCY)
-
-#define NUM_THREADS 4
 
 namespace agario {
   namespace bot {
@@ -137,8 +129,10 @@ namespace agario {
     template<typename ...Ts>
     class BotEvaluator {
     public:
-      explicit BotEvaluator(int num_bots) : _num_bots(num_bots),
-      pool(NUM_THREADS) {}
+      explicit BotEvaluator(int num_bots, float game_duration,
+        int tick_freq, int threads) :
+        num_bots(num_bots), game_duration(game_duration),
+        tick_freq(tick_freq), pool(threads) {}
 
       /**
        * Executes `num_games` number of games, recording results
@@ -146,6 +140,8 @@ namespace agario {
        * @param num_games the number of games to play
        */
       void run(int num_games) {
+        int ticks_per_game = static_cast<int>(60 * game_duration * tick_freq);
+
         for (int game = 0; game < num_games; game++) {
           pool.schedule([=](){
             std::cout << oslock << "Playing game " << game << std::endl << osunlock;
@@ -153,8 +149,8 @@ namespace agario {
             engine.reset();
             add_bots<Ts...>(engine);
 
-            agario::time_delta dt(TICK_DURATION);
-            for (int t = 0; t < TICKS_PER_GAME; t++)
+            agario::time_delta dt(1.0 / tick_freq);
+            for (int t = 0; t < ticks_per_game; t++)
               engine.tick(dt);
 
             m.lock();
@@ -170,8 +166,11 @@ namespace agario {
       const GamesRecap &stats() { return recaps; }
 
     private:
+      int num_bots;
+      float game_duration;
+      int tick_freq;
+
       GamesRecap recaps;
-      int _num_bots;
 
       ThreadPool pool;
       std::mutex m;
@@ -198,7 +197,7 @@ namespace agario {
       /* add multiple kinds of bots, using the typeid as name */
       template <typename U, typename ...Us>
       void _add_bots(agario::Engine<RENDERABLE> &engine) {
-        for (int i = 0; i < _num_bots; i++) {
+        for (int i = 0; i < num_bots; i++) {
           engine.add_player<U>();
         }
         add_bots<Us...>(engine);
@@ -208,15 +207,52 @@ namespace agario {
   }
 }
 
+cxxopts::Options options() {
+
+  try {
+    cxxopts::Options options("Agario Bot Evaluator", "command line options");
+    options
+      .positional_help("[optional args]")
+      .show_positional_help();
+
+    options.add_options()
+      ("g,games", "number of games", cxxopts::value<int>()->default_value("10"))
+      ("b,bots", "number of bots", cxxopts::value<int>()->default_value("7"))
+      ("d,duration", "game duration", cxxopts::value<float>()->default_value("3.0"))
+      ("f,frequency", "tick frequency", cxxopts::value<int>()->default_value("30"))
+      ("j,threads", "number of threads", cxxopts::value<int>()->default_value("4"))
+      ("help", "Print help");
+
+
+    options.parse_positional({"server"});
+    return options;
+
+  } catch (const cxxopts::OptionException &e) {
+    std::cout << "error parsing options: " << e.what() << std::endl;
+    exit(1);
+  }
+}
+
 int main(int argc, char *argv[]) {
+  auto opts = options();
+  auto args = opts.parse(argc, argv);
+
+  int num_games = args["games"].as<int>();
+  int num_bots = args["bots"].as<int>();
+  float game_duration = args["duration"].as<float>();
+  int tick_freq = args["frequency"].as<int>();
+  int threads = args["threads"].as<int>();
+
   using namespace agario::bot;
   using HungryBot = HungryBot<RENDERABLE>;
   using HungryShyBot = HungryShyBot<RENDERABLE>;
   using AggressiveBot = AggressiveBot<RENDERABLE>;
 
   // configure which bots to evaluate in this template pack
-  BotEvaluator<HungryBot, HungryShyBot, AggressiveBot> evaluator(NUM_BOTS);
-  evaluator.run(NUM_GAMES);
+  using Evaluator = BotEvaluator<HungryBot, HungryShyBot, AggressiveBot>;
+  
+  Evaluator evaluator(num_bots, game_duration, tick_freq, threads);
+  evaluator.run(num_games);
 
   std::cout << evaluator.stats() << std::endl;
 
