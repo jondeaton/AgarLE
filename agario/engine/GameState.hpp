@@ -21,15 +21,17 @@ namespace agario {
     std::vector<agario::Virus<renderable>> viruses;
 
     agario::distance arena_width, arena_height;
+    agario::tick ticks;
 
     explicit GameState (agario::distance arena_width, agario::distance arena_height) :
-      arena_width(arena_width), arena_height(arena_height) { }
+      arena_width(arena_width), arena_height(arena_height), ticks(0) { }
 
     void clear() {
       players.clear();
       pellets.clear();
       foods.clear();
       viruses.clear();
+      ticks = 0;
     }
   };
 

@@ -34,7 +34,7 @@ namespace agario {
       state(arena_width, arena_height),
       _num_pellets(num_pellets), _num_virus(num_viruses),
       _pellet_regen(pellet_regen),
-      _ticks(0), next_pid(0) {
+      next_pid(0) {
       std::srand(std::chrono::system_clock::now().time_since_epoch().count());
     }
     Engine() : Engine(DEFAULT_ARENA_WIDTH, DEFAULT_ARENA_HEIGHT) {}
@@ -43,7 +43,7 @@ namespace agario {
      * Total game ticks
      * @return the number of ticks that have elapsed in the game
      */
-    agario::tick ticks() const { return _ticks; }
+    agario::tick ticks() const { return state.ticks; }
     const typename GameState::PlayerMap &players() const { return state.players; }
     const std::vector<Pellet> &pellets() const { return state.pellets; }
     const std::vector<Food> &foods() const { return state.foods; }
@@ -112,8 +112,11 @@ namespace agario {
      * since the previous game tick.
      */
     void tick(const agario::time_delta &elapsed_seconds) {
-      for (auto &pair : state.players)
-        tick_player(*pair.second, elapsed_seconds);
+      for (auto &pair : state.players) {
+        auto &player = *pair.second;
+        if (!player.dead())
+          tick_player(player, elapsed_seconds);
+      }
 
       check_player_collisions();
 
@@ -123,7 +126,7 @@ namespace agario {
         add_pellets(_num_pellets - state.pellets.size());
       }
       add_viruses(_num_virus - state.viruses.size());
-      _ticks++;
+      state.ticks++;
     }
 
     Engine(const Engine &) = delete; // no copy constructor
@@ -135,9 +138,7 @@ namespace agario {
 
     agario::GameState<renderable> state;
 
-    agario::tick _ticks;
     agario::pid next_pid;
-
     int _num_pellets, _num_virus, _pellet_regen;
 
     /**
@@ -169,7 +170,7 @@ namespace agario {
      */
     void tick_player(Player &player, const agario::time_delta &elapsed_seconds) {
 
-      if (!player.dead() && _ticks % 10 == 0) // increases frame rate a lot
+      if (ticks() % 10 == 0)
         player.take_action(state);
 
       move_player(player, elapsed_seconds);
