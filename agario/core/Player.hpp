@@ -111,6 +111,7 @@ namespace agario {
         cell.draw(shader);
     }
 
+    /* override this function to define a bot's behavior */
     virtual void take_action(const GameState<renderable> &state) {
       static_cast<void>(state);
     }

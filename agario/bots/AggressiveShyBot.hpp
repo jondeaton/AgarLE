@@ -10,22 +10,38 @@ namespace agario {
 
 
     template<bool renderable>
-    class AggressiveBot : public Bot<renderable> {
+    class AggressiveShyBot : public Bot<renderable> {
     public:
       using Bot = Bot<renderable>;
       using Player = agario::Player<renderable>;
       using Cell = agario::Cell<renderable>;
       using GameState = GameState<renderable>;
 
-      static constexpr agario::color default_color = agario::color::red;
-      AggressiveBot(agario::pid pid, const std::string &name) : AggressiveBot(pid, name, default_color) {}
-      explicit AggressiveBot(const std::string &name) : AggressiveBot(-1, name) {}
-      explicit AggressiveBot(agario::pid pid) : AggressiveBot(pid, "AggressiveBot") {}
+      static constexpr agario::color default_color = agario::color::orange;
+      AggressiveShyBot(agario::pid pid, const std::string &name) : AggressiveShyBot(pid, name, default_color) {}
+      explicit AggressiveShyBot(const std::string &name) : AggressiveShyBot(-1, name) {}
+      explicit AggressiveShyBot(agario::pid pid) : AggressiveShyBot(pid, "AggressiveShyBot") {}
 
-      AggressiveBot(agario::pid pid, const std::string &name, agario::color color)
+      AggressiveShyBot(agario::pid pid, const std::string &name, agario::color color)
         : Bot(pid, name, color), targeting(bot::no_player) { }
 
       void take_action(const GameState &state) override {
+
+        // check if there are any big players nearby
+        for (auto &pair : state.players) {
+          Player &other_player = *pair.second;
+          if (other_player == *this) continue; // skip self
+
+          // is it nearby?
+          auto distance = this->location().distance_to(other_player.location());
+
+          // it is scary?
+          if (distance < SHY_RADIUS && other_player.mass() > mass()) {
+            // yes! run (directly) away!
+            this->target = this->location() - (other_player.location() - this->location());
+            return;
+          }
+        }
 
         auto &largest_cell = this->largest_cell();
 

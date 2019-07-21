@@ -103,6 +103,12 @@ private:
 std::ostream &operator<<(std::ostream &os, const GamesRecap &recaps) {
   auto names = recaps.names();
 
+  /* sort by macro average */
+  std::sort(names.begin(), names.end(),
+            [&](const std::string &n1, const std::string &n2) {
+              return recaps.macro_average(n1) > recaps.macro_average(n2);
+            });
+
   // fin the longest name
   std::vector<unsigned long> lens;
   std::transform(names.begin(), names.end(), std::back_inserter(lens),
@@ -237,21 +243,25 @@ int main(int argc, char *argv[]) {
   using HungryBot = HungryBot<RENDERABLE>;
   using HungryShyBot = HungryShyBot<RENDERABLE>;
   using AggressiveBot = AggressiveBot<RENDERABLE>;
+  using AggressiveShyBot = AggressiveShyBot<RENDERABLE>;
 
-  // configure which bots to evaluate in this template pack
-  using Evaluator = BotEvaluator<HungryBot, HungryShyBot, AggressiveBot>;
-
+  /* configure which bots to evaluate in this template pack */
+  using Evaluator = BotEvaluator<
+    HungryBot,
+    HungryShyBot,
+    AggressiveBot,
+    AggressiveShyBot>;
 
   /* command line parsing and evaluation */
 
   auto opts = options();
   auto args = opts.parse(argc, argv);
 
-  int num_games       = args["games"].as<int>();
-  int num_bots        = args["bots"].as<int>();
+  int num_games = args["games"].as<int>();
+  int num_bots = args["bots"].as<int>();
   float game_duration = args["duration"].as<float>();
-  int tick_freq       = args["frequency"].as<int>();
-  int threads         = args["threads"].as<int>();
+  int tick_freq = args["frequency"].as<int>();
+  int threads = args["threads"].as<int>();
 
   Evaluator evaluator(num_bots, game_duration, tick_freq, threads);
   evaluator.run(num_games);

@@ -62,11 +62,12 @@ namespace agario {
     agario::pid add_player(const std::string &name = std::string()) {
       auto pid = next_pid++;
 
-      std::shared_ptr<P> player = name.empty() ?
-        std::make_shared<P>(pid)
-      :
-        std::make_shared<P>(pid, name);
-
+      std::shared_ptr<P> player = nullptr;
+      if (name.empty()) {
+        player = std::make_shared<P>(pid);
+      } else {
+        player = std::make_shared<P>(pid, name);
+      }
 
       auto p = state.players.insert(std::make_pair(pid, player));
       _respawn(*player);
@@ -168,7 +169,7 @@ namespace agario {
      */
     void tick_player(Player &player, const agario::time_delta &elapsed_seconds) {
 
-      if (_ticks % 10 == 0) // increases frame rate a lot
+      if (!player.dead() && _ticks % 10 == 0) // increases frame rate a lot
         player.take_action(state);
 
       move_player(player, elapsed_seconds);

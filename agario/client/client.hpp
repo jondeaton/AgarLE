@@ -18,6 +18,7 @@
 #define DEFAULT_SCREEN_WIDTH 640
 #define DEFAULT_SCREEN_HEIGHT 480
 
+#define RENDERABLE true
 
 namespace agario {
 
@@ -56,11 +57,17 @@ namespace agario {
     }
 
     void add_bots() {
-      for (int i = 0; i < 10; i++)
-        engine.add_player<bot::HungryBot<true>>("HungryBot");
+      using namespace agario::bot;
+      using HungryBot = HungryBot<RENDERABLE>;
+      using HungryShyBot = HungryShyBot<RENDERABLE>;
+      using AggressiveBot = AggressiveBot<RENDERABLE>;
+      using AggressiveShyBot = AggressiveShyBot<RENDERABLE>;
 
-      for (int i = 0; i < 25; i++)
-        engine.add_player<bot::HungryShyBot<true>>("HungryShyBot");
+      int n = 7;
+      add_bot<HungryBot>(n);
+      add_bot<HungryShyBot>(n);
+      add_bot<AggressiveBot>(n);
+      add_bot<AggressiveShyBot>(n);
     }
 
     void initialize_renderer() {
@@ -129,6 +136,12 @@ namespace agario {
 
     std::unique_ptr<agario::Renderer> renderer;
     std::shared_ptr<Window> window;
+
+    template <typename T>
+    void add_bot(int num_bots) {
+      for (int i = 0; i < num_bots; i++)
+        engine.add_player<T>();
+    }
 
     void process_input() {
       GLFWwindow *win = window->pointer();
