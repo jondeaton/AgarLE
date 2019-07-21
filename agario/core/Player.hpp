@@ -4,12 +4,12 @@
 #include <algorithm>
 #include <vector>
 
-#include "core/types.hpp"
-#include "core/Ball.hpp"
-#include "core/types.hpp"
-#include "core/Entities.hpp"
-#include "core/settings.hpp"
-#include "utils.hpp"
+#include "agario/core/types.hpp"
+#include "agario/core/Ball.hpp"
+#include "agario/core/types.hpp"
+#include "agario/core/Entities.hpp"
+#include "agario/core/settings.hpp"
+#include "agario/core/utils.hpp"
 
 #include <assert.h>
 #include <type_traits>
@@ -25,18 +25,14 @@ namespace agario {
 
     Player() = delete;
 
-    template<typename Loc>
-    Player(agario::pid pid, std::string name, Loc &&loc, agario::color color) :
+    Player(agario::pid pid, std::string name, agario::color color) :
       action(none), target(0, 0), split_cooldown(0), feed_cooldown(0),
       _pid(pid), _name(std::move(name)), _score(0), _color(color) {
-      add_cell(loc, CELL_MIN_SIZE);
     }
 
-    template<typename Loc>
-    Player(agario::pid pid, std::string name, Loc &&loc) : Player(pid, name, loc, random_color()) {}
-    Player(agario::pid pid, std::string name, agario::color color) : Player(pid, name, Location(0, 0), color) {}
-    Player(agario::pid pid, std::string name) : Player(pid, name, random_color()) {}
-    Player(std::string name) : Player(-1, name) {}
+    Player(agario::pid pid, const std::string &name) : Player(pid, name, random_color()) {}
+    explicit Player(const std::string &name) : Player(-1, name) {}
+    explicit Player(agario::pid pid) : Player(pid, "unnamed") {}
 
     std::vector<Cell> cells;
     agario::action action;
@@ -44,10 +40,9 @@ namespace agario {
     agario::tick split_cooldown;
     agario::tick feed_cooldown;
 
-    agario::color color() const {
-      return _color;
-    }
+    agario::color color() const { return _color; }
 
+    // renderable version of add_cell, must set cell color
     template<bool enable = renderable, typename... Args>
     typename std::enable_if<enable, void>::type
     add_cell(Args &&... args) {
@@ -55,13 +50,15 @@ namespace agario {
       cells.back().color = _color;
     }
 
+    // non-renderable version of add_cell
     template<bool enable = renderable, typename... Args>
     typename std::enable_if<!enable, void>::type
      add_cell(Args &&... args) {
       cells.emplace_back(std::forward<Args>(args)...);
     }
 
-    bool dead() const { return cells.size() == 0; }
+    void kill() { cells.clear(); }
+    bool dead() const { return cells.empty(); }
 
     void set_score(score new_score) { _score = new_score; }
 
@@ -114,6 +111,7 @@ namespace agario {
         cell.draw(shader);
     }
 
+    /* override this function to define a bot's behavior */
     virtual void take_action(const GameState<renderable> &state) {
       static_cast<void>(state);
     }

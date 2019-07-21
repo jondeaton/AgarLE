@@ -1,9 +1,9 @@
 #pragma once
 
-#include "rendering/platform.hpp"
+#include "agario/rendering/platform.hpp"
 #include <GLFW/glfw3.h>
 
-#include "rendering/Canvas.hpp"
+#include "agario/rendering/Canvas.hpp"
 
 #include <exception>
 

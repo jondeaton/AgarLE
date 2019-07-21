@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/types.hpp"
-#include "settings.hpp"
+#include "agario/core/types.hpp"
+#include "agario/core/settings.hpp"
 
 namespace agario {
 

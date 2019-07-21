@@ -14,3 +14,24 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_subdirectory(agario)
 add_subdirectory(environment)
+add_subdirectory(utils)
+add_subdirectory(bench)
+
+find_package(gtest)
+if (GTEST_FOUND)
+    enable_testing()
+
+    add_test(NAME GameEngine
+             COMMAND agario/test-engine)
+
+    add_test(NAME GameEngine-Renderable
+             COMMAND agario/test-engine-renderable)
+
+    add_test(NAME LearningEnvironment
+             COMMAND environment/test-envs)
+
+    add_test(NAME OpenAI-Gym
+            COMMAND gym_test.py
+            WORKING_DIRECTORY ../test)
+
+endif()

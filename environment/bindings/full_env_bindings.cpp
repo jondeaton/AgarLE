@@ -4,13 +4,15 @@
 #include <pybind11/numpy.h>
 
 #include <iostream>
-#include "envs/FullEnvironment.hpp"
+#include "environment/envs/FullEnvironment.hpp"
 
+static constexpr bool renderable =
 #ifdef RENDERABLE
-static constexpr bool renderable = true;
+ true
 #else
-static constexpr bool renderable = false;
+  false
 #endif
+  ;
 
 namespace py = pybind11;
 

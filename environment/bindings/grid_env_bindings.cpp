@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-#include "envs/GridEnvironment.hpp"
+#include "environment/envs/GridEnvironment.hpp"
 
 static constexpr bool renderable =
 #ifdef RENDERABLE

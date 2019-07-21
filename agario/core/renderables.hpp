@@ -2,15 +2,16 @@
 
 #define GL_SILENCE_DEPRECATION
 
-#include "rendering/platform.hpp"
-#include "core/color.hpp"
+#include "agario/rendering/platform.hpp"
+#include "agario/core/color.hpp"
+
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <core/Ball.hpp>
-#include <rendering/shader.hpp>
+#include <agario/core/Ball.hpp>
+#include <agario/rendering/shader.hpp>
 
 #define COLOR_LEN 3
 
@@ -125,6 +126,8 @@ namespace agario {
     }
 
     ~RenderableBall() override {
+      // If you get a "function not found" compilation error
+      // right here its probably because you didn't link OpenGL
       if (_initialized) {
         glDeleteVertexArrays(1, &circle.vao);
         glDeleteBuffers(1, &circle.vbo);

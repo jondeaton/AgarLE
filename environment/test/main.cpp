@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
-#include <test/grid-test.hpp>
+
+#include <environment/test/grid-test.hpp>
 
 namespace { }
 

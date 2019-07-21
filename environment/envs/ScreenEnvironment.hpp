@@ -1,15 +1,18 @@
 #pragma once
 
-#include <engine/Engine.hpp>
-#include <core/types.hpp>
-#include <core/Entities.hpp>
-#include <core/Ball.hpp>
-#include <bots/bots.hpp>
+#include <agario/engine/Engine.hpp>
+#include <agario/core/types.hpp>
+#include <agario/core/Entities.hpp>
+#include <agario/core/Ball.hpp>
+#include <agario/bots/bots.hpp>
+#include "agario/engine/GameState.hpp"
 
-#include "rendering/types.hpp"
-#include "rendering/FrameBufferObject.hpp"
-#include "rendering/renderer.hpp"
-#include "envs/BaseEnvironment.hpp"
+#include "agario/rendering/types.hpp"
+#include "agario/rendering/FrameBufferObject.hpp"
+#include "agario/rendering/renderer.hpp"
+
+#include "environment/envs/BaseEnvironment.hpp"
+
 
 #define PIXEL_LEN 3
 

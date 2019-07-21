@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-#include "core/types.hpp"
+#include "agario/core/types.hpp"
 
 #define CELL_EAT_MARGIN 1.1
 

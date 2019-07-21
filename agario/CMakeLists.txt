@@ -40,7 +40,7 @@ else()
     set(CMAKE_CXX_FLAGS "${DEBUG_FLAGS}")
 endif()
 
-include_directories(".")
+include_directories("." "..")
 
 set(AGARIO_CORE_SRC
         core/core.hpp           core/utils.hpp
@@ -51,10 +51,11 @@ set(AGARIO_CORE_SRC
 
 set(AGARIO_BOT_SRC
         bots/bots.hpp
+        bots/Bot.hpp
         bots/ExampleBot.hpp
-        bots/RandomBot.hpp
         bots/HungryBot.hpp
-        bots/HungryShyBot.hpp)
+        bots/HungryShyBot.hpp
+        bots/AggressiveBot.hpp)
 
 set(AGARIO_ENGINE_SRC
         ${AGARIO_BOT_SRC}
@@ -99,9 +100,25 @@ set(AGARIO_SERVER_SRC
         server/main.cpp)
 add_executable(server ${AGARIO_SERVER_SRC})
 
+
+# ============================================================
+# Bot Benchmarking
+# ============================================================
+
+add_executable(bot-compare bots/benchmark.cpp)
+target_include_directories(bot-compare PRIVATE "..")
+target_link_libraries(bot-compare util)
+
+# ============================================================
+# Testing
+# ============================================================
+
 include_directories(test)
 set(TEST_SRC
+        test/test-core.hpp
+        test/test-entities.hpp
         test/test-engine.hpp
+        test/renderable.hpp
         test/main.cpp)
 
 find_package(gtest)
@@ -112,7 +129,19 @@ if (GTEST_FOUND)
 
     add_executable(test-engine ${TEST_SRC} ${AGARIO_SRC})
     target_link_libraries(test-engine pthread gtest)
-#    target_compile_options(test-engine PUBLIC ${TEST_FLAGS})
+
+    find_package(OpenGL REQUIRED)
+    if (OpenGL_FOUND)
+        add_executable(test-engine-renderable ${TEST_SRC} ${AGARIO_SRC})
+        target_include_directories(test-engine-renderable PRIVATE ${OPENGL_INCLUDE_DIR})
+
+        target_link_libraries(test-engine-renderable pthread gtest ${OPENGL_LIBRARIES} glm glfw)
+        target_compile_definitions(test-engine-renderable PUBLIC RENDERABLE)
+
+    else()
+        message("OpenGL not found")
+    endif()
+
 else()
     message("Google Test not found")
 endif()

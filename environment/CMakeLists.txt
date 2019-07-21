@@ -3,7 +3,7 @@ project (AvarioEnv)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include_directories(".")
+include_directories("." "..")
 add_subdirectory(pybind11)
 
 IF(APPLE)
@@ -22,7 +22,7 @@ set(AGARIO_FULL_ENV_SROUCE
         envs/FullEnvironment.hpp)
 
 pybind11_add_module(agario_full_env bindings/full_env_bindings.cpp ${AGARIO_FULL_ENV_SROUCE})
-target_include_directories(agario_full_env PRIVATE "../agario")
+target_include_directories(agario_full_env PRIVATE "..")
 
 
 set(AGARIO_GRID_ENV_SOURCE
@@ -30,7 +30,7 @@ set(AGARIO_GRID_ENV_SOURCE
         envs/GridEnvironment.hpp)
 
 pybind11_add_module(agario_grid_env bindings/grid_env_bindings.cpp ${AGARIO_GRID_ENV_SOURCE})
-target_include_directories(agario_grid_env PRIVATE "../agario")
+target_include_directories(agario_grid_env PRIVATE "..")
 
 
 set(OpenGL_GL_PREFERENCE GLVND)
@@ -68,7 +68,7 @@ if (GTEST_FOUND)
     include_directories(test ${GTEST_INDLUCE_DIRS})
 
     add_executable(test-envs ${TEST_SRC} ${AGARIO_GRID_ENV_SOURCE})
-    target_include_directories(test-envs PRIVATE "../agario")
+    target_include_directories(test-envs PRIVATE "..")
     target_link_libraries(test-envs gtest pthread)
     #    target_compile_options(test-engine PUBLIC ${TEST_FLAGS})
 else()

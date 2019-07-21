@@ -4,13 +4,13 @@
 #include <cstdlib>
 #include <chrono>
 #include <algorithm>
-#include <bots/HungryShyBot.hpp>
+#include <sstream>
 
-#include "core/Player.hpp"
-#include "core/settings.hpp"
-#include "core/types.hpp"
-#include "core/Entities.hpp"
-#include "GameState.hpp"
+#include "agario/core/Player.hpp"
+#include "agario/core/settings.hpp"
+#include "agario/core/types.hpp"
+#include "agario/core/Entities.hpp"
+#include "agario/engine/GameState.hpp"
 
 namespace agario {
 
@@ -22,28 +22,29 @@ namespace agario {
   class Engine {
   public:
 
-    typedef Player <renderable> Player;
-    typedef Cell   <renderable> Cell;
-    typedef Food   <renderable> Food;
-    typedef Pellet <renderable> Pellet;
-    typedef Virus  <renderable> Virus;
+    typedef Player<renderable> Player;
+    typedef Cell<renderable> Cell;
+    typedef Food<renderable> Food;
+    typedef Pellet<renderable> Pellet;
+    typedef Virus<renderable> Virus;
+    using GameState = GameState<renderable>;
 
-    Engine(distance arena_width, distance arena_height, int num_pellets, int num_viruses, bool pellet_regen=true) :
-      state (arena_width, arena_height),
+    Engine(distance arena_width, distance arena_height,
+           int num_pellets = DEFAULT_NUM_PELLETS, int num_viruses = DEFAULT_NUM_VIRUSES, bool pellet_regen = true) :
+      state(arena_width, arena_height),
       _num_pellets(num_pellets), _num_virus(num_viruses),
       _pellet_regen(pellet_regen),
-      _ticks(0), next_pid(0) {
+      next_pid(0) {
       std::srand(std::chrono::system_clock::now().time_since_epoch().count());
     }
-    Engine(distance arena_width, distance arena_height) : Engine(arena_width, arena_height, 1000, 25) { }
     Engine() : Engine(DEFAULT_ARENA_WIDTH, DEFAULT_ARENA_HEIGHT) {}
 
     /**
- * Total game ticks
- * @return the number of ticks that have elapsed in the game
- */
-    agario::tick ticks() const { return _ticks; }
-    const std::vector<Player> &players() const { return state.players; }
+     * Total game ticks
+     * @return the number of ticks that have elapsed in the game
+     */
+    agario::tick ticks() const { return state.ticks; }
+    const typename GameState::PlayerMap &players() const { return state.players; }
     const std::vector<Pellet> &pellets() const { return state.pellets; }
     const std::vector<Food> &foods() const { return state.foods; }
     const std::vector<Virus> &viruses() const { return state.viruses; }
@@ -51,26 +52,30 @@ namespace agario {
     const agario::GameState<renderable> &get_game_state() const { return state; }
     agario::distance arena_width() const { return state.arena_width; }
     agario::distance arena_height() const { return state.arena_height; }
-    int total_players() { return state.players.size(); }
-    int total_pellets() { return state.pellets.size(); }
-    int total_viruses() { return state.viruses.size(); }
-    int total_foods() { return state.foods.size(); }
+    int player_count() const { return state.players.size(); }
+    int pellet_count() const { return state.pellets.size(); }
+    int virus_count() const { return state.viruses.size(); }
+    int food_count() const { return state.foods.size(); }
+    bool pellet_regen() const { return _pellet_regen; };
 
-    template <typename P>
-    agario::pid add_player(const std::string &name) {
-      auto player_ptr = std::make_shared<P>(next_pid, name, random_location());
-      auto p = state.players.insert(std::make_pair(next_pid, player_ptr));
-      next_pid++;
-      return p.first->second->pid();
+    template<typename P>
+    agario::pid add_player(const std::string &name = std::string()) {
+      auto pid = next_pid++;
+
+      std::shared_ptr<P> player = nullptr;
+      if (name.empty()) {
+        player = std::make_shared<P>(pid);
+      } else {
+        player = std::make_shared<P>(pid, name);
+      }
+
+      auto p = state.players.insert(std::make_pair(pid, player));
+      _respawn(*player);
+      return pid;
     }
 
     Player &player(agario::pid pid) {
-      if (state.players.find(pid) == state.players.end()) {
-        std::stringstream ss;
-        ss << "Player ID: " << pid << " does not exist.";
-        throw EngineException(ss.str());
-      }
-      return *state.players.at(pid);
+      return const_cast<Player &>(get_player(pid));
     }
 
     const Player &get_player(agario::pid pid) const {
@@ -92,13 +97,12 @@ namespace agario {
       add_viruses(_num_virus);
     }
 
-    /**
-     * Resets a player to the starting position
-     * @param pid player ID of the player to reset
-     */
-    void reset_player(agario::pid pid) {
-      player(pid).cells.clear();
-      player(pid).add_cell(random_location(), CELL_MIN_SIZE);
+    void respawn(agario::pid pid) { _respawn(player(pid)); }
+
+    agario::Location random_location() {
+      auto x = random<agario::distance>(arena_width());
+      auto y = random<agario::distance>(arena_height());
+      return Location(x, y);
     }
 
     /**
@@ -107,9 +111,12 @@ namespace agario {
      * @param elapsed_seconds the amount of time which has elapsed
      * since the previous game tick.
      */
-    void tick(std::chrono::duration<double> elapsed_seconds) {
-      for (auto &pair : state.players)
-        tick_player(*pair.second, elapsed_seconds);
+    void tick(const agario::time_delta &elapsed_seconds) {
+      for (auto &pair : state.players) {
+        auto &player = *pair.second;
+        if (!player.dead())
+          tick_player(player, elapsed_seconds);
+      }
 
       check_player_collisions();
 
@@ -119,7 +126,7 @@ namespace agario {
         add_pellets(_num_pellets - state.pellets.size());
       }
       add_viruses(_num_virus - state.viruses.size());
-      _ticks++;
+      state.ticks++;
     }
 
     Engine(const Engine &) = delete; // no copy constructor
@@ -127,22 +134,21 @@ namespace agario {
     Engine(Engine &&) = delete; // no move constructor
     Engine &operator=(Engine &&) = delete; // no move assignment
 
-    agario::Location random_location() {
-      auto x = random<agario::distance>(arena_width());
-      auto y = random<agario::distance>(arena_height());
-      return Location(x, y);
-    }
-
   private:
 
     agario::GameState<renderable> state;
 
-    agario::tick _ticks;
     agario::pid next_pid;
+    int _num_pellets, _num_virus, _pellet_regen;
 
-    int _num_pellets;
-    int _num_virus;
-    int _pellet_regen;
+    /**
+     * Resets a player to the starting position
+     * @param pid player ID of the player to reset
+     */
+    void _respawn(Player &player) {
+      player.kill();
+      player.add_cell(random_location(), CELL_MIN_SIZE);
+    }
 
     void add_pellets(int n) {
       for (int p = 0; p < n; p++)
@@ -162,9 +168,9 @@ namespace agario {
      * @param player the player to tick
      * @param elapsed_seconds the amount of (game) time since the last game tick
      */
-    void tick_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
+    void tick_player(Player &player, const agario::time_delta &elapsed_seconds) {
 
-      if (_ticks % 10 == 0) // increases frame rate a lot
+      if (ticks() % 10 == 0)
         player.take_action(state);
 
       move_player(player, elapsed_seconds);
@@ -192,7 +198,7 @@ namespace agario {
      * @param player the player to move
      * @param elapsed_seconds time since the last game tick
      */
-    void move_player(Player &player, std::chrono::duration<double> elapsed_seconds) {
+    void move_player(Player &player, const agario::time_delta &elapsed_seconds) {
       auto dt = elapsed_seconds.count();
 
       for (auto &cell : player.cells) {
@@ -213,7 +219,7 @@ namespace agario {
       check_player_self_collisions(player);
     }
 
-    void move_foods(std::chrono::duration<double> elapsed_seconds) {
+    void move_foods(const agario::time_delta &elapsed_seconds) {
       auto dt = elapsed_seconds.count();
 
       for (auto &food : state.foods) {
@@ -290,7 +296,7 @@ namespace agario {
      * @param cell the cell which is doing the eating
      */
     void eat_pellets(Cell &cell) {
-      auto prev_size = total_pellets();
+      auto prev_size = pellet_count();
 
       state.pellets.erase(
         std::remove_if(state.pellets.begin(), state.pellets.end(),
@@ -298,13 +304,13 @@ namespace agario {
                          return cell.can_eat(pellet) && cell.collides_with(pellet);
                        }),
         state.pellets.end());
-      auto num_eaten = prev_size - total_pellets();
+      auto num_eaten = prev_size - pellet_count();
       cell.increment_mass(num_eaten * PELLET_MASS);
     }
 
     void eat_food(Cell &cell) {
       if (cell.mass() < FOOD_MASS) return;
-      auto prev_size = total_foods();
+      auto prev_size = food_count();
 
       state.foods.erase(
         std::remove_if(state.foods.begin(), state.foods.end(),
@@ -312,7 +318,7 @@ namespace agario {
                          return cell.can_eat(pellet) && cell.collides_with(pellet);
                        }),
         state.foods.end());
-      auto num_eaten = prev_size - total_foods();
+      auto num_eaten = prev_size - food_count();
       cell.increment_mass(num_eaten * FOOD_MASS);
     }
 
@@ -331,7 +337,7 @@ namespace agario {
         Food food(loc, vel);
 
         state.foods.emplace_back(std::move(food));
-        cell.increment_mass(- food.mass());
+        cell.increment_mass(-food.mass());
       }
     }
 
@@ -382,7 +388,7 @@ namespace agario {
     }
 
     /**
-     * Checks all pairs of players for coliisions that result
+     * Checks all pairs of players for collisions that result
      * in one cell eating another. Updates the corresponding lists
      * of cells in each player to reflect any collisions.
      */
@@ -447,7 +453,6 @@ namespace agario {
     }
 
     void check_virus_collisions(Cell &cell, std::vector<Cell> &created_cells) {
-
       for (auto it = state.viruses.begin(); it != state.viruses.end();) {
         Virus &virus = *it;
 
@@ -506,7 +511,6 @@ namespace agario {
 
     template<typename T>
     T random(T max) { return random<T>(0, max); }
-
   };
 
 }

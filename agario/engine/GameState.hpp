@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/Ball.hpp"
-#include "core/Entities.hpp"
-#include "core/Player.hpp"
+#include "agario/core/Ball.hpp"
+#include "agario/core/Entities.hpp"
+#include "agario/core/Player.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -13,22 +13,25 @@ namespace agario {
   template<bool renderable>
   class GameState {
   public:
-    std::unordered_map<agario::pid, std::shared_ptr<agario::Player<renderable>>> players;
+    using PlayerMap = std::unordered_map<agario::pid, std::shared_ptr<agario::Player<renderable>>>;
+
+    PlayerMap players;
     std::vector<agario::Pellet<renderable>> pellets;
     std::vector<agario::Food<renderable>> foods;
     std::vector<agario::Virus<renderable>> viruses;
 
-    agario::distance arena_width;
-    agario::distance arena_height;
+    agario::distance arena_width, arena_height;
+    agario::tick ticks;
 
     explicit GameState (agario::distance arena_width, agario::distance arena_height) :
-      arena_width(arena_width), arena_height(arena_height) { }
+      arena_width(arena_width), arena_height(arena_height), ticks(0) { }
 
     void clear() {
       players.clear();
       pellets.clear();
       foods.clear();
       viruses.clear();
+      ticks = 0;
     }
   };
 

@@ -1,5 +1,6 @@
 #pragma once
 
-#include "bots/RandomBot.hpp"
-#include "bots/HungryBot.hpp"
-#include "bots/HungryShyBot.hpp"
+#include <agario/bots/HungryBot.hpp>
+#include <agario/bots/HungryShyBot.hpp>
+#include <agario/bots/AggressiveBot.hpp>
+#include <agario/bots/AggressiveShyBot.hpp>

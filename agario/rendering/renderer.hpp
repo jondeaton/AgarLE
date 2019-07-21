@@ -17,9 +17,9 @@
 #include <core/Entities.hpp>
 #include <core/Player.hpp>
 
-#include "rendering/Canvas.hpp"
-#include "rendering/shader.hpp"
-#include "core/renderables.hpp"
+#include "agario/rendering/Canvas.hpp"
+#include "agario/rendering/shader.hpp"
+#include "agario/core/renderables.hpp"
 
 #define NUM_GRID_LINES 11
 
