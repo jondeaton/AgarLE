@@ -11,7 +11,7 @@ IF(APPLE)
     link_directories(/usr/local/lib)
 ENDIF()
 
-option(DEFINE_RENDERABLE "Renderable" OFF) # Enabled by default
+option(DEFINE_RENDERABLE "Renderable" OFF) # Disabled by default
 if(DEFINE_RENDERABLE)
     message("Renderable")
     add_definitions(-DRENDERABLE)
@@ -24,7 +24,6 @@ set(AGARIO_FULL_ENV_SROUCE
 pybind11_add_module(agario_full_env bindings/full_env_bindings.cpp ${AGARIO_FULL_ENV_SROUCE})
 target_include_directories(agario_full_env PRIVATE "..")
 
-
 set(AGARIO_GRID_ENV_SOURCE
         envs/BaseEnvironment.hpp
         envs/GridEnvironment.hpp)
@@ -32,6 +31,9 @@ set(AGARIO_GRID_ENV_SOURCE
 pybind11_add_module(agario_grid_env bindings/grid_env_bindings.cpp ${AGARIO_GRID_ENV_SOURCE})
 target_include_directories(agario_grid_env PRIVATE "..")
 
+set(AGARIO_SCREEN_ENV_SOURCE
+        envs/BaseEnvironment.hpp
+        envs/ScreenEnvironment.hpp)
 
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
@@ -47,16 +49,28 @@ if (OpenGL_FOUND)
 
     include_directories(${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIR})
 
-    set(AGARIO_SCREEN_ENV_SOURCE
-            envs/BaseEnvironment.hpp
-            envs/ScreenEnvironment.hpp)
-
     pybind11_add_module(agario_screen_env bindings/screen_env_bindings.cpp ${AGARIO_SCREEN_ENV_SOURCE})
-    target_include_directories(agario_screen_env PRIVATE "../agario" ${OPENGL_INCLUDE_DIR})
+
+    target_include_directories(agario_screen_env PRIVATE "../agario" ${OPENGL_INCLUDE_DIR} ${GLM_INCLUDE_DIRS})
     target_link_libraries(agario_screen_env PUBLIC ${OPENGL_LIBRARIES} glm glfw)
+#    target_link_directories(agario_screen_env PUBLIC ${GLM_LIBRARY_DIRS})
+
 else()
     message("OpenGL not found")
 endif()
+
+#pybind11_add_module(agario_env bindings/bindings.cpp
+#        ${AGARIO_FULL_ENV_SROUCE}
+#        ${AGARIO_GRID_ENV_SOURCE}
+#        ${AGARIO_SCREEN_ENV_SOURCE})
+#target_include_directories(agario_env PRIVATE "..")
+
+
+
+
+# ============================================================
+# Testing
+# ============================================================
 
 find_package(gtest)
 if (GTEST_FOUND)
