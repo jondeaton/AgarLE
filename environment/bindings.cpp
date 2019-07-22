@@ -46,7 +46,8 @@ PYBIND11_MODULE(agario_env, module) {
        * list of numpy arrays
        */
       for (int i = 0; i < data_vec.size(); i++) {
-        void *data = (void *) data_vec[i];
+        auto *data = const_cast<float*>(data_vec[i]);
+
         std::vector<int> shape = shapes[i];
         std::vector<int> strides = {(int) (shape[1] * sizeof(float)),
                                     sizeof(float)};
@@ -68,7 +69,7 @@ PYBIND11_MODULE(agario_env, module) {
   /* ================ Grid Environment ================ */
 
   using GridEnvironment = agario::env::GridEnvironment<int, renderable>;
-  typedef GridEnvironment::dtype dtype;
+  using dtype = GridEnvironment::dtype;
 
   pybind11::class_<GridEnvironment>(module, "GridEnvironment")
     .def(pybind11::init<int, int, bool, int, int, int>())
@@ -87,7 +88,7 @@ PYBIND11_MODULE(agario_env, module) {
 
       auto observation = env.get_state();
 
-      auto data = (void *) observation.data();
+      auto *data = const_cast<dtype *>(observation.data());
       auto shape = observation.shape();
       auto strides = observation.strides();
 
@@ -102,6 +103,7 @@ PYBIND11_MODULE(agario_env, module) {
     .def("render", &GridEnvironment::render);
 
 
+  /* we only include this conditionally if OpenGL was found available for linking */
 #ifdef INCLUDE_SCREEN_ENV
 
   /* ================ Screen Environment ================ */
@@ -113,7 +115,7 @@ PYBIND11_MODULE(agario_env, module) {
     .def("get_state", [](const ScreenEnvironment &env) {
 
       auto &observation = env.get_state();
-      auto data = (void *) observation.frame_data();
+      auto *data = const_cast<std::uint8_t *>(observation.frame_data());
       auto shape = observation.shape();
       auto strides = observation.strides();
 
