@@ -9,7 +9,7 @@ import gym
 from gym import error, spaces, utils
 import numpy as np
 
-import agario_grid_env
+import agario_env
 
 class GridEnv(gym.Env):
     metadata = {'render.modes': ['human']}
@@ -28,7 +28,7 @@ class GridEnv(gym.Env):
 
         # create and configure environment
         args = (frames_per_step, arena_size, pellet_regen, num_pellets, num_viruses, num_bots)
-        self._env = agario_grid_env.GridEnvironment(*args)
+        self._env = agario_env.GridEnvironment(*args)
         self._env.configure_observation({
             "grid_size": grid_size,
             "observe_cells": observe_cells,

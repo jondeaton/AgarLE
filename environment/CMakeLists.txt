@@ -17,19 +17,14 @@ if(DEFINE_RENDERABLE)
     add_definitions(-DRENDERABLE)
 endif(DEFINE_RENDERABLE)
 
+
 set(AGARIO_FULL_ENV_SROUCE
         envs/BaseEnvironment.hpp
         envs/FullEnvironment.hpp)
 
-pybind11_add_module(agario_full_env bindings/full_env_bindings.cpp ${AGARIO_FULL_ENV_SROUCE})
-target_include_directories(agario_full_env PRIVATE "..")
-
 set(AGARIO_GRID_ENV_SOURCE
         envs/BaseEnvironment.hpp
         envs/GridEnvironment.hpp)
-
-pybind11_add_module(agario_grid_env bindings/grid_env_bindings.cpp ${AGARIO_GRID_ENV_SOURCE})
-target_include_directories(agario_grid_env PRIVATE "..")
 
 set(AGARIO_SCREEN_ENV_SOURCE
         envs/BaseEnvironment.hpp
@@ -39,32 +34,34 @@ set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 if (OpenGL_FOUND)
 
+    add_definitions(-DINCLUDE_SCREEN_ENV)
+
     find_library(GLFW REQUIRED)
     find_package(glfw3)
     find_package(glm REQUIRED)
 
-    include_directories(${GLM_INCLUDE_DIRS})
+    include_directories(${GLM_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIR})
     link_directories(${GLM_LIBRARY_DIRS})
     add_definitions(${GLM_DEFINITIONS})
 
-    include_directories(${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIR})
+    pybind11_add_module(agario_env bindings.cpp
+            ${AGARIO_FULL_ENV_SROUCE}
+            ${AGARIO_GRID_ENV_SOURCE}
+            ${AGARIO_SCREEN_ENV_SOURCE})
 
-    pybind11_add_module(agario_screen_env bindings/screen_env_bindings.cpp ${AGARIO_SCREEN_ENV_SOURCE})
-
-    target_include_directories(agario_screen_env PRIVATE "../agario" ${OPENGL_INCLUDE_DIR} ${GLM_INCLUDE_DIRS})
-    target_link_libraries(agario_screen_env PUBLIC ${OPENGL_LIBRARIES} glm glfw)
-#    target_link_directories(agario_screen_env PUBLIC ${GLM_LIBRARY_DIRS})
+    target_include_directories(agario_env PRIVATE "..")
+    target_include_directories(agario_env PRIVATE "../agario" ${OPENGL_INCLUDE_DIR} ${GLM_INCLUDE_DIRS})
+    target_link_libraries(agario_env PUBLIC ${OPENGL_LIBRARIES} glm glfw)
 
 else()
     message("OpenGL not found")
+
+    pybind11_add_module(agario_env bindings.cpp
+            ${AGARIO_FULL_ENV_SROUCE}
+            ${AGARIO_GRID_ENV_SOURCE})
+    target_include_directories(agario_env PRIVATE "..")
+
 endif()
-
-#pybind11_add_module(agario_env bindings/bindings.cpp
-#        ${AGARIO_FULL_ENV_SROUCE}
-#        ${AGARIO_GRID_ENV_SOURCE}
-#        ${AGARIO_SCREEN_ENV_SOURCE})
-#target_include_directories(agario_env PRIVATE "..")
-
 
 
 

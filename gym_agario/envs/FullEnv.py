@@ -11,7 +11,7 @@ import numpy as np
 
 from collections import namedtuple
 
-import agario_full_env
+import agario_env
 
 FullObservation = namedtuple('Observation', ['pellets', 'viruses', 'foods', 'agent', 'others'])
 
@@ -39,7 +39,7 @@ class FullEnv(gym.Env):
             "others":  spaces.Space(shape=(None, None, 5))
         })
 
-        self._env = agario_full_env.FullEnvironment(frames_per_step, arena_size, pellet_regen,
+        self._env = agario_env.FullEnvironment(frames_per_step, arena_size, pellet_regen,
                                                 num_pellets, num_viruses, num_bots)
 
         self.prev_status = 0

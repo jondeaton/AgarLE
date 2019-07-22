@@ -6,7 +6,7 @@ Author: Jon Deaton (jdeaton@stanford.edu)
 
 import gym
 from gym import error, spaces, utils
-import agario_screen_env
+import agario_env
 
 from collections import namedtuple
 
@@ -34,7 +34,7 @@ class ScreenEnv(gym.Env):
             "others":  spaces.Space(shape=(None, None, 5))
         })
 
-        self._env = agario_screen_env.ScreenEnvironment(frames_per_step, arena_size, pellet_regen,
+        self._env = agario_env.ScreenEnvironment(frames_per_step, arena_size, pellet_regen,
                                                         num_pellets, num_viruses, num_bots,
                                                         screen_len, screen_len)
 

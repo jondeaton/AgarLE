@@ -17,10 +17,7 @@
 #include "core/renderables.hpp"
 #include "rendering/window.hpp"
 #include "rendering/renderer.hpp"
-static bool _renderable = true;
 
-#else
-static bool _renderable = false;
 #endif
 
 namespace agario {

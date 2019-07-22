@@ -4,7 +4,12 @@
 #include <pybind11/numpy.h>
 
 #include <iostream>
-#include "environment/envs/FullEnvironment.hpp"
+#include <environment/envs/FullEnvironment.hpp>
+#include <environment/envs/GridEnvironment.hpp>
+
+#ifdef INCLUDE_SCREEN_ENV
+#include <environment/envs/ScreenEnvironment.hpp>
+#endif
 
 static constexpr bool renderable =
 #ifdef RENDERABLE
@@ -16,7 +21,7 @@ static constexpr bool renderable =
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(agario_full_env, module) {
+PYBIND11_MODULE(agario_env, module) {
   using namespace pybind11::literals;
   module.doc() = "Agar.io Learning Environment";
 
@@ -97,6 +102,7 @@ PYBIND11_MODULE(agario_full_env, module) {
     .def("render", &GridEnvironment::render);
 
 
+#ifdef INCLUDE_SCREEN_ENV
 
   /* ================ Screen Environment ================ */
   using ScreenEnvironment = agario::env::ScreenEnvironment<true>;
@@ -120,4 +126,7 @@ PYBIND11_MODULE(agario_full_env, module) {
     .def("take_action", &ScreenEnvironment::take_action, "x"_a, "y"_a, "act"_a)
     .def("reset", &ScreenEnvironment::reset)
     .def("render", &ScreenEnvironment::render);
+
+#endif
+
 }
