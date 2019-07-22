@@ -6,6 +6,7 @@
 #include <iostream>
 #include <environment/envs/FullEnvironment.hpp>
 #include <environment/envs/GridEnvironment.hpp>
+#include <environment/envs/RamEnvironment.hpp>
 
 #ifdef INCLUDE_SCREEN_ENV
 #include <environment/envs/ScreenEnvironment.hpp>
@@ -67,7 +68,6 @@ PYBIND11_MODULE(agario_env, module) {
 
 
   /* ================ Grid Environment ================ */
-
   using GridEnvironment = agario::env::GridEnvironment<int, renderable>;
   using dtype = GridEnvironment::dtype;
 
@@ -102,11 +102,37 @@ PYBIND11_MODULE(agario_env, module) {
     .def("reset", &GridEnvironment::reset)
     .def("render", &GridEnvironment::render);
 
+  /* ================ Ram Environment ================ */
 
-  /* we only include this conditionally if OpenGL was found available for linking */
-#ifdef INCLUDE_SCREEN_ENV
+  using RamEnvironment = agario::env::RamEnvironment<int, renderable>;
+  using dtype = RamEnvironment::dtype;
+
+  pybind11::class_<RamEnvironment>(module, "RamEnvironment")
+    .def(pybind11::init<int, int, bool, int, int, int>())
+    .def("step", &RamEnvironment::step)
+    .def("get_state", [](const RamEnvironment &env) {
+
+      auto observation = env.get_state();
+
+      auto *data = const_cast<dtype *>(observation.data());
+      auto shape = observation.shape();
+      auto strides = observation.strides();
+
+      auto format = py::format_descriptor<dtype>::format();
+      auto buffer = py::buffer_info(data, sizeof(dtype), format, shape.size(), shape, strides);
+      auto arr = py::array_t<dtype>(buffer);
+      return arr;
+    })
+    .def("done", &RamEnvironment::done)
+    .def("take_action", &RamEnvironment::take_action, "x"_a, "y"_a, "act"_a)
+    .def("reset", &RamEnvironment::reset)
+    .def("render", &RamEnvironment::render);
 
   /* ================ Screen Environment ================ */
+  /* we only include this conditionally if OpenGL was found available for linking */
+
+#ifdef INCLUDE_SCREEN_ENV
+
   using ScreenEnvironment = agario::env::ScreenEnvironment<true>;
 
   pybind11::class_<ScreenEnvironment>(module, "ScreenEnvironment")

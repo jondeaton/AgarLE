@@ -18,13 +18,11 @@ if(DEFINE_RENDERABLE)
 endif(DEFINE_RENDERABLE)
 
 
-set(AGARIO_FULL_ENV_SROUCE
+set(AGARIO_ENVS_SOURCE
         envs/BaseEnvironment.hpp
-        envs/FullEnvironment.hpp)
-
-set(AGARIO_GRID_ENV_SOURCE
-        envs/BaseEnvironment.hpp
-        envs/GridEnvironment.hpp)
+        envs/FullEnvironment.hpp
+        envs/GridEnvironment.hpp
+        envs/RamEnvironment.hpp)
 
 set(AGARIO_SCREEN_ENV_SOURCE
         envs/BaseEnvironment.hpp
@@ -45,8 +43,7 @@ if (OpenGL_FOUND)
     add_definitions(${GLM_DEFINITIONS})
 
     pybind11_add_module(agario_env bindings.cpp
-            ${AGARIO_FULL_ENV_SROUCE}
-            ${AGARIO_GRID_ENV_SOURCE}
+            ${AGARIO_ENVS_SOURCE}
             ${AGARIO_SCREEN_ENV_SOURCE})
 
     target_include_directories(agario_env PRIVATE "..")
@@ -57,8 +54,7 @@ else()
     message("OpenGL not found")
 
     pybind11_add_module(agario_env bindings.cpp
-            ${AGARIO_FULL_ENV_SROUCE}
-            ${AGARIO_GRID_ENV_SOURCE})
+            ${AGARIO_ENVS_SOURCE})
     target_include_directories(agario_env PRIVATE "..")
 
 endif()
