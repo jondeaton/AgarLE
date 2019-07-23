@@ -19,7 +19,6 @@
 namespace agario {
   namespace env {
 
-
     class ScreenObservation {
     public:
       explicit ScreenObservation(int num_frames, screen_len width, screen_len height) :
@@ -71,7 +70,12 @@ namespace agario {
 
     template<bool renderable>
     class ScreenEnvironment : public BaseEnvironment<renderable> {
-      typedef agario::Player<renderable> Player;
+      using GameState = GameState<renderable>;
+      using Player = Player<renderable>;
+      using Cell = Cell<renderable>;
+      using Pellet = Pellet<renderable>;
+      using Virus = Virus<renderable>;
+      using Food = Food<renderable>;
 
     public:
       typedef BaseEnvironment<renderable> Super;

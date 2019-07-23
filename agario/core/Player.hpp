@@ -100,6 +100,10 @@ namespace agario {
       return this->_pid == other.pid();
     }
 
+    bool operator!=(const Player &other) const {
+      return !(*this == other);
+    }
+
     bool operator>(const Player &other) const { return mass() > other.mass(); }
 
     bool operator<(const Player &other) const { return mass() < other.mass(); }

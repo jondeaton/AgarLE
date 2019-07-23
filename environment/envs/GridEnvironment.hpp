@@ -25,12 +25,12 @@ namespace agario {
 
     template<typename T, bool renderable>
     class GridObservation {
-      typedef GameState<renderable> GameState;
-      typedef Player<renderable> Player;
-      typedef Cell<renderable> Cell;
-      typedef Pellet<renderable> Pellet;
-      typedef Virus<renderable> Virus;
-      typedef Food<renderable> Food;
+      using GameState = GameState<renderable>;
+      using Player = Player<renderable>;
+      using Cell = Cell<renderable>;
+      using Pellet = Pellet<renderable>;
+      using Virus = Virus<renderable>;
+      using Food = Food<renderable>;
 
     public:
       typedef T dtype;

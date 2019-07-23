@@ -69,7 +69,6 @@ PYBIND11_MODULE(agario_env, module) {
 
   /* ================ Grid Environment ================ */
   using GridEnvironment = agario::env::GridEnvironment<int, renderable>;
-  using dtype = GridEnvironment::dtype;
 
   pybind11::class_<GridEnvironment>(module, "GridEnvironment")
     .def(pybind11::init<int, int, bool, int, int, int>())
@@ -85,6 +84,7 @@ PYBIND11_MODULE(agario_env, module) {
     })
     .def("step", &GridEnvironment::step)
     .def("get_state", [](const GridEnvironment &env) {
+      using dtype = GridEnvironment::dtype;
 
       auto observation = env.get_state();
 
@@ -103,14 +103,13 @@ PYBIND11_MODULE(agario_env, module) {
     .def("render", &GridEnvironment::render);
 
   /* ================ Ram Environment ================ */
-
-  using RamEnvironment = agario::env::RamEnvironment<int, renderable>;
-  using dtype = RamEnvironment::dtype;
+  using RamEnvironment = agario::env::RamEnvironment<renderable>;
 
   pybind11::class_<RamEnvironment>(module, "RamEnvironment")
     .def(pybind11::init<int, int, bool, int, int, int>())
     .def("step", &RamEnvironment::step)
     .def("get_state", [](const RamEnvironment &env) {
+      using dtype = typename RamEnvironment::dtype;
 
       auto observation = env.get_state();
 

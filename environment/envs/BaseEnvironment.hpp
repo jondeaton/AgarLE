@@ -74,9 +74,7 @@ namespace agario {
           player.target = agario::Location(target_x, target_y);
         }
 
-        /**
-         * Resets the environment by resetting the game engine
-         */
+        /* Resets the environment by resetting the game engine. */
         void reset() {
           engine.reset();
           pid = engine.template add_player<Player>("agent");
@@ -93,10 +91,12 @@ namespace agario {
       protected:
         Engine<renderable> engine;
         agario::pid pid;
-        int _num_frames;
-        int _num_bots;
+
+        const int _num_frames;
+        const int _num_bots;
+        const agario::time_delta step_dt;
+
         bool _done;
-        std::chrono::duration<float> step_dt;
 
         // override this to allow environment to get it's state from
         // intermediate frames between the start and end of a "step"

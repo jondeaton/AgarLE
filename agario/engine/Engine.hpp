@@ -175,15 +175,19 @@ namespace agario {
 
       move_player(player, elapsed_seconds);
 
-      std::vector<Cell> created_cells;
+      std::vector<Cell> created_cells; // list of new cells that will be created
+      int create_limit = PLAYER_CELL_LIMIT - player.cells.size();
+
       for (Cell &cell : player.cells) {
         eat_pellets(cell);
         eat_food(cell);
-        check_virus_collisions(cell, created_cells);
+        check_virus_collisions(cell, created_cells, create_limit);
       }
 
+      create_limit -= created_cells.size();
+
       maybe_emit_food(player);
-      maybe_split(player, created_cells);
+      maybe_split(player, created_cells, create_limit);
 
       // add any cells that were created
       player.add_cells(created_cells);
@@ -351,21 +355,25 @@ namespace agario {
       }
     }
 
-    void maybe_split(Player &player, std::vector<Cell> &created_cells) {
+    void maybe_split(Player &player, std::vector<Cell> &created_cells, int create_limit) {
       if (player.split_cooldown > 0)
         player.split_cooldown -= 1;
 
       if (player.action == agario::action::split && player.split_cooldown == 0) {
-        player_split(player, created_cells);
+        player_split(player, created_cells, create_limit);
         player.split_cooldown = 30;
       }
     }
 
-    void player_split(Player &player, std::vector<Cell> &created_cells) {
+    void player_split(Player &player, std::vector<Cell> &created_cells, int create_limit) {
+      if (create_limit == 0)
+        return;
 
+      int num_splits = 0;
       for (Cell &cell : player.cells) {
 
-        if (cell.mass() < CELL_SPLIT_MINIMUM) continue;
+        if (cell.mass() < CELL_SPLIT_MINIMUM)
+          continue;
 
         agario::mass split_mass = cell.mass() / 2;
         auto remaining_mass = cell.mass() - split_mass;
@@ -373,7 +381,7 @@ namespace agario {
         cell.set_mass(remaining_mass);
 
         auto dir = (player.target - cell.location()).normed();
-        Location loc = cell.location() + dir * cell.radius();
+        auto loc = cell.location() + dir * cell.radius();
         Velocity vel(dir * split_speed(split_mass));
 
         // todo: add constructor that takes splitting velocity (and color)
@@ -384,6 +392,10 @@ namespace agario {
         new_cell.reset_recombine_timer();
 
         created_cells.emplace_back(std::move(new_cell));
+
+        // stop splitting when we've created enough cells
+        if (++num_splits == create_limit)
+          return;
       }
     }
 
@@ -452,12 +464,12 @@ namespace agario {
       }
     }
 
-    void check_virus_collisions(Cell &cell, std::vector<Cell> &created_cells) {
+    void check_virus_collisions(Cell &cell, std::vector<Cell> &created_cells, int create_limit) {
       for (auto it = state.viruses.begin(); it != state.viruses.end();) {
         Virus &virus = *it;
 
         if (cell.can_eat(virus) && cell.collides_with(virus)) {
-          disrupt(cell, virus, created_cells);
+          disrupt(cell, virus, created_cells, create_limit);
           std::swap(*it, state.viruses.back()); // O(1) removal
           state.viruses.pop_back();
           return; // only collide once
@@ -465,7 +477,9 @@ namespace agario {
       }
     }
 
-    void disrupt(Cell &cell, Virus &virus, std::vector<Cell> &created_cells) {
+    /* called when `cell` collides with `virus` and is popped/disrupted.
+     * The new cells that are created are added to `created_cells */
+    void disrupt(Cell &cell, Virus &virus, std::vector<Cell> &created_cells, int create_limit) {
       agario::mass total_mass = cell.mass(); // mass to conserve
 
       // reduce the cell by roughly this ratio CELL_POP_REDUCTION, making sure the
@@ -476,14 +490,17 @@ namespace agario {
       agario::mass pop_mass = total_mass - cell.mass(); // mass conservation
       int num_new_cells = div_round_up<agario::mass>(pop_mass, CELL_POP_SIZE);
 
+      // limit the number of cells created to the cell-creation limit
+      num_new_cells = std::min<int>(num_new_cells, create_limit);
+
       agario::mass remaining_mass = pop_mass;
 
       agario::angle theta = cell.velocity.direction();
       for (int c = 0; c < num_new_cells; c++) {
         agario::angle dvel_angle = cell.velocity.direction() + (2 * M_PI * c / num_new_cells);
-        agario::Velocity vel = Velocity(theta + dvel_angle, max_speed(CELL_POP_SIZE));
 
-        agario::mass new_cell_mass = std::min<agario::mass>(remaining_mass, CELL_POP_SIZE);
+        auto vel = Velocity(theta + dvel_angle, max_speed(CELL_POP_SIZE));
+        auto new_cell_mass = std::min<mass>(remaining_mass, CELL_POP_SIZE);
 
         auto loc = virus.location();
         Cell new_cell(loc, cell.velocity, new_cell_mass);
