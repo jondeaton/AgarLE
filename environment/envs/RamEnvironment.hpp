@@ -10,8 +10,7 @@
 
 #include "environment/envs/BaseEnvironment.hpp"
 
-#define DEFAULT_GRID_SIZE 128
-#define VIEW_SIZE 30
+#define DEFAULT_NUM_FOODS 10
 
 #ifdef RENDERABLE
 
@@ -24,7 +23,7 @@
 namespace agario {
   namespace env {
 
-    template<bool renderable, int cell_limit, int num_foods = 10>
+    template<bool renderable, int cell_limit, int num_foods>
     class RamObservation {
       using GameState = GameState<renderable>;
       using Player = Player<renderable>;
@@ -43,6 +42,7 @@ namespace agario {
                               int num_pellets, int num_viruses) {
         _make_shapes(game_state, num_pellets, num_viruses);
 
+        // todo: we can get rid of this dynamic memory allocation
         _data = new dtype[length()];
         std::fill(_data, _data + length(), 0);
 
@@ -105,7 +105,7 @@ namespace agario {
         length += 2 * num_viruses;
         length += 2 * num_foods; // not state.foods.size()
 
-        _shape = {length};
+        _shape = { length };
         _strides = {(long) sizeof(dtype)};
       }
 
@@ -147,7 +147,10 @@ namespace agario {
     template<bool renderable>
     class RamEnvironment : public BaseEnvironment<renderable> {
       using Player = agario::Player<renderable>;
-      using Observation = RamObservation<renderable, PLAYER_CELL_LIMIT>;
+
+      static constexpr int cell_limit = PLAYER_CELL_LIMIT;
+      static constexpr int num_foods = DEFAULT_NUM_FOODS;
+      using Observation = RamObservation<renderable, cell_limit, num_foods>;
 
     public:
       using dtype = typename Observation::dtype;
@@ -165,6 +168,16 @@ namespace agario {
                                                       this->engine.arena_width(),
                                                       this->engine.arena_height());
 #endif
+      }
+
+      /* returns the length of the observation data... assumes  */
+      int observation_length() const {
+        auto length = 1 + 2; // ticks, arena_width, arena_height
+        length += 5 * (1 + this->num_bots);
+        length += 2 * num_pellets;
+        length += 2 * num_viruses;
+        length += 2 * num_foods;
+        return length;
       }
 
       /**

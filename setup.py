@@ -10,6 +10,6 @@ setup(name='GymAgario',
       description="Agar.io RL gym",
       url="https://github.com/jondeaton/AgarLE",
       install_requires=['gym', "numpy"],
-      packages=["gym_agario", "gym_agario.envs"],
+      packages=["gym_agario"],
       long_description=long_description,
       license="MIT")

@@ -17,16 +17,16 @@ namespace agario {
 
       template<bool renderable>
       class BaseEnvironment {
-        typedef agario::Player<renderable> Player;
-        typedef agario::bot::HungryBot<renderable> HungryBot;
-        typedef agario::bot::HungryShyBot<renderable> HungryShyBot;
+        using Player = agario::Player<renderable>;
+        using HungryBot = agario::bot::HungryBot<renderable>;
+        using HungryShyBot = agario::bot::HungryShyBot<renderable>;
 
       public:
 
         explicit BaseEnvironment(int frames_per_step, int arena_size, bool pellet_regen,
                              int num_pellets, int num_viruses, int num_bots) :
           engine(arena_size, arena_size, num_pellets, num_viruses, pellet_regen),
-          _num_frames(frames_per_step), _num_bots(num_bots), _done(false),
+          num_frames(frames_per_step), num_bots(num_bots), _done(false),
           step_dt(DEFAULT_DT) {
           pid = engine.template add_player<Player>("agent");
           reset();
@@ -41,7 +41,7 @@ namespace agario {
         reward step() {
           auto &player = engine.player(pid);
           auto mass_before = static_cast<int>(player.mass());
-          for (int i = 0; i < _num_frames; i++) {
+          for (int i = 0; i < frames_per_step(); i++) {
             if (player.dead()) {
               _done = true;
               break;
@@ -80,11 +80,18 @@ namespace agario {
           pid = engine.template add_player<Player>("agent");
           add_bots();
           _done = false;
+
+          // the following loop is needed to "initialize" the observation object
+          // with the newly reset state so that a call to get_state directly
+          // after reset will return a state representing the fresh beginning
+          auto &player = engine.player(pid);
+          for (int i = 0; i < frames_per_step(); i++)
+            this->_partial_observation(player, i);
         }
 
         bool done() const { return _done; }
 
-        int frames_per_step() const { return _num_frames; }
+        int frames_per_step() const { return num_frames; }
 
         virtual void render() { };
 
@@ -92,8 +99,8 @@ namespace agario {
         Engine<renderable> engine;
         agario::pid pid;
 
-        const int _num_frames;
-        const int _num_bots;
+        const int num_frames;
+        const int num_bots;
         const agario::time_delta step_dt;
 
         bool _done;
@@ -104,7 +111,7 @@ namespace agario {
 
         // adds the specified number of bots to the game
         void add_bots() {
-          for (int i = 0; i < _num_bots / 2; i++) {
+          for (int i = 0; i < num_bots / 2; i++) {
             engine.template add_player<HungryBot>("hungry");
             engine.template add_player<HungryShyBot>("shy");
           }

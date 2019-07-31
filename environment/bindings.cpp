@@ -22,7 +22,7 @@ static constexpr bool renderable =
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(agario_env, module) {
+PYBIND11_MODULE(agarle, module) {
   using namespace pybind11::literals;
   module.doc() = "Agar.io Learning Environment";
 
@@ -102,11 +102,15 @@ PYBIND11_MODULE(agario_env, module) {
     .def("reset", &GridEnvironment::reset)
     .def("render", &GridEnvironment::render);
 
+
   /* ================ Ram Environment ================ */
   using RamEnvironment = agario::env::RamEnvironment<renderable>;
 
   pybind11::class_<RamEnvironment>(module, "RamEnvironment")
     .def(pybind11::init<int, int, bool, int, int, int>())
+    .def("observation_shape", [](const RamEnvironment &env) {
+      return py::make_tuple(env.observation_length());
+    })
     .def("step", &RamEnvironment::step)
     .def("get_state", [](const RamEnvironment &env) {
       using dtype = typename RamEnvironment::dtype;
@@ -126,6 +130,7 @@ PYBIND11_MODULE(agario_env, module) {
     .def("take_action", &RamEnvironment::take_action, "x"_a, "y"_a, "act"_a)
     .def("reset", &RamEnvironment::reset)
     .def("render", &RamEnvironment::render);
+
 
   /* ================ Screen Environment ================ */
   /* we only include this conditionally if OpenGL was found available for linking */

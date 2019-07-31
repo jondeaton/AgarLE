@@ -42,20 +42,20 @@ if (OpenGL_FOUND)
     link_directories(${GLM_LIBRARY_DIRS})
     add_definitions(${GLM_DEFINITIONS})
 
-    pybind11_add_module(agario_env bindings.cpp
+    pybind11_add_module(agarle bindings.cpp
             ${AGARIO_ENVS_SOURCE}
             ${AGARIO_SCREEN_ENV_SOURCE})
 
-    target_include_directories(agario_env PRIVATE "..")
-    target_include_directories(agario_env PRIVATE "../agario" ${OPENGL_INCLUDE_DIR} ${GLM_INCLUDE_DIRS})
-    target_link_libraries(agario_env PUBLIC ${OPENGL_LIBRARIES} glm glfw)
+    target_include_directories(agarle PRIVATE "..")
+    target_include_directories(agarle  PRIVATE "../agario" ${OPENGL_INCLUDE_DIR} ${GLM_INCLUDE_DIRS})
+    target_link_libraries(agarle PUBLIC ${OPENGL_LIBRARIES} glm glfw)
 
 else()
     message("OpenGL not found")
 
-    pybind11_add_module(agario_env bindings.cpp
+    pybind11_add_module(agarle bindings.cpp
             ${AGARIO_ENVS_SOURCE})
-    target_include_directories(agario_env PRIVATE "..")
+    target_include_directories(agarle PRIVATE "..")
 
 endif()
 
