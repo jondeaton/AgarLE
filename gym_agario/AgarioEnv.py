@@ -23,12 +23,12 @@ class AgarioEnv(gym.Env):
         if obs_type not in ("ram", "screen", "grid", "full"):
             raise ValueError(obs_type)
 
-        self.obs_type = obs_type
-        self.action_space = spaces.Tuple((spaces.Box(low=-1, high=1, shape=(2,)),
-                                          spaces.MultiBinary(1),
-                                          spaces.MultiBinary(1)))
-
         self._env, self.observation_space = self._make_environment(obs_type, kwargs)
+
+        self.obs_type = obs_type
+
+        target_space = spaces.Box(low=0, high=self.arena_size, shape=(2,))
+        self.action_space = spaces.Tuple((target_space, spaces.Discrete(3)))
 
     def step(self, action):
         """ take an action in the environment, advancing the environment
@@ -47,29 +47,38 @@ class AgarioEnv(gym.Env):
         reward = self._env.step()
         done = self._env.done()
 
-        state = None if done else self._env.get_state()
-        observation = state
-
-        if self.obs_type == "full":
-            # full observation type requires this special wrapper
-            observation = FullObservation(pellets=state[0], viruses=state[1],
-                                          foods=state[2], agent=state[3], others=state[4:])
-
+        observation = None if done else self._make_observation()
         return observation, reward, done, {}
 
     def reset(self):
-        """
-        resets the environment
+        """ resets the environment
         :return: the state of the environment at the beginning
         """
         self._env.reset()
-        return self._env.get_state()
+        return self._make_observation()
 
     def render(self, mode='human'):
         self._env.render()
 
     def __del__(self):
         pass
+
+    def _make_observation(self):
+        state = self._env.get_state()
+
+        if self.obs_type == "full":
+            # full observation type requires this special wrapper
+            observation = FullObservation(pellets=state[0], viruses=state[1],
+                                          foods=state[2], agent=state[3], others=state[4:])
+
+        elif self.obs_type in ("grid", "screen"):
+            # NCHW to NHWC
+            observation = np.transpose(state, [1, 2, 0])
+
+        else:
+            observation = state
+
+        return observation
 
     def _make_environment(self, obs_type, kwargs):
         assert obs_type in ("ram", "screen", "grid", "full")
@@ -163,11 +172,13 @@ class AgarioEnv(gym.Env):
             num_bots = 0
 
         # now, override any of the defaults with those from the arguments
-        frames_per_step = kwargs.get("frames_per_step", frames_per_step)
-        arena_size      = kwargs.get("arena_size",      arena_size)
-        num_pellets     = kwargs.get("num_pellets",     num_pellets)
-        num_viruses     = kwargs.get("num_viruses",     num_viruses)
-        num_bots        = kwargs.get("num_bots",        num_bots)
-        pellet_regen    = kwargs.get("pellet_regen",    pellet_regen)
+        self.frames_per_step = kwargs.get("frames_per_step", frames_per_step)
+        self.arena_size      = kwargs.get("arena_size",      arena_size)
+        self.num_pellets     = kwargs.get("num_pellets",     num_pellets)
+        self.num_viruses     = kwargs.get("num_viruses",     num_viruses)
+        self.num_bots        = kwargs.get("num_bots",        num_bots)
+        self.pellet_regen    = kwargs.get("pellet_regen",    pellet_regen)
 
-        return frames_per_step, arena_size, pellet_regen, num_pellets, num_viruses, num_bots
+        return self.frames_per_step, self.arena_size, \
+               self.pellet_regen, self.num_pellets, \
+               self.num_viruses, self.num_bots
