@@ -37,8 +37,7 @@ class ScreenGymTest(unittest.TestCase):
         self.assertIsInstance(done, bool)
         self.assertIsInstance(info, dict)
 
-        expected_shape = (self.env_config['frames_per_step'], self.env_config['screen_len'], self.env_config['screen_len'], 3)
-        self.assertEqual(next_state.shape, expected_shape)
+        self.assertEqual(next_state.shape, env.observation_space.shape)
 
         self.assertGreater(np.sum(next_state), 0)
         self.assertFalse(np.all(next_state == 255))
@@ -53,8 +52,7 @@ class ScreenGymTest(unittest.TestCase):
             self.assertIsInstance(done, bool)
             self.assertIsInstance(info, dict)
 
-            expected_shape = (self.env_config['frames_per_step'], self.env_config['screen_len'], self.env_config['screen_len'], 3)
-            self.assertEqual(next_state.shape, expected_shape)
+            self.assertEqual(next_state.shape, env.observation_space.shape)
 
             self.assertGreater(np.sum(next_state), 0)
             self.assertFalse(np.all(next_state == 255))

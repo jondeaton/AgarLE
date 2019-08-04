@@ -13,6 +13,10 @@
 namespace agario {
   namespace env {
 
+    class EnvironmentException : public std::runtime_error {
+      using runtime_error::runtime_error;
+    };
+
       typedef double reward;
 
       template<bool renderable>

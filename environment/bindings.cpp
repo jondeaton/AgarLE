@@ -82,11 +82,15 @@ PYBIND11_MODULE(agarle, module) {
 
       env.configure_observation(grid_size, cells, others, viruses, pellets);
     })
+    .def("observation_shape", [](const GridEnvironment &env) {
+      auto shape = env.observation_shape();
+      return py::make_tuple(shape[0], shape[1], shape[2]);
+    })
     .def("step", &GridEnvironment::step)
     .def("get_state", [](const GridEnvironment &env) {
       using dtype = GridEnvironment::dtype;
 
-      auto observation = env.get_state();
+      auto &observation = env.get_state();
 
       auto *data = const_cast<dtype *>(observation.data());
       auto shape = observation.shape();

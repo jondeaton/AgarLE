@@ -71,7 +71,7 @@ class AgarioEnv(gym.Env):
             observation = FullObservation(pellets=state[0], viruses=state[1],
                                           foods=state[2], agent=state[3], others=state[4:])
 
-        elif self.obs_type in ("grid", "screen"):
+        elif self.obs_type in ("grid",):
             # NCHW to NHWC
             observation = np.transpose(state, [1, 2, 0])
 
@@ -92,11 +92,6 @@ class AgarioEnv(gym.Env):
             observe_viruses = kwargs.get("observe_viruses", True)
             observe_pellets = kwargs.get("observe_pellets", True)
 
-            # todo: use env.observation_shape() ?
-            num_channels = int(observe_cells + observe_others + observe_viruses + observe_pellets)
-            shape = (num_channels, grid_size, grid_size)
-            observation_space = spaces.Box(-np.inf, np.inf, shape, dtype=np.int32)
-
             env = agarle.GridEnvironment(*args)
             env.configure_observation({
                 "grid_size": grid_size,
@@ -105,6 +100,10 @@ class AgarioEnv(gym.Env):
                 "observe_viruses": observe_viruses,
                 "observe_pellets": observe_pellets
             })
+
+            channels, width, height = env.observation_shape()
+            shape = (width, height, channels)
+            observation_space = spaces.Box(-np.inf, np.inf, shape, dtype=np.int32)
 
         elif obs_type == "ram":
             env = agarle.RamEnvironment(*args)
@@ -125,7 +124,7 @@ class AgarioEnv(gym.Env):
                 raise error.Error("Screen environment not available")
 
             # todo: use env.observation_shape() ?
-            shape = screen_len, screen_len, 3
+            shape = 4, screen_len, screen_len, 3
             observation_space = spaces.Box(low=0, high=255, shape=shape, dtype=np.uint8)
 
         elif obs_type == "full":

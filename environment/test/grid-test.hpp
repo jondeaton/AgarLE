@@ -20,7 +20,9 @@ namespace {
   class EnvTest : public testing::Test {
   protected:
     EnvTest() : env(4, 1000, true, 1000, 25, 25) { }
-    void SetUp() override { }
+    void SetUp() override {
+      env.configure_observation(128, true, true, true, true);
+    }
     void TearDown() override { }
 
     GridEnvironment env;
@@ -40,7 +42,16 @@ namespace {
     SetUp();
     env.take_action(0, 0, 0);
     auto r = env.step();
-    auto state = env.get_state();
+    auto &state = env.get_state();
+  }
+
+  TEST_F(EnvTest, multi_get_state) {
+    SetUp();
+    for (int i = 0; i < 32; i++) {
+      env.take_action(0, 0, 0);
+      auto r = env.step();
+      auto &state = env.get_state();
+    }
   }
 
 }

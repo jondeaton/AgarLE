@@ -20,19 +20,19 @@ class GridGymTest(unittest.TestCase):
         env = self._make_env()
         state, reward, done, info = env.step((0.0, 0.0, 0))
 
-        self.assertValidState(state)
+        self.assertValidState(env, state)
 
     def test_steps(self):
         env = self._make_env()
         for _ in range(10):
             state, reward, done, info = env.step((0.0, 0.0, 0))
 
-            self.assertValidState(state)
+            self.assertValidState(env, state)
 
-    def assertValidState(self, state):
+    def assertValidState(self, env, state):
         self.assertIsInstance(state, np.ndarray)
         self.assertEqual(state.dtype, np.int32, "data type: %s" % state.dtype)
-        self.assertEqual(state.shape, (4, 128, 128))
+        self.assertEqual(state.shape, env.observation_space.shape)
 
         self.assertGreaterEqual(state.min(), -1)
         self.assertLess(state.max(), 1000)
