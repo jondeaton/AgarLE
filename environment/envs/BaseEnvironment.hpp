@@ -27,10 +27,10 @@ namespace agario {
 
       public:
 
-        explicit BaseEnvironment(int frames_per_step, int arena_size, bool pellet_regen,
-                             int num_pellets, int num_viruses, int num_bots) :
+        explicit BaseEnvironment(int ticks_per_step, int arena_size, bool pellet_regen,
+                                 int num_pellets, int num_viruses, int num_bots) :
           engine(arena_size, arena_size, num_pellets, num_viruses, pellet_regen),
-          num_frames(frames_per_step), num_bots(num_bots), _done(false),
+          _ticks_per_step(ticks_per_step), num_bots(num_bots), _done(false),
           step_dt(DEFAULT_DT) {
           pid = engine.template add_player<Player>("agent");
           reset();
@@ -45,7 +45,7 @@ namespace agario {
         reward step() {
           auto &player = engine.player(pid);
           auto mass_before = static_cast<int>(player.mass());
-          for (int i = 0; i < frames_per_step(); i++) {
+          for (int i = 0; i < ticks_per_step(); i++) {
             if (player.dead()) {
               _done = true;
               break;
@@ -89,13 +89,13 @@ namespace agario {
           // with the newly reset state so that a call to get_state directly
           // after reset will return a state representing the fresh beginning
           auto &player = engine.player(pid);
-          for (int i = 0; i < frames_per_step(); i++)
+          for (int i = 0; i < ticks_per_step(); i++)
             this->_partial_observation(player, i);
         }
 
         bool done() const { return _done; }
 
-        int frames_per_step() const { return num_frames; }
+        int ticks_per_step() const { return _ticks_per_step; }
 
         virtual void render() { };
 
@@ -103,7 +103,7 @@ namespace agario {
         Engine<renderable> engine;
         agario::pid pid;
 
-        const int num_frames;
+        const int _ticks_per_step;
         const int num_bots;
         const agario::time_delta step_dt;
 
@@ -111,7 +111,7 @@ namespace agario {
 
         // override this to allow environment to get it's state from
         // intermediate frames between the start and end of a "step"
-        virtual void _partial_observation(Player &player, int frame) { };
+        virtual void _partial_observation(Player &player, int tick_index) { };
 
         // adds the specified number of bots to the game
         void add_bots() {

@@ -86,6 +86,7 @@ class AgarioEnv(gym.Env):
         args = self._get_env_args(kwargs)
 
         if obs_type == "grid":
+            num_frames = kwargs.get("num_frames", 2)
             grid_size = kwargs.get("grid_size", 128)
             observe_cells = kwargs.get("observe_cells", True)
             observe_others = kwargs.get("observe_others", True)
@@ -94,6 +95,7 @@ class AgarioEnv(gym.Env):
 
             env = agarle.GridEnvironment(*args)
             env.configure_observation({
+                "num_frames": num_frames,
                 "grid_size": grid_size,
                 "observe_cells": observe_cells,
                 "observe_others": observe_others,
@@ -151,7 +153,7 @@ class AgarioEnv(gym.Env):
             raise ValueError(difficulty)
 
         # default values for the "normal"
-        frames_per_step = 4
+        ticks_per_step = 4
         arena_size = 1000
         num_pellets = 1000
         num_viruses = 25
@@ -171,13 +173,13 @@ class AgarioEnv(gym.Env):
             num_bots = 0
 
         # now, override any of the defaults with those from the arguments
-        self.frames_per_step = kwargs.get("frames_per_step", frames_per_step)
-        self.arena_size      = kwargs.get("arena_size",      arena_size)
-        self.num_pellets     = kwargs.get("num_pellets",     num_pellets)
-        self.num_viruses     = kwargs.get("num_viruses",     num_viruses)
-        self.num_bots        = kwargs.get("num_bots",        num_bots)
-        self.pellet_regen    = kwargs.get("pellet_regen",    pellet_regen)
+        self.ticks_per_step  = kwargs.get("ticks_per_step", ticks_per_step)
+        self.arena_size      = kwargs.get("arena_size",     arena_size)
+        self.num_pellets     = kwargs.get("num_pellets",    num_pellets)
+        self.num_viruses     = kwargs.get("num_viruses",    num_viruses)
+        self.num_bots        = kwargs.get("num_bots",       num_bots)
+        self.pellet_regen    = kwargs.get("pellet_regen",   pellet_regen)
 
-        return self.frames_per_step, self.arena_size, \
+        return self.ticks_per_step, self.arena_size, \
                self.pellet_regen, self.num_pellets, \
                self.num_viruses, self.num_bots

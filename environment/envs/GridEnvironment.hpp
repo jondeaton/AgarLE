@@ -23,16 +23,6 @@
 namespace agario {
   namespace env {
 
-    // maybe?
-//    enum Observe : unsigned char {
-//      cells   = 1 << 0,
-//      others  = 1 << 1,
-//      viruses = 1 << 2,
-//      pellets = 1 << 3,
-//      foods   = 1 << 4,
-//    };
-
-
     template<typename T, bool renderable>
     class GridObservation {
       using GameState = GameState<renderable>;
@@ -43,24 +33,20 @@ namespace agario {
       using Food = Food<renderable>;
 
     public:
-      typedef T dtype;
+      using dtype = T;
 
-      explicit GridObservation() : _data(nullptr), _view_size(VIEW_SIZE) { }
+      GridObservation() : _data(nullptr) { }
 
-      /* Construct a grid observation from the perspective of `player` for the 
-       * given game state `game_state`. Specify the size of the grid whether
-       * to store cells, others, viruses and pellets with the remaining arguments
-       */
       explicit GridObservation(int num_frames, int grid_size, bool cells, bool others, bool viruses, bool pellets) :
-        _grid_size(grid_size), _view_size(VIEW_SIZE),
         _num_frames(num_frames),
+        _grid_size(grid_size),
         _observe_cells(cells), _observe_others(others), _observe_viruses(viruses), _observe_pellets(pellets) {
         _make_shapes();
         _data = new dtype[length()];
         clear();
       }
 
-      /* configures the observation to store a particular */
+      /* configures the observation for a particular size */
       void configure(int num_frames, int grid_size, bool observe_cells, bool observe_others,
                      bool observe_viruses, bool observe_pellets) {
         _num_frames = num_frames;
@@ -77,20 +63,23 @@ namespace agario {
         clear();
       }
 
+      bool configured() const  { return _data != nullptr; }
+
       /* data buffer, mulit-dim array shape and sizes*/
       const dtype *data() const {
-        if (_data == nullptr)
+        if (!configured())
           throw EnvironmentException("GridObservation was not configured.");
         return _data;
       }
 
-      std::vector<int> shape() const {
-        if (_data == nullptr)
+      const std::vector<int> &shape() const {
+        if (!configured())
           throw EnvironmentException("GridObservation was not configured.");
         return _shape;
       }
-      std::vector<ssize_t> strides() const {
-        if (_data == nullptr)
+
+      const std::vector<ssize_t> &strides() const {
+        if (!configured())
           throw EnvironmentException("GridObservation was not configured.");
         return _strides;
       }
@@ -139,42 +128,23 @@ namespace agario {
         return len;
       }
 
+      int num_frames() const { return _num_frames; }
+
       // no copy operations because if you're copying this object then
       // you're probably not using it correctly
       GridObservation(const GridObservation &) = delete; // no copy constructor
       GridObservation &operator=(const GridObservation &) = delete; // no copy assignments
 
-      /* move constructor */
-      GridObservation(GridObservation &&obs) noexcept :
-        _data(std::move(obs._data)), _shape(std::move(obs._shape)),
-        _strides(std::move(obs._strides)), _view_size(std::move(obs._view_size)),
-        _grid_size(std::move(obs._grid_size)) {
-        obs._data = nullptr;
-      };
-
-      /* move assignment */
-      GridObservation &operator=(GridObservation &&obs) noexcept {
-        _data = std::move(obs._data);
-        _shape = std::move(obs._shape);
-        _strides = std::move(obs._strides);
-        _view_size = std::move(obs._view_size);
-        _grid_size = std::move(obs._grid_size);
-        obs._data = nullptr;
-        return *this;
-      };
-
-      ~GridObservation() {
-        delete[] _data;
-      }
+      ~GridObservation() { delete[] _data; }
 
     private:
       T *_data;
       std::vector<int> _shape;
       std::vector<ssize_t> _strides;
-      int _view_size;
-      int _grid_size;
 
+      /* configuration */
       int _num_frames;
+      int _grid_size;
       bool _observe_pellets;
       bool _observe_cells;
       bool _observe_viruses;
@@ -182,7 +152,9 @@ namespace agario {
 
       /* the number of channels in each frame */
       int channels_per_frame() const {
-        return static_cast<int>(1 + _observe_cells + _observe_others + _observe_viruses + _observe_pellets);
+        // the +1 is for the out-of-bounds channel
+        return static_cast<int>(1 + _observe_cells + _observe_others 
+                                  + _observe_viruses + _observe_pellets);
       }
 
       /* creates the shape and strides to represent the multi-dimensional array */
@@ -201,10 +173,12 @@ namespace agario {
       /* stores the given entities in the data array at the given `channel` */
       template<typename U>
       void _store_entities(const std::vector<U> &entities, const Player &player, int channel) {
+        int view_size = _view_size(player);
+
         int grid_x, grid_y;
         for (auto &entity : entities) {
           const Location diff = entity.location() - player.location();
-          _world_to_grid(diff, grid_x, grid_y);
+          _world_to_grid(diff, view_size, grid_x, grid_y);
 
           int index = _index(channel, grid_x, grid_y);
           if (_inside_grid(grid_x, grid_y))
@@ -214,11 +188,13 @@ namespace agario {
 
       /* marks out-of-bounds locations on the given `channel` */
       void _mark_out_of_bounds(const Player &player, int channel, agario::distance arena_width, agario::distance arena_height) {
+        int view_size = _view_size(player);
+
         int centering = _grid_size / 2;
         for (int i = 0; i < _grid_size; i++)
           for (int j = 0; j < _grid_size; j++) {
 
-            auto loc = _grid_to_world(i, j);
+            auto loc = _grid_to_world(view_size, i, j);
             int index = _index(channel, i, j);
             bool in_bounds = _in_bounds(loc, arena_width, arena_height);
 
@@ -229,22 +205,28 @@ namespace agario {
           }
       }
 
+      /* determines what the view size should be, based on the player's mass */
+      int _view_size(const Player &player) const {
+        // todo: make this consistent with the renderer's view (somewhat tough)
+        return agario::clamp<int>(player.mass() / 2, 20, 60);
+      }
+
       /* converts world-coordinates to grid-coordinates */
-      void _world_to_grid(const Location &loc, int &grid_x, int &grid_y) const {
+      void _world_to_grid(const Location &loc, int view_size, int &grid_x, int &grid_y) const {
         int centering = _grid_size / 2;
-        grid_x = static_cast<int>(_grid_size * loc.x / _view_size) + centering;
-        grid_y = static_cast<int>(_grid_size * loc.y / _view_size) + centering;
+        grid_x = static_cast<int>(_grid_size * loc.x / view_size) + centering;
+        grid_y = static_cast<int>(_grid_size * loc.y / view_size) + centering;
       }
 
       /* converts grid-coordinates to world-coordinates */
-      Location _grid_to_world(int grid_x, int grid_y) const {
+      Location _grid_to_world(int view_size, int grid_x, int grid_y) const {
         int centering = _grid_size / 2;
 
         auto x_diff = grid_x - centering;
         auto y_diff = grid_y - centering;
 
-        auto x_loc = x_diff * _view_size / _grid_size;
-        auto y_loc = y_diff * _view_size / _grid_size;
+        auto x_loc = x_diff * view_size / _grid_size;
+        auto y_loc = y_diff * view_size / _grid_size;
         return Location(x_loc, y_loc);
       }
 
@@ -269,20 +251,17 @@ namespace agario {
 
     template<typename T, bool renderable>
     class GridEnvironment : public BaseEnvironment<renderable> {
-      typedef agario::Player<renderable> Player;
-      typedef GridObservation<T, renderable> GridObservation;
+      using Player = agario::Player<renderable>;
+      using GridObservation = GridObservation<T, renderable>;
       using Super = BaseEnvironment<renderable>;
 
     public:
       using dtype = T;
       using Observation = GridObservation;
 
-      explicit GridEnvironment(int frames_per_step, int arena_size, bool pellet_regen,
+      explicit GridEnvironment(int ticks_per_step, int arena_size, bool pellet_regen,
                                int num_pellets, int num_viruses, int num_bots) :
-        _grid_size(DEFAULT_GRID_SIZE),
-        _observe_cells(true), _observe_others(true),
-        _observe_viruses(true), _observe_pellets(true),
-        Super(frames_per_step, arena_size, pellet_regen, num_pellets, num_viruses, num_bots) {
+        Super(ticks_per_step, arena_size, pellet_regen, num_pellets, num_viruses, num_bots) {
 
         /* I would use if constexpr from C++17 here but that's not an option */
 #ifdef RENDERABLE
@@ -294,14 +273,15 @@ namespace agario {
       }
 
       /* Configures the observation types that will be returned. */
-      void configure_observation(int grid_size, bool observe_cells, bool observe_others,
+      void configure_observation(int num_frames, int grid_size, bool observe_cells, bool observe_others,
                                  bool observe_viruses, bool observe_pellets) {
-        observation.configure(this->frames_per_step(), grid_size, observe_cells, observe_others, observe_viruses, observe_pellets);
+        if (num_frames > this->ticks_per_step())
+          throw EnvironmentException("num_frames may not exceed ticks-per-step");
+
+        observation.configure(num_frames, grid_size, observe_cells, observe_others, observe_viruses, observe_pellets);
       }
 
-      std::vector<int> observation_shape() const {
-        return observation.shape();
-      }
+      const std::vector<int> &observation_shape() const { return observation.shape(); }
 
       /**
        * Returns the current state of the world without advancing through time
@@ -311,9 +291,11 @@ namespace agario {
       const Observation &get_state() const { return observation; }
 
       /* allows for intermediate grid frames to be stored in the GridObservation */
-      void _partial_observation(Player &player, int frame_index) override {
+      void _partial_observation(Player &player, int tick_index) override {
         auto &state = this->engine.game_state();
-        observation.add_frame(player, state, frame_index);
+        int frame_index = tick_index - (this->ticks_per_step() - observation.num_frames());
+        if (frame_index >= 0)
+          observation.add_frame(player, state, frame_index);
       }
 
       void render() override {
@@ -328,11 +310,6 @@ namespace agario {
 
     private:
       GridObservation observation;
-      int _grid_size;
-      bool _observe_cells;
-      bool _observe_others;
-      bool _observe_viruses;
-      bool _observe_pellets;
 
 #ifdef RENDERABLE
       std::unique_ptr<agario::Renderer> renderer;

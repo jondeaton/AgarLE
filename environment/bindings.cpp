@@ -72,18 +72,19 @@ PYBIND11_MODULE(agarle, module) {
 
   pybind11::class_<GridEnvironment>(module, "GridEnvironment")
     .def(pybind11::init<int, int, bool, int, int, int>())
-    .def("configure_observation", [](GridEnvironment &env, py::dict config) {
+    .def("configure_observation", [](GridEnvironment &env, const py::dict &config) {
 
-      int grid_size = config.contains("grid_size") ? config["grid_size"].cast<int>() : DEFAULT_GRID_SIZE;
-      bool cells    = config.contains("observe_cells")   ? config["observe_cells"].cast<bool>()   : true;
-      bool others   = config.contains("observe_others")  ? config["observe_others"].cast<bool>()  : true;
-      bool viruses  = config.contains("observe_viruses") ? config["observe_viruses"].cast<bool>() : true;
-      bool pellets  = config.contains("observe_pellets") ? config["observe_pellets"].cast<bool>() : true;
+      int num_frames = config.contains("num_frames")      ? config["num_frames"].cast<int>() : 2;
+      int grid_size  = config.contains("grid_size")       ? config["grid_size"].cast<int>() : DEFAULT_GRID_SIZE;
+      bool cells     = config.contains("observe_cells")   ? config["observe_cells"].cast<bool>()   : true;
+      bool others    = config.contains("observe_others")  ? config["observe_others"].cast<bool>()  : true;
+      bool viruses   = config.contains("observe_viruses") ? config["observe_viruses"].cast<bool>() : true;
+      bool pellets   = config.contains("observe_pellets") ? config["observe_pellets"].cast<bool>() : true;
 
-      env.configure_observation(grid_size, cells, others, viruses, pellets);
+      env.configure_observation(num_frames, grid_size, cells, others, viruses, pellets);
     })
     .def("observation_shape", [](const GridEnvironment &env) {
-      auto shape = env.observation_shape();
+      const auto &shape = env.observation_shape();
       return py::make_tuple(shape[0], shape[1], shape[2]);
     })
     .def("step", &GridEnvironment::step)
@@ -96,13 +97,8 @@ PYBIND11_MODULE(agarle, module) {
       auto *data = new dtype[observation.length()];
       std::copy(observation.data(), observation.data() + observation.length(), data);
 
-      auto shape = observation.shape();
-      auto strides = observation.strides();
-
-//      auto format = py::format_descriptor<dtype>::format();
-//      auto buffer = py::buffer_info(data, sizeof(dtype), format, shape.size(), shape, strides);
-//      auto arr = py::array_t<dtype>(buffer);
-//      return arr;
+      const auto &shape = observation.shape();
+      const auto &strides = observation.strides();
 
       py::capsule cleanup(data, [](void *ptr) {
         auto *data_pointer = reinterpret_cast<dtype*>(ptr);

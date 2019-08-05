@@ -33,7 +33,7 @@ namespace {
   protected:
     EnvTest() : env(4, 1000, true, 1000, 25, 25) { }
     void SetUp() override {
-      env.configure_observation(128, true, true, true, true);
+      env.configure_observation(2, 128, true, true, true, true);
     }
     void TearDown() override { }
 

@@ -72,7 +72,7 @@ namespace agario {
       auto x = world_loc[0] / w;
       auto y = world_loc[1] / w;
 
-      return agario::Location(x, y);
+      return { x, y };
     }
 
     void make_projections(const Player &player) {
