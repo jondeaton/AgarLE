@@ -92,14 +92,24 @@ PYBIND11_MODULE(agarle, module) {
 
       auto &observation = env.get_state();
 
-      auto *data = const_cast<dtype *>(observation.data());
+      /// make a copy of the data for the numpy array to take ownership of
+      auto *data = new dtype[observation.length()];
+      std::copy(observation.data(), observation.data() + observation.length(), data);
+
       auto shape = observation.shape();
       auto strides = observation.strides();
 
-      auto format = py::format_descriptor<dtype>::format();
-      auto buffer = py::buffer_info(data, sizeof(dtype), format, shape.size(), shape, strides);
-      auto arr = py::array_t<dtype>(buffer);
-      return arr;
+//      auto format = py::format_descriptor<dtype>::format();
+//      auto buffer = py::buffer_info(data, sizeof(dtype), format, shape.size(), shape, strides);
+//      auto arr = py::array_t<dtype>(buffer);
+//      return arr;
+
+      py::capsule cleanup(data, [](void *ptr) {
+        auto *data_pointer = reinterpret_cast<dtype*>(ptr);
+        delete[] data_pointer;
+      });
+
+      return py::array_t<dtype>(shape, strides, data, cleanup);
     })
     .def("done", &GridEnvironment::done)
     .def("take_action", &GridEnvironment::take_action, "x"_a, "y"_a, "act"_a)
