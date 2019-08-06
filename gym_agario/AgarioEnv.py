@@ -24,7 +24,7 @@ class AgarioEnv(gym.Env):
             raise ValueError(obs_type)
 
         self._env, self.observation_space = self._make_environment(obs_type, kwargs)
-
+        self.steps = None
         self.obs_type = obs_type
 
         target_space = spaces.Box(low=0, high=self.arena_size, shape=(2,))
@@ -41,6 +41,8 @@ class AgarioEnv(gym.Env):
             episode_over (bool) : whether the game is over or not
             info (dict) : diagnostic information (currently empty)
         """
+        assert self.steps is not None, "Cannot call env.step() before calling reset()"
+
         x, y, game_act = action
         self._env.take_action(x, y, game_act)
 
@@ -48,12 +50,14 @@ class AgarioEnv(gym.Env):
         done = self._env.done()
 
         observation = None if done else self._make_observation()
-        return observation, reward, done, {}
+        self.steps += 1
+        return observation, reward, done, {'steps': self.steps}
 
     def reset(self):
         """ resets the environment
         :return: the state of the environment at the beginning
         """
+        self.steps = 0
         self._env.reset()
         return self._make_observation()
 

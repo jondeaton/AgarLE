@@ -37,10 +37,12 @@ namespace agario {
 
       GridObservation() : _data(nullptr) { }
 
-      explicit GridObservation(int num_frames, int grid_size, bool cells, bool others, bool viruses, bool pellets) :
+      explicit GridObservation(int num_frames, int grid_size, 
+          bool cells, bool others, bool viruses, bool pellets) :
         _num_frames(num_frames),
         _grid_size(grid_size),
-        _observe_cells(cells), _observe_others(others), _observe_viruses(viruses), _observe_pellets(pellets) {
+        _observe_cells(cells), _observe_others(others), 
+        _observe_viruses(viruses), _observe_pellets(pellets) {
         _make_shapes();
         _data = new dtype[length()];
         clear();
@@ -138,11 +140,11 @@ namespace agario {
       ~GridObservation() { delete[] _data; }
 
     private:
-      T *_data;
+      dtype *_data;
       std::vector<int> _shape;
       std::vector<ssize_t> _strides;
 
-      /* configuration */
+      /* observation configuration parameters */
       int _num_frames;
       int _grid_size;
       bool _observe_pellets;
@@ -187,7 +189,8 @@ namespace agario {
       }
 
       /* marks out-of-bounds locations on the given `channel` */
-      void _mark_out_of_bounds(const Player &player, int channel, agario::distance arena_width, agario::distance arena_height) {
+      void _mark_out_of_bounds(const Player &player, int channel, 
+          agario::distance arena_width, agario::distance arena_height) {
         int view_size = _view_size(player);
 
         int centering = _grid_size / 2;
@@ -208,7 +211,7 @@ namespace agario {
       /* determines what the view size should be, based on the player's mass */
       int _view_size(const Player &player) const {
         // todo: make this consistent with the renderer's view (somewhat tough)
-        return agario::clamp<int>(player.mass() / 2, 20, 60);
+        return agario::clamp<int>(2 * player.mass(), 100, 300);
       }
 
       /* converts world-coordinates to grid-coordinates */
