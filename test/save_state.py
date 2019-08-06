@@ -6,7 +6,7 @@ import numpy as np
 
 def main():
     env_config = {
-        'frames_per_step': 4,
+        'ticks_per_step': 4,
         'arena_size': 1000,
         'num_pellets': 1000,
         'num_viruses': 25,

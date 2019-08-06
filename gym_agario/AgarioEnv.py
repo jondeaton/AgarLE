@@ -174,12 +174,13 @@ class AgarioEnv(gym.Env):
 
         # now, override any of the defaults with those from the arguments
         self.ticks_per_step  = kwargs.get("ticks_per_step", ticks_per_step)
-        self.arena_size      = kwargs.get("arena_size",     arena_size)
-        self.num_pellets     = kwargs.get("num_pellets",    num_pellets)
-        self.num_viruses     = kwargs.get("num_viruses",    num_viruses)
-        self.num_bots        = kwargs.get("num_bots",       num_bots)
-        self.pellet_regen    = kwargs.get("pellet_regen",   pellet_regen)
+        self.arena_size      = kwargs.get("arena_size", arena_size)
+        self.num_pellets     = kwargs.get("num_pellets", num_pellets)
+        self.num_viruses     = kwargs.get("num_viruses", num_viruses)
+        self.num_bots        = kwargs.get("num_bot", num_bots)
+        self.pellet_regen    = kwargs.get("pellet_regen", pellet_regen)
 
         return self.ticks_per_step, self.arena_size, \
                self.pellet_regen, self.num_pellets, \
                self.num_viruses, self.num_bots
+

@@ -8,7 +8,7 @@
 #include "agario/engine/GameState.hpp"
 
 // 60 frames per second: the default amount of time between frames of the game
-#define DEFAULT_DT (1.0 / 60)
+#define DEFAULT_DT (1.0 / 30)
 
 namespace agario {
   namespace env {
