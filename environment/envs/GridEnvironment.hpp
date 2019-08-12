@@ -45,7 +45,7 @@ namespace agario {
         _observe_viruses(viruses), _observe_pellets(pellets) {
         _make_shapes();
         _data = new dtype[length()];
-        clear();
+        clear_data();
       }
 
       /* configures the observation for a particular size */
@@ -62,7 +62,7 @@ namespace agario {
 
         _make_shapes();
         _data = new dtype[length()];
-        clear();
+        clear_data();
       }
 
       bool configured() const  { return _data != nullptr; }
@@ -118,7 +118,7 @@ namespace agario {
         }
       }
 
-      void clear() {
+      void clear_data() {
         std::fill(_data, _data + length(), 0);
       }
 
@@ -175,12 +175,11 @@ namespace agario {
       /* stores the given entities in the data array at the given `channel` */
       template<typename U>
       void _store_entities(const std::vector<U> &entities, const Player &player, int channel) {
-        int view_size = _view_size(player);
+        float view_size = _view_size(player);
 
         int grid_x, grid_y;
         for (auto &entity : entities) {
-          const Location diff = entity.location() - player.location();
-          _world_to_grid(diff, view_size, grid_x, grid_y);
+          _world_to_grid(player, entity.location(), view_size, grid_x, grid_y);
 
           int index = _index(channel, grid_x, grid_y);
           if (_inside_grid(grid_x, grid_y))
@@ -191,46 +190,48 @@ namespace agario {
       /* marks out-of-bounds locations on the given `channel` */
       void _mark_out_of_bounds(const Player &player, int channel, 
           agario::distance arena_width, agario::distance arena_height) {
-        int view_size = _view_size(player);
+        float view_size = _view_size(player);
 
         int centering = _grid_size / 2;
         for (int i = 0; i < _grid_size; i++)
           for (int j = 0; j < _grid_size; j++) {
 
-            auto loc = _grid_to_world(view_size, i, j);
+            auto loc = _grid_to_world(player, view_size, i, j);
             int index = _index(channel, i, j);
             bool in_bounds = _in_bounds(loc, arena_width, arena_height);
-
-            if (in_bounds)
-              _data[index] = 0;
-            else
-              _data[index] = -1;
+            _data[index] = in_bounds ? 0 : -1;
           }
       }
 
       /* determines what the view size should be, based on the player's mass */
-      int _view_size(const Player &player) const {
+      float _view_size(const Player &player) const {
         // todo: make this consistent with the renderer's view (somewhat tough)
-        return agario::clamp<int>(2 * player.mass(), 100, 300);
+        return agario::clamp<float>(2 * player.mass(), 100, 300);
       }
 
       /* converts world-coordinates to grid-coordinates */
-      void _world_to_grid(const Location &loc, int view_size, int &grid_x, int &grid_y) const {
-        int centering = _grid_size / 2;
-        grid_x = static_cast<int>(_grid_size * loc.x / view_size) + centering;
-        grid_y = static_cast<int>(_grid_size * loc.y / view_size) + centering;
+      void _world_to_grid(const Player &player, const Location & loc,
+        float view_size, int &grid_x, int &grid_y) const {
+
+        float centering = _grid_size / 2.0;
+
+        auto diff_x = loc.x - player.x();
+        auto diff_y = loc.y - player.y();
+
+        grid_x = static_cast<int>(_grid_size * diff_x / view_size + centering);
+        grid_y = static_cast<int>(_grid_size * diff_y / view_size + centering);
       }
 
       /* converts grid-coordinates to world-coordinates */
-      Location _grid_to_world(int view_size, int grid_x, int grid_y) const {
-        int centering = _grid_size / 2;
+      Location _grid_to_world(const Player &player, float view_size, int grid_x, int grid_y) const {
+        float centering = _grid_size / 2.0;
 
-        auto x_diff = grid_x - centering;
-        auto y_diff = grid_y - centering;
+        float x_diff = static_cast<float>(grid_x) - centering;
+        float y_diff = static_cast<float>(grid_y) - centering;
 
-        auto x_loc = x_diff * view_size / _grid_size;
-        auto y_loc = y_diff * view_size / _grid_size;
-        return Location(x_loc, y_loc);
+        float dx = x_diff * view_size / _grid_size;
+        float dy = y_diff * view_size / _grid_size;
+        return player.location() + Location(dx, dy);
       }
 
       /* the index of a given channel, x, y grid-coordinate in the `_data` array */
@@ -292,6 +293,12 @@ namespace agario {
        * locations of every entity in the current state of the game world
        */
       const Observation &get_state() const { return observation; }
+
+      /* since we reuse the observation's data buffer for each step,
+       * we need to have the data cleared at the beginning of each step */
+      void _step_hook() override {
+        observation.clear_data();
+      }
 
       /* allows for intermediate grid frames to be stored in the GridObservation */
       void _partial_observation(Player &player, int tick_index) override {

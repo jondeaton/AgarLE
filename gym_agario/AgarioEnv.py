@@ -1,7 +1,27 @@
 """
-File: Env
+File: AgarioEnv
 Date: 2019-07-30 
-Author: Jon Deaton (jdeaton@stanford.edu)
+Author: Jon Deaton (jonpauldeaton@gmail.com)
+
+This file wraps the Agar.io Learning Environment (agarle)
+in an OpenAI gym interface. The interface offers four different
+kinds of observation types:
+
+1. screen   - rendering of the agar.io game screen
+              (only available if agarle was compiled with OpenGL)
+
+2. grid     - an image-like grid with channels for pellets, cells, viruses, boundaries, etc.
+              I recommend this one the most since it produces fixed-size image-like data
+              is much faster than the "screen" type and doesn't require compiling with
+              OpenGL (which works fine on my machine, but TBH probably won't work on your machine LOL)
+
+3. ram      - raw positions and velocities of every entity in a fixed-size vector
+              I haven't tried this one, but I never got "full" to work, so I'm guessing
+              that this is more difficult than "grid".
+
+4. full     - positions and velocities of every entity in a variable length vector
+              This is meant for debugging
+
 """
 
 import gym
@@ -68,6 +88,10 @@ class AgarioEnv(gym.Env):
         pass
 
     def _make_observation(self):
+        """ creates an observation object from the underlying environment
+        representing the current state of the game
+        :return: An observation object
+        """
         state = self._env.get_state()
 
         if self.obs_type == "full":
@@ -75,8 +99,8 @@ class AgarioEnv(gym.Env):
             observation = FullObservation(pellets=state[0], viruses=state[1],
                                           foods=state[2], agent=state[3], others=state[4:])
 
-        elif self.obs_type in ("grid",):
-            # NCHW to NHWC
+        elif self.obs_type in ("grid", ):
+            # convert NCHW to NHWC
             observation = np.transpose(state, [1, 2, 0])
 
         else:
@@ -85,6 +109,13 @@ class AgarioEnv(gym.Env):
         return observation
 
     def _make_environment(self, obs_type, kwargs):
+        """ Instantiates and configures the underlying Agar.io environment (C++ implementation)
+        :param obs_type: the observation type one of "ram", "screen", "grid", or "full"
+        :param kwargs: environment configuration parameters
+        :return: tuple of
+                    1) the environment object
+                    2) observation space
+        """
         assert obs_type in ("ram", "screen", "grid", "full")
 
         args = self._get_env_args(kwargs)
@@ -146,8 +177,7 @@ class AgarioEnv(gym.Env):
         return env, observation_space
 
     def _get_env_args(self, kwargs):
-        """
-        creates a set of positional arguments to pass to the learning environment
+        """ creates a set of positional arguments to pass to the learning environment
         which specify how difficult to make the environment
         :param kwargs: arguments from the instantiation of t
         :return: list of arguments to the underlying environment
@@ -168,21 +198,28 @@ class AgarioEnv(gym.Env):
             pass  # default
 
         elif difficulty == "empty":
+            # same as "normal" but no enemies
             num_bots = 0
 
         elif difficulty == "trivial":
-            arena_size = 50
-            num_pellets = 100
-            num_viruses = 0
-            num_bots = 0
+            arena_size = 50  # tiny arena
+            num_pellets = 200  # plenty of food
+            num_viruses = 0  # no viruses
+            num_bots = 0  # no enemies
 
         # now, override any of the defaults with those from the arguments
+        # this allows you to specify a difficulty, but also to override
+        # values so you can have, say, "normal" but with zero viruses, or w/e u want
         self.ticks_per_step  = kwargs.get("ticks_per_step", ticks_per_step)
         self.arena_size      = kwargs.get("arena_size", arena_size)
         self.num_pellets     = kwargs.get("num_pellets", num_pellets)
         self.num_viruses     = kwargs.get("num_viruses", num_viruses)
         self.num_bots        = kwargs.get("num_bot", num_bots)
         self.pellet_regen    = kwargs.get("pellet_regen", pellet_regen)
+
+        # todo: more assertions
+        if type(self.ticks_per_step) is not int or self.ticks_per_step <= 0:
+            raise ValueError(f"ticks_per_step must be a positive integer")
 
         return self.ticks_per_step, self.arena_size, \
                self.pellet_regen, self.num_pellets, \

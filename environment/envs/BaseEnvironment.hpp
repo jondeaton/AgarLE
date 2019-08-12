@@ -43,6 +43,9 @@ namespace agario {
          * and after the step
          */
         reward step() {
+
+          this->_step_hook(); // allow subclass to set itself up for the step
+
           auto &player = engine.player(pid);
           auto mass_before = static_cast<int>(player.mass());
           for (int i = 0; i < ticks_per_step(); i++) {
@@ -108,6 +111,9 @@ namespace agario {
         const agario::time_delta step_dt;
 
         bool _done;
+
+        // allows subclass to do something special at the beginning of each step
+        virtual void _step_hook() { };
 
         // override this to allow environment to get it's state from
         // intermediate frames between the start and end of a "step"
