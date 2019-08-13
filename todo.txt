@@ -1,22 +1,20 @@
 
 - Learning Environment
-  - make focused player some special color
   - get rid of dock icon (how?)
   - configurable width and height of screen
 
 - Game Mechanics Tweaking
   - small cells can push big cells
-  - Feeding viruses causing them to duplicate
+  - Feeding viruses cause virus splitting
 
  - Bugs
-    - viruses appear inside players = splitting them
-    - splitting into bottom left corner breaks the game
+    - viruses appear inside players => splitting them
+    - splitting into arena corner breaks the game
 
 - Refactoring
   - More efficient algorithms for entity collisions
   - Better solution to NumberWrapper (is there one?)
   - make speed and time new types?
-  - Player class should not add a cell in constructor
 
 - Maintainability
   - Documentation
