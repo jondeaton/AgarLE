@@ -22,6 +22,40 @@ kinds of observation types:
 4. full     - positions and velocities of every entity in a variable length vector
               This is meant for debugging
 
+
+This gym supports multiple agents in the same game. By default, there will
+only be a single agent, and the gym will conform to the typical gym interface.
+(note that there may still be any number of "bots" in this environment)
+
+However, if you pass "multi_agent": True to the environment configuration
+then the environment will have multiple agents all interacting within the
+same agar.io game simultaneously.
+
+    env = gym.make("agario-grid-v0", **{
+        "multi_agent": True,
+        "num_agents": 5
+    })
+
+In this setting, the environment object will no longer conform to the
+typical gym interface in the following ways.
+
+    1. `step()` will expect a list of actions of the same length
+    as the number of agents.
+
+    2. The return value of `step()` will be a list of observations,
+    list of rewards, and list of dones each with length equal to
+    the number of agents. The `info` dictionary (4th return value)
+    remain a single dictionary.
+
+    3. `reset()` will return a list of observations of length equal
+    to the number of agents
+
+    4. When an agent is "done", observations will be None
+
+
+Note that if you pass "num_agents" greater than 1, "multi_agent"
+will be set to True automatically.
+
 """
 
 import gym
@@ -50,10 +84,11 @@ class AgarioEnv(gym.Env):
         target_space = spaces.Box(low=0, high=self.arena_size, shape=(2,))
         self.action_space = spaces.Tuple((target_space, spaces.Discrete(3)))
 
-    def step(self, action):
+    def step(self, actions):
         """ take an action in the environment, advancing the environment
         along until the next time step
-        :param action: (x, y, a) where `x`, `y` are in [0, 1] and `a` is
+        :param actions: either a single tuple, or list of tuples of tuples
+        of the form (x, y, a) where `x`, `y` are in [-1, 1] and `a` is
         in {0, 1, 2} corresponding to nothing, split, feed, respectively.
         :return: tuple of - observation, reward, episode_over
             observation (object) : the next state of the world.
@@ -61,17 +96,35 @@ class AgarioEnv(gym.Env):
             episode_over (bool) : whether the game is over or not
             info (dict) : diagnostic information (currently empty)
         """
-        assert self.steps is not None, "Cannot call env.step() before calling reset()"
+        assert self.steps is not None, "Cannot call step() before calling reset()"
 
-        x, y, game_act = action
-        self._env.take_action(x, y, game_act)
+        if not self.multi_agent:
+            actions = [actions]
 
-        reward = self._env.step()
-        done = self._env.done()
+        assert type(actions) is list
+        if len(actions) != self.num_agents:
+            raise ValueException(f"Number of actions {len(actions)} does"
+                                 f"not match number of agents {self.num_agents}")
 
-        observation = None if done else self._make_observation()
+        self._env.take_actions(actions)
+
+        observations = self._make_observation()
+        assert len(observations) == self.num_agents
+
+        rewards = self._env.step()
+        assert len(rewards) == self.num_agents
+
+        dones = self._env.dones()
+        assert len(dones) == self.num_agents
+
+        # unwrap observations, rewards, dones if not mult-agent
+        if not self.multi_agent:
+            observations = observations[0]
+            rewards = rewards[0]
+            dones = dones[0]
+
         self.steps += 1
-        return observation, reward, done, {'steps': self.steps}
+        return observations, rewards, dones, {'steps': self.steps}
 
     def reset(self):
         """ resets the environment
@@ -79,7 +132,10 @@ class AgarioEnv(gym.Env):
         """
         self.steps = 0
         self._env.reset()
-        return self._make_observation()
+        obs = self._make_observations()
+        assert len(obs) == self.num_agents
+
+        return obs if self.multi_agent else obs[0]
 
     def render(self, mode='human'):
         self._env.render()
@@ -186,6 +242,9 @@ class AgarioEnv(gym.Env):
         if difficulty not in ["normal", "empty", "trivial"]:
             raise ValueError(difficulty)
 
+        multi_agent = False
+        num_agents = 1
+
         # default values for the "normal"
         ticks_per_step = 4
         arena_size = 1000
@@ -210,6 +269,8 @@ class AgarioEnv(gym.Env):
         # now, override any of the defaults with those from the arguments
         # this allows you to specify a difficulty, but also to override
         # values so you can have, say, "normal" but with zero viruses, or w/e u want
+        self.multi_agent     = kwargs.get("multi_agent", multi_agent)
+        self.num_agents      = kwargs.get("num_agents", num_agents)
         self.ticks_per_step  = kwargs.get("ticks_per_step", ticks_per_step)
         self.arena_size      = kwargs.get("arena_size", arena_size)
         self.num_pellets     = kwargs.get("num_pellets", num_pellets)
@@ -217,11 +278,13 @@ class AgarioEnv(gym.Env):
         self.num_bots        = kwargs.get("num_bot", num_bots)
         self.pellet_regen    = kwargs.get("pellet_regen", pellet_regen)
 
+        self.multi_agent = self.multi_agent or self.num_agents > 1
+
         # todo: more assertions
         if type(self.ticks_per_step) is not int or self.ticks_per_step <= 0:
             raise ValueError(f"ticks_per_step must be a positive integer")
 
-        return self.ticks_per_step, self.arena_size, \
+        return self.num_agents, self.ticks_per_step, self.arena_size, \
                self.pellet_regen, self.num_pellets, \
                self.num_viruses, self.num_bots
 

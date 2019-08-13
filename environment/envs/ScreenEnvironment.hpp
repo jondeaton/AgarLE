@@ -86,7 +86,7 @@ namespace agario {
         Super(frames_per_step, arena_size, pellet_regen, num_pellets, num_viruses, num_bots),
         _observation(frames_per_step, screen_width, screen_height),
         frame_buffer(std::make_shared<FrameBufferObject>(screen_width, screen_height)),
-        renderer(frame_buffer, this->engine.arena_width(), this->engine.arena_height()) {}
+        renderer(frame_buffer, this->engine_.arena_width(), this->engine_.arena_height()) {}
 
       const ScreenObservation &get_state() const { return _observation; }
       screen_len screen_width() const { return frame_buffer->width(); }
@@ -100,7 +100,7 @@ namespace agario {
 
       // stores current frame into buffer containing the next observation
       void _partial_observation(Player &player, int frame_index) override {
-        renderer.render_screen(player, this->engine.game_state());
+        renderer.render_screen(player, this->engine_.game_state());
         void *data = _observation.frame_data(frame_index);
         frame_buffer->copy(data);
       }

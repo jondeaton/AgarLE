@@ -1,5 +1,7 @@
 #pragma once
 
+#include <assert.h>
+
 #include <agario/engine/Engine.hpp>
 #include <agario/core/types.hpp>
 #include <agario/core/Entities.hpp>
@@ -263,9 +265,9 @@ namespace agario {
       using dtype = T;
       using Observation = GridObservation;
 
-      explicit GridEnvironment(int ticks_per_step, int arena_size, bool pellet_regen,
+      explicit GridEnvironment(int num_agents, int ticks_per_step, int arena_size, bool pellet_regen,
                                int num_pellets, int num_viruses, int num_bots) :
-        Super(ticks_per_step, arena_size, pellet_regen, num_pellets, num_viruses, num_bots) {
+        Super(num_agents, ticks_per_step, arena_size, pellet_regen, num_pellets, num_viruses, num_bots) {
 
         /* I would use if constexpr from C++17 here but that's not an option */
 #ifdef RENDERABLE
@@ -282,27 +284,37 @@ namespace agario {
         if (num_frames > this->ticks_per_step())
           throw EnvironmentException("num_frames may not exceed ticks-per-step");
 
-        observation.configure(num_frames, grid_size, observe_cells, observe_others, observe_viruses, observe_pellets);
+        for (auto &observation : observations)
+          observation.configure(num_frames, grid_size, observe_cells, observe_others, observe_viruses, observe_pellets);
       }
 
-      const std::vector<int> &observation_shape() const { return observation.shape(); }
+      const std::vector<int> &observation_shape() const { return observations[0].shape(); }
 
       /**
        * Returns the current state of the world without advancing through time
        * @return An Observation object containing all of the
        * locations of every entity in the current state of the game world
        */
-      const Observation &get_state() const { return observation; }
+      const std::vector<Observation> &get_observations() const { return observations; }
 
       /* since we reuse the observation's data buffer for each step,
        * we need to have the data cleared at the beginning of each step */
       void _step_hook() override {
-        observation.clear_data();
+        for (auto &observation : observations)
+          observation.clear_data();
       }
 
       /* allows for intermediate grid frames to be stored in the GridObservation */
-      void _partial_observation(Player &player, int tick_index) override {
-        auto &state = this->engine.game_state();
+      void _partial_observation(int agent_index, int tick_index) override {
+        assert(agent_index < this->num_agents());
+        assert(tick_index < this->ticks_per_step());
+
+        auto &player = this->engine_.player(this->pids_[agent_index]);
+        if (player.dead()) return;
+
+        Observation &observation = observations[agent_index];
+
+        auto &state = this->engine_.game_state();
         int frame_index = tick_index - (this->ticks_per_step() - observation.num_frames());
         if (frame_index >= 0)
           observation.add_frame(player, state, frame_index);
@@ -319,7 +331,7 @@ namespace agario {
       }
 
     private:
-      GridObservation observation;
+      std::vector<GridObservation> observations;
 
 #ifdef RENDERABLE
       std::unique_ptr<agario::Renderer> renderer;

@@ -7,7 +7,9 @@
 #include <agario/bots/bots.hpp>
 #include "agario/engine/GameState.hpp"
 
-// 60 frames per second: the default amount of time between frames of the game
+#include <tuple>
+
+// 30 frames per second: the default amount of time between frames of the game
 #define DEFAULT_DT (1.0 / 30)
 
 namespace agario {
@@ -17,117 +19,169 @@ namespace agario {
       using runtime_error::runtime_error;
     };
 
-      typedef double reward;
+    using Action = std::tuple<float, float, action>;
 
-      template<bool renderable>
-      class BaseEnvironment {
-        using Player = agario::Player<renderable>;
-        using HungryBot = agario::bot::HungryBot<renderable>;
-        using HungryShyBot = agario::bot::HungryShyBot<renderable>;
+    typedef double reward;
 
-      public:
+    template<bool renderable>
+    class BaseEnvironment {
+      using Player = agario::Player<renderable>;
+      using HungryBot = agario::bot::HungryBot<renderable>;
+      using HungryShyBot = agario::bot::HungryShyBot<renderable>;
+      using AggressiveBot = agario::bot::AggressiveBot<renderable>;
+      using AggressiveShyBot = agario::bot::AggressiveShyBot<renderable>;
 
-        explicit BaseEnvironment(int ticks_per_step, int arena_size, bool pellet_regen,
-                                 int num_pellets, int num_viruses, int num_bots) :
-          engine(arena_size, arena_size, num_pellets, num_viruses, pellet_regen),
-          _ticks_per_step(ticks_per_step), num_bots(num_bots), _done(false),
-          step_dt(DEFAULT_DT) {
-          pid = engine.template add_player<Player>("agent");
-          reset();
+    public:
+
+      explicit BaseEnvironment(int num_agents, int ticks_per_step, int arena_size, bool pellet_regen,
+                               int num_pellets, int num_viruses, int num_bots) :
+        num_agents_(num_agents),
+        engine_(arena_size, arena_size, num_pellets, num_viruses, pellet_regen),
+        ticks_per_step_(ticks_per_step), num_bots_(num_bots),
+        step_dt_(DEFAULT_DT) {
+
+        pids_.reserve(num_agents);
+        dones_.reserve(num_agents);
+
+        reset();
+      }
+
+      int num_agents() const { return num_agents_; }
+
+      /**
+       * Steps the environment forward by several game frames
+       * @return the reward accumulated by the player during those
+       * frames, which is equal to the difference in it's mass before
+       * and after the step
+       */
+      std::vector<reward> step() {
+        this->_step_hook(); // allow subclass to set itself up for the step
+
+        auto before = masses<float>();
+
+        for (int tick = 0; tick < ticks_per_step(); tick++) {
+          engine_.tick(step_dt_);
+          for (int agent = 0; agent < num_agents(); agent++)
+              this->_partial_observation(agent, tick);
         }
 
-        /**
-         * Steps the environment forward by several game frames
-         * @return the reward accumulated by the player during those
-         * frames, which is equal to the difference in it's mass before
-         * and after the step
-         */
-        reward step() {
+        // reward = mass after - mass before
+        auto rewards = masses<reward>();
+        for (int i = 0; i < num_agents(); ++i)
+          rewards[i] -= before[i];
 
-          this->_step_hook(); // allow subclass to set itself up for the step
+        return rewards;
+      }
 
-          auto &player = engine.player(pid);
-          auto mass_before = static_cast<int>(player.mass());
-          for (int i = 0; i < ticks_per_step(); i++) {
-            if (player.dead()) {
-              _done = true;
-              break;
-            }
-            engine.tick(step_dt);
-            this->_partial_observation(player, i);
-          }
+      /* the mass of each player */
+      template<typename T>
+      std::vector<T> masses() const {
+        std::vector<T> masses_(num_agents());
+        for (auto &pid : pids_) {
+          auto &player = engine_.get_player(pid);
+          masses_.emplace_back(static_cast<T>(player.mass()));
+        }
+        return masses_;
+      }
 
-          auto mass_now = static_cast<int>(player.mass());
-          auto reward = mass_now - mass_before;
-          return reward;
+      /* take an action for each agent */
+      void take_actions(const std::vector<Action> &actions) {
+        if (actions.size() != num_agents())
+          throw EnvironmentException("Number of actions (" + std::to_string(actions.size())
+                                     + ") does not match number of agents (" + std::to_string(num_agents()) + ")");
+
+        for (int i = 0; i < num_agents(); i++)
+          take_action(pids_[i], actions[i]);
+      }
+
+      /* set the action for a given player `pid` */
+      void take_action(agario::pid pid, const Action &action) {
+        take_action(pid, std::get<0>(action), std::get<1>(action), std::get<2>(action));
+      }
+
+      /**
+       * Specifies the next action for the agent to take
+       * but does not step the game forwards in time. This
+       * just specifies what action will be taken by
+       * the agent on the next call to step
+       * @param dx from -1 to 1 specifying x direction to go in
+       * @param dy from -1 to 1 specifying y direction go to in
+       * @param action {0, 1, 2} meaning, none, split, feed
+       */
+      void take_action(agario::pid pid, float dx, float dy, int action) {
+        auto &player = engine_.player(pid);
+
+        /* todo: this isn't exactly "calibrated" such such that
+         * dx = 1 means move exactly the maximum speed */
+        auto target_x = player.x() + dx * 10;
+        auto target_y = player.y() + dy * 10;
+
+        player.action = static_cast<agario::action>(action);
+        player.target = agario::Location(target_x, target_y);
+      }
+
+      /* resets the environment by resetting the game engine. */
+      void reset() {
+        engine_.reset();
+
+        // add players
+        for (int i = 0; i < num_agents_; i++) {
+          auto pid = engine_.template add_player<Player>("agent" + std::to_string(i));
+          pids_.emplace_back(pid);
+          dones_[i] = false;
         }
 
-        /**
-         * Specifies the next action for the agent to take
-         * but does not step the game forwards in time. This
-         * just specifies what action will be taken by
-         * the agent on the next call to step
-         * @param dx from 0 to 1 specifying x direction to go in
-         * @param dy from 0 to 1 specifying y direction go to in
-         * @param action {0, 1, 2} meaning, none, split, feed
-         */
-        void take_action(float dx, float dy, int action) {
-          auto &player = engine.player(pid);
+        add_bots();
 
-          auto target_x = player.x() + dx * 10;
-          auto target_y = player.y() + dy * 10;
+        // the following loop is needed to "initialize" the observation object
+        // with the newly reset state so that a call to get_state directly
+        // after reset will return a state representing the fresh beginning
+        for (int frame_index = 0; frame_index < ticks_per_step(); frame_index++)
+          for (int agent_index = 0; agent_index < num_agents(); agent_index++)
+            this->_partial_observation(agent_index, frame_index);
+      }
 
-          player.action = static_cast<agario::action>(action);
-          player.target = agario::Location(target_x, target_y);
+      /* all agents done? */
+      bool done() const {
+        for (bool d : dones_)
+          if (!d) return false;
+        return true;
+      }
+
+      std::vector<bool> dones() const { return dones_; }
+
+      int ticks_per_step() const { return ticks_per_step_; }
+
+      virtual void render() {};
+
+    protected:
+      Engine <renderable> engine_;
+      std::vector<agario::pid> pids_;
+      std::vector<bool> dones_;
+
+      const int num_agents_;
+      const int ticks_per_step_;
+      const int num_bots_;
+      const agario::time_delta step_dt_;
+
+      // allows subclass to do something special at the beginning of each step
+      virtual void _step_hook() {};
+
+      // override this to allow environment to get it's state from
+      // intermediate frames between the start and end of a "step"
+      virtual void _partial_observation(int agent_index, int tick_index) {};
+
+      // adds the specified number of bots to the game
+      void add_bots() {
+        for (int i = 0; i < num_bots_ / 4; i++) {
+          engine_.template add_player<HungryBot>();
+          engine_.template add_player<HungryShyBot>();
+          engine_.template add_player<AggressiveBot>();
+          engine_.template add_player<AggressiveShyBot>();
         }
+      }
 
-        /* Resets the environment by resetting the game engine. */
-        void reset() {
-          engine.reset();
-          pid = engine.template add_player<Player>("agent");
-          add_bots();
-          _done = false;
-
-          // the following loop is needed to "initialize" the observation object
-          // with the newly reset state so that a call to get_state directly
-          // after reset will return a state representing the fresh beginning
-          auto &player = engine.player(pid);
-          for (int i = 0; i < ticks_per_step(); i++)
-            this->_partial_observation(player, i);
-        }
-
-        bool done() const { return _done; }
-
-        int ticks_per_step() const { return _ticks_per_step; }
-
-        virtual void render() { };
-
-      protected:
-        Engine<renderable> engine;
-        agario::pid pid;
-
-        const int _ticks_per_step;
-        const int num_bots;
-        const agario::time_delta step_dt;
-
-        bool _done;
-
-        // allows subclass to do something special at the beginning of each step
-        virtual void _step_hook() { };
-
-        // override this to allow environment to get it's state from
-        // intermediate frames between the start and end of a "step"
-        virtual void _partial_observation(Player &player, int tick_index) { };
-
-        // adds the specified number of bots to the game
-        void add_bots() {
-          for (int i = 0; i < num_bots / 2; i++) {
-            engine.template add_player<HungryBot>("hungry");
-            engine.template add_player<HungryShyBot>("shy");
-          }
-        }
-
-      };
+    };
 
   } // namespace env
 } // namespace agario

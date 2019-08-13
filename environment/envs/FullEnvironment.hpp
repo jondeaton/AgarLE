@@ -115,8 +115,8 @@ namespace agario {
        * locations of every entity in the current state of the game world
        */
       const FullObservation get_state() const {
-        auto &player = this->engine.get_player(this->pid);
-        return FullObservation(player, this->engine.get_game_state());
+        auto &player = this->engine_.get_player(this->pid);
+        return FullObservation(player, this->engine_.get_game_state());
       }
 
       void render() {

@@ -173,7 +173,7 @@ namespace agario {
       /* returns the length of the observation data... assumes  */
       int observation_length() const {
         auto length = 1 + 2; // ticks, arena_width, arena_height
-        length += 5 * (1 + this->num_bots);
+        length += 5 * (1 + this->num_bots_);
         length += 2 * num_pellets;
         length += 2 * num_viruses;
         length += 2 * num_foods;
@@ -185,8 +185,8 @@ namespace agario {
        * @return An Observation object representing the "RAM" of the game
        */
       Observation get_state() const {
-        auto &player = this->engine.get_player(this->pid);
-        auto &game_state = this->engine.get_game_state();
+        auto &player = this->engine_.get_player(this->pid);
+        auto &game_state = this->engine_.get_game_state();
 
         Observation observation(player, game_state, num_pellets, num_viruses);
         return observation; // return-value-optimization
