@@ -13,7 +13,7 @@ kinds of observation types:
 2. grid     - an image-like grid with channels for pellets, cells, viruses, boundaries, etc.
               I recommend this one the most since it produces fixed-size image-like data
               is much faster than the "screen" type and doesn't require compiling with
-              OpenGL (which works fine on my machine, but TBH probably won't work on your machine LOL)
+              OpenGL (which works fine on my machine, but probably won't work on your machine LOL)
 
 3. ram      - raw positions and velocities of every entity in a fixed-size vector
               I haven't tried this one, but I never got "full" to work, so I'm guessing
@@ -81,15 +81,15 @@ class AgarioEnv(gym.Env):
         self.steps = None
         self.obs_type = obs_type
 
-        target_space = spaces.Box(low=0, high=self.arena_size, shape=(2,))
+        target_space = spaces.Box(low=-np.inf, high=np.inf, shape=(2,))
         self.action_space = spaces.Tuple((target_space, spaces.Discrete(3)))
 
     def step(self, actions):
         """ take an action in the environment, advancing the environment
         along until the next time step
         :param actions: either a single tuple, or list of tuples of tuples
-        of the form (x, y, a) where `x`, `y` are in [-1, 1] and `a` is
-        in {0, 1, 2} corresponding to nothing, split, feed, respectively.
+            of the form (x, y, a) where `x`, `y` are in [-1, 1] and `a` is
+            in {0, 1, 2} corresponding to nothing, split, feed, respectively.
         :return: tuple of - observation, reward, episode_over
             observation (object) : the next state of the world.
             reward (float) : reward gained during the time step
@@ -99,21 +99,36 @@ class AgarioEnv(gym.Env):
         assert self.steps is not None, "Cannot call step() before calling reset()"
 
         if not self.multi_agent:
+            # if not multi-agent then the action should just be a single tuple
             actions = [actions]
 
-        assert type(actions) is list
+        if type(actions) is not list:
+            raise ValueError("Action list must be a list of two-element tuples")
+
         if len(actions) != self.num_agents:
             raise ValueException(f"Number of actions {len(actions)} does"
                                  f"not match number of agents {self.num_agents}")
+        
+        # make sure that the actions are well-formed
+        for action in actions:
+            if action not in self.action_space:
+                raise ValueError(f"action {action} not in action space")
+        
+        # make sure that all of the targets are in float32 mode
+        actions = [(float(tgt[0]), float(tgt[1]), a) for tgt, a in actions]
 
+        # set the action for each agent
         self._env.take_actions(actions)
 
-        observations = self._make_observation()
-        assert len(observations) == self.num_agents
-
+        # step the environment forwards through time
         rewards = self._env.step()
         assert len(rewards) == self.num_agents
 
+        # observe the new state of the environment for each agent
+        observations = self._make_observations()
+        assert len(observations) == self.num_agents
+
+        # get the "done" status of each agent
         dones = self._env.dones()
         assert len(dones) == self.num_agents
 
@@ -143,26 +158,27 @@ class AgarioEnv(gym.Env):
     def __del__(self):
         pass
 
-    def _make_observation(self):
+    def _make_observations(self):
         """ creates an observation object from the underlying environment
         representing the current state of the game
         :return: An observation object
         """
-        state = self._env.get_state()
+        states = self._env.get_state()
 
         if self.obs_type == "full":
             # full observation type requires this special wrapper
-            observation = FullObservation(pellets=state[0], viruses=state[1],
+            observations = [FullObservation(pellets=state[0], viruses=state[1],
                                           foods=state[2], agent=state[3], others=state[4:])
+                            for state in states]
 
         elif self.obs_type in ("grid", ):
             # convert NCHW to NHWC
-            observation = np.transpose(state, [1, 2, 0])
+            observations = [np.transpose(state, [1, 2, 0]) for state in states]
 
         else:
-            observation = state
+            observations = states
 
-        return observation
+        return observations
 
     def _make_environment(self, obs_type, kwargs):
         """ Instantiates and configures the underlying Agar.io environment (C++ implementation)
@@ -179,8 +195,8 @@ class AgarioEnv(gym.Env):
         if obs_type == "grid":
             num_frames = kwargs.get("num_frames", 2)
             grid_size = kwargs.get("grid_size", 128)
-            observe_cells = kwargs.get("observe_cells", True)
-            observe_others = kwargs.get("observe_others", True)
+            observe_cells = kwargs.get("observe_cells",     True)
+            observe_others = kwargs.get("observe_others",   True)
             observe_viruses = kwargs.get("observe_viruses", True)
             observe_pellets = kwargs.get("observe_pellets", True)
 

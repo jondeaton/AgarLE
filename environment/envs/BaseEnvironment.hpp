@@ -19,7 +19,11 @@ namespace agario {
       using runtime_error::runtime_error;
     };
 
-    using Action = std::tuple<float, float, action>;
+    struct Action {
+      float dx;
+      float dy;
+      agario::action a;
+    };
 
     typedef double reward;
 
@@ -36,13 +40,12 @@ namespace agario {
       explicit BaseEnvironment(int num_agents, int ticks_per_step, int arena_size, bool pellet_regen,
                                int num_pellets, int num_viruses, int num_bots) :
         num_agents_(num_agents),
+        dones_(num_agents),
         engine_(arena_size, arena_size, num_pellets, num_viruses, pellet_regen),
         ticks_per_step_(ticks_per_step), num_bots_(num_bots),
         step_dt_(DEFAULT_DT) {
 
         pids_.reserve(num_agents);
-        dones_.reserve(num_agents);
-
         reset();
       }
 
@@ -76,7 +79,8 @@ namespace agario {
       /* the mass of each player */
       template<typename T>
       std::vector<T> masses() const {
-        std::vector<T> masses_(num_agents());
+        std::vector<T> masses_;
+        masses_.reserve(num_agents());
         for (auto &pid : pids_) {
           auto &player = engine_.get_player(pid);
           masses_.emplace_back(static_cast<T>(player.mass()));
@@ -96,7 +100,7 @@ namespace agario {
 
       /* set the action for a given player `pid` */
       void take_action(agario::pid pid, const Action &action) {
-        take_action(pid, std::get<0>(action), std::get<1>(action), std::get<2>(action));
+        take_action(pid, action.dx, action.dy, action.a);
       }
 
       /**
@@ -123,6 +127,8 @@ namespace agario {
       /* resets the environment by resetting the game engine. */
       void reset() {
         engine_.reset();
+
+        pids_.clear();
 
         // add players
         for (int i = 0; i < num_agents_; i++) {

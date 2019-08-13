@@ -31,7 +31,7 @@ namespace {
   /* ===================== Tests ===================== */
   class EnvTest : public testing::Test {
   protected:
-    EnvTest() : env(4, 1000, true, 1000, 25, 25) { }
+    EnvTest() : env(1, 4, 1000, true, 1000, 25, 25) { }
     void SetUp() override {
       env.configure_observation(2, 128, true, true, true, true);
     }

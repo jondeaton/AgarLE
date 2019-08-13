@@ -98,10 +98,18 @@ PYBIND11_MODULE(agarle, module) {
       using Action = agario::env::Action;
 
       // convert from py::list to std::vector
-      std::vector<Action> acts(env.num_agents());
-      for (const auto &action : actions) {
-        const auto a = action.cast<Action>();
-        acts.emplace_back(a);
+      std::vector<Action> acts;
+      acts.reserve(env.num_agents());
+
+      for (auto &action : actions) {
+        py::tuple t = py::cast<py::tuple>(action);
+
+        auto dx = py::cast<float>(t[0]);
+        auto dy = py::cast<float>(t[1]);
+        auto a = static_cast<agario::action>(py::cast<int>(t[2]));
+        
+        Action act = { dx, dy, a };
+        acts.emplace_back(act);
       }
       env.take_actions(acts);
     })

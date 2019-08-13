@@ -7,20 +7,18 @@
 #include <agario/core/Entities.hpp>
 #include <agario/core/Ball.hpp>
 #include <agario/bots/bots.hpp>
-#include "agario/engine/GameState.hpp"
+#include <agario/engine/GameState.hpp>
 
 #include "environment/envs/BaseEnvironment.hpp"
 
+#ifdef RENDERABLE
+#include <agario/core/renderables.hpp>
+#include <agario/rendering/window.hpp>
+#include <agario/rendering/renderer.hpp>
+#endif
+
 #define DEFAULT_GRID_SIZE 128
 #define VIEW_SIZE 30
-
-#ifdef RENDERABLE
-
-#include "core/renderables.hpp"
-#include "rendering/window.hpp"
-#include "rendering/renderer.hpp"
-
-#endif
 
 namespace agario {
   namespace env {
@@ -138,7 +136,27 @@ namespace agario {
       // you're probably not using it correctly
       GridObservation(const GridObservation &) = delete; // no copy constructor
       GridObservation &operator=(const GridObservation &) = delete; // no copy assignments
+      
+      /* move constructor */
+      GridObservation(GridObservation &&obs) noexcept :
+        _data(std::move(obs._data)), 
+        _shape(std::move(obs._shape)),
+        _strides(std::move(obs._strides)),
+        _num_frames(std::move(obs._num_frames)),
+        _grid_size(std::move(obs._grid_size)) {
+        obs._data = nullptr;
+      };
 
+      /* move assignment */
+      GridObservation &operator=(GridObservation &&obs) noexcept {
+        _data = std::move(obs._data);
+        _shape = std::move(obs._shape);
+        _strides = std::move(obs._strides);
+        _num_frames = std::move(obs._num_frames);
+        _grid_size = std::move(obs._grid_size);
+        obs._data = nullptr;
+        return *this;
+      };
       ~GridObservation() { delete[] _data; }
 
     private:
@@ -249,7 +267,7 @@ namespace agario {
         return 0 <= grid_x && grid_x < _grid_size && 0 <= grid_y && grid_y < _grid_size;
       }
 
-      bool _in_bounds(const Location &loc, agario::distance arena_width, agario::distance arena_height) {
+      bool _in_bounds(const Location &loc, distance arena_width, distance arena_height) {
         return 0 <= loc.x && loc.x < arena_width && 0 <= loc.y && loc.y < arena_height;
       }
     };
@@ -267,7 +285,8 @@ namespace agario {
 
       explicit GridEnvironment(int num_agents, int ticks_per_step, int arena_size, bool pellet_regen,
                                int num_pellets, int num_viruses, int num_bots) :
-        Super(num_agents, ticks_per_step, arena_size, pellet_regen, num_pellets, num_viruses, num_bots) {
+        Super(num_agents, ticks_per_step, arena_size, pellet_regen, 
+              num_pellets, num_viruses, num_bots) {
 
         /* I would use if constexpr from C++17 here but that's not an option */
 #ifdef RENDERABLE
@@ -279,16 +298,24 @@ namespace agario {
       }
 
       /* Configures the observation types that will be returned. */
-      void configure_observation(int num_frames, int grid_size, bool observe_cells, bool observe_others,
-                                 bool observe_viruses, bool observe_pellets) {
+      void configure_observation(int num_frames, int grid_size, 
+          bool observe_cells,   bool observe_others,
+          bool observe_viruses, bool observe_pellets) {
+
         if (num_frames > this->ticks_per_step())
           throw EnvironmentException("num_frames may not exceed ticks-per-step");
 
-        for (auto &observation : observations)
-          observation.configure(num_frames, grid_size, observe_cells, observe_others, observe_viruses, observe_pellets);
+        observations.clear();
+        for (int i = 0; i < this->num_agents(); i++)
+          observations.emplace_back(num_frames, grid_size, observe_cells,
+              observe_others, observe_viruses, observe_pellets);
       }
 
-      const std::vector<int> &observation_shape() const { return observations[0].shape(); }
+      /* the shape of the observation object(s) */
+      const std::vector<int> &observation_shape() const { 
+        assert (observations.size() > 0);
+        return observations[0].shape();
+      }
 
       /**
        * Returns the current state of the world without advancing through time
