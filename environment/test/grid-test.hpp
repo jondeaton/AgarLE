@@ -11,6 +11,8 @@ static constexpr bool renderable =
 #endif
   ;
 
+using namespace agario::env;
+
 namespace {
 
   using GridEnvironment = agario::env::GridEnvironment<int, renderable>;
@@ -31,40 +33,84 @@ namespace {
   /* ===================== Tests ===================== */
   class EnvTest : public testing::Test {
   protected:
-    EnvTest() : env(1, 4, 1000, true, 1000, 25, 25) { }
+    EnvTest() : env(4, 4, 1000,
+      true, 1000,
+      25, 25) { }
     void SetUp() override {
-      env.configure_observation(2, 128, true, true, true, true);
+      env.configure_observation(2, 128,
+        true, true,
+        true, true);
     }
     void TearDown() override { }
-
     GridEnvironment env;
   };
 
   TEST_F(EnvTest, create_env) {
+    EXPECT_NO_THROW(SetUp());
+  }
+
+  /* make sure that you can take actions */
+  TEST_F(EnvTest, take_actions) {
     SetUp();
+    std::vector<Action> actions;
+    actions.reserve(env.num_agents());
+
+    for (int i = 0; i < env.num_agents(); i++)
+      actions.emplace_back(0.0, 0.0, agario::action::none);
+    EXPECT_NO_THROW(    env.take_actions(actions));
+  }
+
+  /* make sure that it throws when number of actions != number of agents */
+  TEST_F(EnvTest, take_action_wrong_size) {
+    SetUp();
+    std::vector<Action> actions;
+    actions.reserve(env.num_agents());
+
+    EXPECT_THROW(env.take_actions(actions), EnvironmentException);
+
+    for (int a = 1; a <= 1 + env.num_agents(); a++) {
+      actions.emplace_back(0.0, 0.0, agario::action::none);
+      if (a != env.num_agents())
+        EXPECT_THROW(env.take_actions(actions), EnvironmentException);
+      else
+        EXPECT_NO_THROW(env.take_actions(actions));
+    }
+  }
+
+  TEST_F(EnvTest, reset) {
+    SetUp();
+    EXPECT_NO_THROW(env.reset());
   }
 
   TEST_F(EnvTest, step) {
     SetUp();
-    env.take_action(0, 0, 0);
-    auto r = env.step();
+    std::vector<Action> actions;
+    actions.reserve(env.num_agents());
+    for (int i = 0; i < env.num_agents(); i++)
+      actions.emplace_back(0.0, 0.0, agario::action::none);
+
+    for (int i = 0; i < 100; i++) {
+      ASSERT_NO_THROW(env.take_actions(actions));
+      auto rewards = env.step();
+      ASSERT_EQ(rewards.size(), env.num_agents());
+    }
   }
 
   TEST_F(EnvTest, get_state) {
     SetUp();
-    env.take_action(0, 0, 0);
-    auto r = env.step();
-    auto &state = env.get_state();
-    EXPECT_TRUE(has_non_zero(state));
-  }
+    std::vector<Action> actions;
+    actions.reserve(env.num_agents());
+    for (int i = 0; i < env.num_agents(); i++)
+      actions.emplace_back(0.0, 0.0, agario::action::none);
 
-  TEST_F(EnvTest, multi_get_state) {
-    SetUp();
-    for (int i = 0; i < 32; i++) {
-      env.take_action(0, 0, 0);
-      auto r = env.step();
-      auto &state = env.get_state();
-      ASSERT_TRUE(has_non_zero(state));
+    for (int i = 0; i < 100; i++) {
+      ASSERT_NO_THROW(env.take_actions(actions));
+      auto _ = env.step();
+
+      auto &observations = env.get_observations();
+      ASSERT_EQ(observations.size(), env.num_agents());
+      for (auto &o : observations)
+        ASSERT_TRUE(has_non_zero(o));
     }
   }
 

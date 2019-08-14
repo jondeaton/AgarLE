@@ -19,10 +19,12 @@ namespace agario {
       using runtime_error::runtime_error;
     };
 
-    struct Action {
-      float dx;
-      float dy;
-      agario::action a;
+    /* represents a full action in the environment */
+    class Action {
+    public:
+      Action(float dx, float dy, action a) : dx(dx), dy(dy), a(a) { }
+      float dx, dy; // target relative to player location
+      agario::action a; // game-action (i.e. split/feed/none)
     };
 
     typedef double reward;

@@ -107,9 +107,8 @@ PYBIND11_MODULE(agarle, module) {
         auto dx = py::cast<float>(t[0]);
         auto dy = py::cast<float>(t[1]);
         auto a = static_cast<agario::action>(py::cast<int>(t[2]));
-        
-        Action act = { dx, dy, a };
-        acts.emplace_back(act);
+
+        acts.emplace_back(dx, dy, a);
       }
       env.take_actions(acts);
     })

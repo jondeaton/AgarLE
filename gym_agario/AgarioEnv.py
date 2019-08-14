@@ -106,7 +106,7 @@ class AgarioEnv(gym.Env):
             raise ValueError("Action list must be a list of two-element tuples")
 
         if len(actions) != self.num_agents:
-            raise ValueException(f"Number of actions {len(actions)} does"
+            raise ValueError(f"Number of actions {len(actions)} does"
                                  f"not match number of agents {self.num_agents}")
         
         # make sure that the actions are well-formed
@@ -114,8 +114,10 @@ class AgarioEnv(gym.Env):
             if action not in self.action_space:
                 raise ValueError(f"action {action} not in action space")
         
-        # make sure that all of the targets are in float32 mode
-        actions = [(float(tgt[0]), float(tgt[1]), a) for tgt, a in actions]
+        # gotta format the action for the underlying module.
+        # passing the raw target numpy array is tricky because
+        # of data formatting :(
+        actions = [(tgt[0], tgt[1], a) for tgt, a in actions]
 
         # set the action for each agent
         self._env.take_actions(actions)
@@ -126,7 +128,6 @@ class AgarioEnv(gym.Env):
 
         # observe the new state of the environment for each agent
         observations = self._make_observations()
-        assert len(observations) == self.num_agents
 
         # get the "done" status of each agent
         dones = self._env.dones()
@@ -148,8 +149,6 @@ class AgarioEnv(gym.Env):
         self.steps = 0
         self._env.reset()
         obs = self._make_observations()
-        assert len(obs) == self.num_agents
-
         return obs if self.multi_agent else obs[0]
 
     def render(self, mode='human'):
@@ -164,6 +163,7 @@ class AgarioEnv(gym.Env):
         :return: An observation object
         """
         states = self._env.get_state()
+        assert len(states) == self.num_agents
 
         if self.obs_type == "full":
             # full observation type requires this special wrapper
@@ -178,6 +178,7 @@ class AgarioEnv(gym.Env):
         else:
             observations = states
 
+        assert len(observations) == self.num_agents
         return observations
 
     def _make_environment(self, obs_type, kwargs):
@@ -245,6 +246,9 @@ class AgarioEnv(gym.Env):
                 "agent":   spaces.Space(shape=(None, 5)),
                 "others":  spaces.Space(shape=(None, None, 5))
             })
+
+        else:
+            raise ValueError(obs_type)
 
         return env, observation_space
 
