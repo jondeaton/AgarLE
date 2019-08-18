@@ -45,16 +45,17 @@ typical gym interface in the following ways.
     2. The return value of `step()` will be a list of observations,
     list of rewards, and list of dones each with length equal to
     the number of agents. The `info` dictionary (4th return value)
-    remain a single dictionary.
+    remains a single dictionary.
 
     3. `reset()` will return a list of observations of length equal
     to the number of agents
 
-    4. When an agent is "done", observations will be None
-
+    4. When an agent is "done", observations will be None. The environment
+    may still be stepped while some agents are not done. Only when
+    all agents are done must the environment be reset.
 
 Note that if you pass "num_agents" greater than 1, "multi_agent"
-will be set to True automatically.
+will be set True automatically.
 
 """
 
@@ -83,6 +84,8 @@ class AgarioEnv(gym.Env):
 
         target_space = spaces.Box(low=-np.inf, high=np.inf, shape=(2,))
         self.action_space = spaces.Tuple((target_space, spaces.Discrete(3)))
+
+        self._seed = None  # todo: keep track of random seed
 
     def step(self, actions):
         """ take an action in the environment, advancing the environment
@@ -308,3 +311,6 @@ class AgarioEnv(gym.Env):
                self.pellet_regen, self.num_pellets, \
                self.num_viruses, self.num_bots
 
+    def seed(self, seed=None):
+        # sets the random seed for reproducibility
+        self._env.seed(seed)

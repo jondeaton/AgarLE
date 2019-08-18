@@ -115,6 +115,7 @@ PYBIND11_MODULE(agarle, module) {
     .def("reset", &GridEnvironment::reset)
     .def("render", &GridEnvironment::render)
     .def("step", &GridEnvironment::step)
+    .def("seed", &GridEnvironment::seed)
     .def("get_state", [](const GridEnvironment &env) {
       // todo: accept numpy array to populate?
       using dtype = GridEnvironment::dtype;

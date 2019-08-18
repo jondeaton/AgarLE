@@ -30,7 +30,9 @@ namespace agario {
     using GameState = GameState<renderable>;
 
     Engine(distance arena_width, distance arena_height,
-           int num_pellets = DEFAULT_NUM_PELLETS, int num_viruses = DEFAULT_NUM_VIRUSES, bool pellet_regen = true) :
+           int num_pellets = DEFAULT_NUM_PELLETS,
+           int num_viruses = DEFAULT_NUM_VIRUSES,
+           bool pellet_regen = true) :
       state(arena_width, arena_height),
       _num_pellets(num_pellets), _num_virus(num_viruses),
       _pellet_regen(pellet_regen),
@@ -128,6 +130,8 @@ namespace agario {
       add_viruses(_num_virus - state.viruses.size());
       state.ticks++;
     }
+
+    void seed(int s) { std::srand(s); }
 
     Engine(const Engine &) = delete; // no copy constructor
     Engine &operator=(const Engine &) = delete; // no copy assignments

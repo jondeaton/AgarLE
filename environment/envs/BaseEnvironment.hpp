@@ -162,6 +162,8 @@ namespace agario {
 
       virtual void render() {};
 
+      void seed (int s) { engine_.seed(s); }
+
     protected:
       Engine <renderable> engine_;
       std::vector<agario::pid> pids_;
