@@ -85,7 +85,7 @@ class AgarioEnv(gym.Env):
         target_space = spaces.Box(low=-np.inf, high=np.inf, shape=(2,))
         self.action_space = spaces.Tuple((target_space, spaces.Discrete(3)))
 
-        self._seed = None  # todo: keep track of random seed
+        self._seed = None
 
     def step(self, actions):
         """ take an action in the environment, advancing the environment
@@ -313,4 +313,7 @@ class AgarioEnv(gym.Env):
 
     def seed(self, seed=None):
         # sets the random seed for reproducibility
-        self._env.seed(seed)
+        if seed is not None:
+            self._seed = seed
+            self._env.seed(seed)
+            return [self._seed]

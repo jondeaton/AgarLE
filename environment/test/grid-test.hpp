@@ -89,7 +89,7 @@ namespace {
     for (int i = 0; i < env.num_agents(); i++)
       actions.emplace_back(0.0, 0.0, agario::action::none);
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10; i++) {
       ASSERT_NO_THROW(env.take_actions(actions));
       auto rewards = env.step();
       ASSERT_EQ(rewards.size(), env.num_agents());
@@ -103,7 +103,7 @@ namespace {
     for (int i = 0; i < env.num_agents(); i++)
       actions.emplace_back(0.0, 0.0, agario::action::none);
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10; i++) {
       ASSERT_NO_THROW(env.take_actions(actions));
       auto _ = env.step();
 
