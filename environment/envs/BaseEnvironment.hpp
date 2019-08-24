@@ -32,10 +32,6 @@ namespace agario {
     template<bool renderable>
     class BaseEnvironment {
       using Player = agario::Player<renderable>;
-      using HungryBot = agario::bot::HungryBot<renderable>;
-      using HungryShyBot = agario::bot::HungryShyBot<renderable>;
-      using AggressiveBot = agario::bot::AggressiveBot<renderable>;
-      using AggressiveShyBot = agario::bot::AggressiveShyBot<renderable>;
 
     public:
 
@@ -116,6 +112,8 @@ namespace agario {
        */
       void take_action(agario::pid pid, float dx, float dy, int action) {
         auto &player = engine_.player(pid);
+        
+        if (player.dead()) return; // its okay to take action on a dead player
 
         /* todo: this isn't exactly "calibrated" such such that
          * dx = 1 means move exactly the maximum speed */
@@ -149,13 +147,6 @@ namespace agario {
             this->_partial_observation(agent_index, frame_index);
       }
 
-      /* all agents done? */
-      bool done() const {
-        for (bool d : dones_)
-          if (!d) return false;
-        return true;
-      }
-
       std::vector<bool> dones() const { return dones_; }
 
       int ticks_per_step() const { return ticks_per_step_; }
@@ -174,20 +165,35 @@ namespace agario {
       const int num_bots_;
       const agario::time_delta step_dt_;
 
-      // allows subclass to do something special at the beginning of each step
+      /* allows subclass to do something special at the beginning of each step */
       virtual void _step_hook() {};
 
-      // override this to allow environment to get it's state from
-      // intermediate frames between the start and end of a "step"
+      /* override this to allow environment to get it's state from
+       * intermediate frames between the start and end of a "step" */
       virtual void _partial_observation(int agent_index, int tick_index) {};
 
-      // adds the specified number of bots to the game
+      /* adds the specified number of bots to the game */
       void add_bots() {
-        for (int i = 0; i < num_bots_ / 4; i++) {
-          engine_.template add_player<HungryBot>();
-          engine_.template add_player<HungryShyBot>();
-          engine_.template add_player<AggressiveBot>();
-          engine_.template add_player<AggressiveShyBot>();
+        using HungryBot = agario::bot::HungryBot<renderable>;
+        using HungryShyBot = agario::bot::HungryShyBot<renderable>;
+        using AggressiveBot = agario::bot::AggressiveBot<renderable>;
+        using AggressiveShyBot = agario::bot::AggressiveShyBot<renderable>;
+
+        for (int i = 0; i < num_bots_; i++) {
+          switch (i % num_bots_) {
+            case 0:
+              engine_.template add_player<HungryBot>();
+              break;
+            case 1:
+              engine_.template add_player<HungryShyBot>();
+              break;
+            case 2:
+              engine_.template add_player<AggressiveBot>();
+              break;
+            case 3:
+              engine_.template add_player<AggressiveShyBot>();
+              break;
+          }
         }
       }
 

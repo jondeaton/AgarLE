@@ -184,12 +184,8 @@ namespace agario {
        * Returns the current state of the world (without advancing through time)
        * @return An Observation object representing the "RAM" of the game
        */
-      Observation get_state() const {
-        auto &player = this->engine_.get_player(this->pid);
-        auto &game_state = this->engine_.get_game_state();
-
-        Observation observation(player, game_state, num_pellets, num_viruses);
-        return observation; // return-value-optimization
+      const std::vector<Observation> &get_observations() const {
+        return observations;
       }
 
       void render() {
@@ -203,6 +199,7 @@ namespace agario {
       }
 
     private:
+      std::vector<Observation> observations;
       int num_pellets, num_viruses;
 
 #ifdef RENDERABLE

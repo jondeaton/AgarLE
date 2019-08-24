@@ -21,12 +21,11 @@ namespace agario {
   template<bool renderable>
   class Engine {
   public:
-
-    typedef Player<renderable> Player;
-    typedef Cell<renderable> Cell;
-    typedef Food<renderable> Food;
-    typedef Pellet<renderable> Pellet;
-    typedef Virus<renderable> Virus;
+    using Player = Player<renderable>;
+    using Cell = Cell<renderable>;
+    using Food = Food<renderable>;
+    using Pellet = Pellet<renderable>;
+    using Virus = Virus<renderable>;
     using GameState = GameState<renderable>;
 
     Engine(distance arena_width, distance arena_height,
@@ -41,10 +40,7 @@ namespace agario {
     }
     Engine() : Engine(DEFAULT_ARENA_WIDTH, DEFAULT_ARENA_HEIGHT) {}
 
-    /**
-     * Total game ticks
-     * @return the number of ticks that have elapsed in the game
-     */
+    /* the number of ticks that have elapsed in the game */
     agario::tick ticks() const { return state.ticks; }
     const typename GameState::PlayerMap &players() const { return state.players; }
     const std::vector<Pellet> &pellets() const { return state.pellets; }
@@ -131,7 +127,7 @@ namespace agario {
       state.ticks++;
     }
 
-    void seed(int s) { std::srand(s); }
+    void seed(unsigned s) { std::srand(s); }
 
     Engine(const Engine &) = delete; // no copy constructor
     Engine &operator=(const Engine &) = delete; // no copy assignments

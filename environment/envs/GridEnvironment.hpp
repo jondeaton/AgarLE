@@ -300,10 +300,6 @@ namespace agario {
       /* Configures the observation types that will be returned. */
       template <typename ...Config>
       void configure_observation(Config&&... config) {
-
-//        if (num_frames > this->ticks_per_step())
-//          throw EnvironmentException("num_frames may not exceed ticks-per-step");
-
         observations.clear();
         for (int i = 0; i < this->num_agents(); i++)
           observations.emplace_back(config...);
@@ -340,6 +336,8 @@ namespace agario {
         Observation &observation = observations[agent_index];
 
         auto &state = this->engine_.game_state();
+
+        // we store in the observation the last `num_frames` frames between each step
         int frame_index = tick_index - (this->ticks_per_step() - observation.num_frames());
         if (frame_index >= 0)
           observation.add_frame(player, state, frame_index);
@@ -356,7 +354,7 @@ namespace agario {
       }
 
     private:
-      std::vector<GridObservation> observations;
+      std::vector<Observation> observations;
 
 #ifdef RENDERABLE
       std::unique_ptr<agario::Renderer> renderer;

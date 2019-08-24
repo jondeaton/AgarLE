@@ -87,7 +87,6 @@ PYBIND11_MODULE(agarle, module) {
       const auto &shape = env.observation_shape();
       return py::make_tuple(shape[0], shape[1], shape[2]);
     })
-    .def("done", &GridEnvironment::done)
     .def("dones", [](const GridEnvironment &env) {
       py::list list;
       for (bool done : env.dones())
