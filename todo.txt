@@ -1,27 +1,25 @@
-
-- Learning Environment
-  - get rid of dock icon (how?)
-  - configurable width and height of screen
+- Auto clone pybind11 and cxxopts repositories during build
+- get rid of dock icon in ScreenEnvironment?
 
 - Game Mechanics Tweaking
   - small cells can push big cells
   - Feeding viruses cause virus splitting
+  - names on players
+  - respawn bots
+  - nice bot that feeds you
 
  - Bugs
     - viruses appear inside players => splitting them
     - splitting into arena corner breaks the game
+    - ticks_per_step = 1 results in crash
+    - num_frames is always 2 even when I pass 1
+    
+- better algorithms for collision detection
+  - Soft food positions by x position (faster)
 
-- Refactoring
-  - More efficient algorithms for entity collisions
-  - Better solution to NumberWrapper (is there one?)
-  - make speed and time new types?
+- extensive testing for GridEnvironment
+- Make agarle pip installable
 
-- Maintainability
-  - Documentation
-  - Automated CI
-
-- Client-Server connection
-  - GameState serialization
-  - Server IO
-  - Client IO 
-  - Browser client (WASM + WebGL?)
+- Documentation
+- Automated CI
+- Client Server
