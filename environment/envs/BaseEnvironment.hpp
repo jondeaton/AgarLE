@@ -132,7 +132,8 @@ namespace agario {
 
         // add players
         for (int i = 0; i < num_agents_; i++) {
-          auto pid = engine_.template add_player<Player>("agent" + std::to_string(i));
+          auto name = "agent" + std::to_string(i);
+          auto pid = engine_.template add_player<Player>(name);
           pids_.emplace_back(pid);
           dones_[i] = false;
         }
@@ -140,16 +141,15 @@ namespace agario {
         add_bots();
 
         // the following loop is needed to "initialize" the observation object
-        // with the newly reset state so that a call to get_state directly
-        // after reset will return a state representing the fresh beginning
+        // with the newly reset state so that a call to `get_state` directly
+        // after `reset` will return a state representing the fresh beginning
         for (int frame_index = 0; frame_index < ticks_per_step(); frame_index++)
           for (int agent_index = 0; agent_index < num_agents(); agent_index++)
             this->_partial_observation(agent_index, frame_index);
       }
 
-      std::vector<bool> dones() const { return dones_; }
-
-      int ticks_per_step() const { return ticks_per_step_; }
+      [[nodiscard]] std::vector<bool> dones() const { return dones_; }
+      [[nodiscard]] int ticks_per_step() const { return ticks_per_step_; }
 
       virtual void render() {};
 
@@ -172,6 +172,7 @@ namespace agario {
        * intermediate frames between the start and end of a "step" */
       virtual void _partial_observation(int agent_index, int tick_index) {};
 
+    private:
       /* adds the specified number of bots to the game */
       void add_bots() {
         using HungryBot = agario::bot::HungryBot<renderable>;

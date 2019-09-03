@@ -18,7 +18,6 @@
 #endif
 
 #define DEFAULT_GRID_SIZE 128
-#define VIEW_SIZE 30
 
 namespace agario {
   namespace env {
@@ -34,9 +33,13 @@ namespace agario {
 
     public:
       using dtype = T;
+      using Shape = std::tuple<int, int, int>;
+      using Strides = std::tuple<ssize_t, ssize_t, ssize_t>;
 
+      /* construct without configuring. configure() must be called. */
       GridObservation() : data_(nullptr) { }
 
+      /* construct with configuration. configure() need not be called */
       template <typename ...Args>
       explicit GridObservation(Args&&... args) : config_(args...) {
         _make_shapes();
@@ -49,14 +52,14 @@ namespace agario {
       void configure(Args&&... args) {
         config_(args...);
 
-        delete[] data_;
+        delete[] data_; // might be nullptr, thats ok
 
         _make_shapes();
         data_ = new dtype[length()];
         clear_data();
       }
 
-      bool configured() const  { return data_ != nullptr; }
+      [[nodiscard]] bool configured() const  { return data_ != nullptr; }
 
       /* data buffer, mulit-dim array shape and sizes*/
       const dtype *data() const {
@@ -65,13 +68,13 @@ namespace agario {
         return data_;
       }
 
-      const std::vector<int> &shape() const {
+      [[nodiscard]] const Shape &shape() const {
         if (!configured())
           throw EnvironmentException("GridObservation was not configured.");
         return shape_;
-      }
+      };
 
-      const std::vector<ssize_t> &strides() const {
+      [[nodiscard]] const Strides &strides() const {
         if (!configured())
           throw EnvironmentException("GridObservation was not configured.");
         return strides_;
@@ -114,14 +117,12 @@ namespace agario {
       }
 
       /* full length of data array */
-      int length() const {
-        int len = 1;
-        for (auto s : shape_)
-          len *= s;
-        return len;
+      [[nodiscard]] int length() const {
+        return std::get<0>(shape_) * std::get<1>(shape_) * std::get<2>(shape_);
       }
 
-      int num_frames() const { return config_.num_frames; }
+      /* the number of frames captured by the observation */
+      [[nodiscard]] int num_frames() const { return config_.num_frames; }
 
       // no copy operations because if you're copying this object then
       // you're probably not using it correctly
@@ -150,8 +151,8 @@ namespace agario {
 
     private:
       dtype *data_;
-      std::vector<int> shape_;
-      std::vector<ssize_t> strides_;
+      Shape shape_;
+      Strides strides_;
 
       /* observation configuration parameters */
       class Configuration {
@@ -173,7 +174,7 @@ namespace agario {
       Configuration config_;
 
       /* the number of channels in each frame */
-      int channels_per_frame() const {
+      [[nodiscard]] int channels_per_frame() const {
         // the +1 is for the out-of-bounds channel
         return static_cast<int>(1 + config_.observe_cells + config_.observe_others
                                 + config_.observe_viruses + config_.observe_pellets);
@@ -225,7 +226,7 @@ namespace agario {
 
       /* determines what the view size should be, based on the player's mass */
       float _view_size(const Player &player) const {
-        // todo: make this consistent with the renderer's view (somewhat tough)
+        // todo: make this "consistent" with the renderer's view (somewhat tough)
         return agario::clamp<float>(2 * player.mass(), 100, 300);
       }
 
@@ -288,7 +289,6 @@ namespace agario {
         Super(num_agents, ticks_per_step, arena_size, pellet_regen, 
               num_pellets, num_viruses, num_bots) {
 
-        /* I would use if constexpr from C++17 here but that's not an option */
 #ifdef RENDERABLE
         window = std::make_shared<Window>("Agar.io Environment", 512, 512);
         renderer = std::make_unique<agario::Renderer>(window,
@@ -306,7 +306,7 @@ namespace agario {
       }
 
       /* the shape of the observation object(s) */
-      const std::vector<int> &observation_shape() const { 
+      const typename Observation::Shape &observation_shape() const {
         assert (observations.size() > 0);
         return observations[0].shape();
       }

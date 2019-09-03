@@ -7,7 +7,7 @@ project(Agario
         HOMEPAGE_URL "https://github.com/jondeaton/AgarLE"
         LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 set(DEBUG_FLAGS "-g -O0 -fpermissive -fsized-deallocation")
 set(RELEASE_FLAGS "-O3 -fpermissive")

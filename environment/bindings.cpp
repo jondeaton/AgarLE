@@ -3,10 +3,11 @@
 #include <pybind11/stl_bind.h>
 #include <pybind11/numpy.h>
 
+#include <tuple>
 #include <iostream>
 //#include <environment/envs/FullEnvironment.hpp>
 #include <environment/envs/GridEnvironment.hpp>
-//#include <environment/envs/RamEnvironment.hpp>
+#include <environment/envs/RamEnvironment.hpp>
 
 #ifdef INCLUDE_SCREEN_ENV
 //#include <environment/envs/ScreenEnvironment.hpp>
@@ -21,6 +22,58 @@ static constexpr bool renderable =
   ;
 
 namespace py = pybind11;
+
+
+template <class Tuple,
+  class T = std::decay_t<std::tuple_element_t<0, std::decay_t<Tuple>>>>
+std::vector<T> to_vector(Tuple&& tuple) {
+  return std::apply([](auto&&... elems) {
+    return std::vector<T>{std::forward<decltype(elems)>(elems)...};
+  }, std::forward<Tuple>(tuple));
+}
+
+/* converts a python list of actions to the C++ action wrapper*/
+std::vector<agario::env::Action> to_action_vector(const py::list &actions) {
+  std::vector<agario::env::Action> acts;
+  acts.reserve(actions.size());
+
+  for (auto &action : actions) {
+    auto t = py::cast<py::tuple>(action);
+
+    auto dx = py::cast<float>(t[0]);
+    auto dy = py::cast<float>(t[1]);
+    auto a = static_cast<agario::action>(py::cast<int>(t[2]));
+
+    acts.emplace_back(dx, dy, a);
+  }
+  return acts;
+}
+
+/* extracts observations from each agent, wrapping them in NumPy arrays */
+template <typename Environment>
+py::list get_state(const Environment &environment) {
+  using dtype = typename Environment::dtype;
+
+  auto &observations = environment.get_observations();
+  py::list obs;
+  for (auto &observation : observations) {
+    // make a copy of the data for the numpy array to take ownership of
+    auto *data = new dtype[observation.length()];
+    std::copy(observation.data(), observation.data() + observation.length(), data);
+
+    const auto &shape = observation.shape();
+    const auto &strides = observation.strides();
+
+    py::capsule cleanup(data, [](void *ptr) {
+      auto *data_pointer = reinterpret_cast<dtype*>(ptr);
+      delete[] data_pointer;
+    });
+
+    // add the numpy array to the list of observations
+    obs.append(py::array_t<dtype>(to_vector(shape), to_vector(strides), data, cleanup));
+  }
+  return obs; // list of numpy arrays
+}
 
 PYBIND11_MODULE(agarle, module) {
   using namespace pybind11::literals;
@@ -72,6 +125,7 @@ PYBIND11_MODULE(agarle, module) {
 
   pybind11::class_<GridEnvironment>(module, "GridEnvironment")
     .def(pybind11::init<int, int, int, bool, int, int, int>())
+    .def("seed", &GridEnvironment::seed)
     .def("configure_observation", [](GridEnvironment &env, const py::dict &config) {
 
       int num_frames = config.contains("num_frames")      ? config["num_frames"].cast<int>() : 2;
@@ -83,92 +137,31 @@ PYBIND11_MODULE(agarle, module) {
 
       env.configure_observation(num_frames, grid_size, cells, others, viruses, pellets);
     })
-    .def("observation_shape", [](const GridEnvironment &env) {
-      const auto &shape = env.observation_shape();
-      return py::make_tuple(shape[0], shape[1], shape[2]);
-    })
-    .def("dones", [](const GridEnvironment &env) {
-      py::list list;
-      for (bool done : env.dones())
-        list.append(done);
-      return list;
-    })
+    .def("observation_shape", &GridEnvironment::observation_shape)
+    .def("dones", &GridEnvironment::dones)
     .def("take_actions", [](GridEnvironment &env, const py::list &actions) {
-      using Action = agario::env::Action;
-
-      // convert from py::list to std::vector
-      std::vector<Action> acts;
-      acts.reserve(env.num_agents());
-
-      for (auto &action : actions) {
-        py::tuple t = py::cast<py::tuple>(action);
-
-        auto dx = py::cast<float>(t[0]);
-        auto dy = py::cast<float>(t[1]);
-        auto a = static_cast<agario::action>(py::cast<int>(t[2]));
-
-        acts.emplace_back(dx, dy, a);
-      }
-      env.take_actions(acts);
+      env.take_actions(to_action_vector(actions));
     })
     .def("reset", &GridEnvironment::reset)
     .def("render", &GridEnvironment::render)
     .def("step", &GridEnvironment::step)
-    .def("seed", &GridEnvironment::seed)
-    .def("get_state", [](const GridEnvironment &env) {
-      // todo: accept numpy array to populate?
-      using dtype = GridEnvironment::dtype;
-
-      auto &observations = env.get_observations();
-      py::list obs;
-      for (auto &observation : observations) {
-        // make a copy of the data for the numpy array to take ownership of
-        auto *data = new dtype[observation.length()];
-        std::copy(observation.data(), observation.data() + observation.length(), data);
-
-        const auto &shape = observation.shape();
-        const auto &strides = observation.strides();
-
-        py::capsule cleanup(data, [](void *ptr) {
-          auto *data_pointer = reinterpret_cast<dtype*>(ptr);
-          delete[] data_pointer;
-        });
-
-        // add the numpy array to the list of observations
-        obs.append(py::array_t<dtype>(shape, strides, data, cleanup));
-      }
-      return obs;
-    });
-
+    .def("get_state", &get_state<GridEnvironment>);
 
   /* ================ Ram Environment ================ */
-//  using RamEnvironment = agario::env::RamEnvironment<renderable>;
-//
-//  pybind11::class_<RamEnvironment>(module, "RamEnvironment")
-//    .def(pybind11::init<int, int, bool, int, int, int>())
-//    .def("observation_shape", [](const RamEnvironment &env) {
-//      return py::make_tuple(env.observation_length());
-//    })
-//    .def("step", &RamEnvironment::step)
-//    .def("get_state", [](const RamEnvironment &env) {
-//      using dtype = typename RamEnvironment::dtype;
-//
-//      auto observation = env.get_state();
-//
-//      auto *data = const_cast<dtype *>(observation.data());
-//      auto shape = observation.shape();
-//      auto strides = observation.strides();
-//
-//      auto format = py::format_descriptor<dtype>::format();
-//      auto buffer = py::buffer_info(data, sizeof(dtype), format, shape.size(), shape, strides);
-//      auto arr = py::array_t<dtype>(buffer);
-//      return arr;
-//    })
-//    .def("done", &RamEnvironment::done)
-//    .def("take_action", &RamEnvironment::take_action, "x"_a, "y"_a, "act"_a)
-//    .def("reset", &RamEnvironment::reset)
-//    .def("render", &RamEnvironment::render);
+  using RamEnvironment = agario::env::RamEnvironment<renderable>;
 
+  pybind11::class_<RamEnvironment>(module, "RamEnvironment")
+    .def(pybind11::init<int, int, int, bool, int, int, int>())
+    .def("seed", &RamEnvironment::seed)
+    .def("observation_shape", &RamEnvironment::observation_shape)
+    .def("dones", &RamEnvironment::dones)
+    .def("take_actions", [](RamEnvironment &env, const py::list &actions) {
+      env.take_actions(to_action_vector(actions));
+    })
+    .def("reset", &RamEnvironment::reset)
+    .def("render", &RamEnvironment::render)
+    .def("step", &RamEnvironment::step)
+    .def("get_state", &get_state<RamEnvironment>);
 
   /* ================ Screen Environment ================ */
   /* we only include this conditionally if OpenGL was found available for linking */
