@@ -47,7 +47,7 @@ namespace agario {
         reset();
       }
 
-      int num_agents() const { return num_agents_; }
+      [[nodiscard]] int num_agents() const { return num_agents_; }
 
       /**
        * Steps the environment forward by several game frames

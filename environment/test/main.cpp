@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <environment/test/grid-test.hpp>
+#include <environment/test/grid-env-test.hpp>
+#include <environment/test/ram-env-test.hpp>
 
 namespace { }
 

@@ -71,7 +71,7 @@ if (GTEST_FOUND)
 
     set(TEST_SRC
             test/main.cpp
-            test/grid-test.hpp)
+            test/grid-env-test.hpp)
     include_directories(test ${GTEST_INDLUCE_DIRS})
 
     add_executable(test-envs ${TEST_SRC} ${AGARIO_GRID_ENV_SOURCE})
