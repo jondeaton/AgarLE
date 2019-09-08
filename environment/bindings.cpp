@@ -5,21 +5,14 @@
 
 #include <tuple>
 #include <iostream>
-//#include <environment/envs/FullEnvironment.hpp>
 #include <environment/envs/GridEnvironment.hpp>
 #include <environment/envs/RamEnvironment.hpp>
 
 #ifdef INCLUDE_SCREEN_ENV
-//#include <environment/envs/ScreenEnvironment.hpp>
+#include <environment/envs/ScreenEnvironment.hpp>
 #endif
 
-static constexpr bool renderable =
-#ifdef RENDERABLE
-  true
-#else
-  false
-#endif
-  ;
+#include <environment/renderable.hpp>
 
 namespace py = pybind11;
 
@@ -76,14 +69,14 @@ py::list get_state(const Environment &environment) {
 }
 
 PYBIND11_MODULE(agarle, module) {
-  using namespace pybind11::literals;
+  using namespace py::literals;
   module.doc() = "Agar.io Learning Environment";
 
   /* ================ Grid Environment ================ */
   using GridEnvironment = agario::env::GridEnvironment<int, renderable>;
 
-  pybind11::class_<GridEnvironment>(module, "GridEnvironment")
-    .def(pybind11::init<int, int, int, bool, int, int, int>())
+  py::class_<GridEnvironment>(module, "GridEnvironment")
+    .def(py::init<int, int, int, bool, int, int, int>())
     .def("seed", &GridEnvironment::seed)
     .def("configure_observation", [](GridEnvironment &env, const py::dict &config) {
 
@@ -106,11 +99,12 @@ PYBIND11_MODULE(agarle, module) {
     .def("step", &GridEnvironment::step)
     .def("get_state", &get_state<GridEnvironment>);
 
+  
   /* ================ Ram Environment ================ */
   using RamEnvironment = agario::env::RamEnvironment<renderable>;
 
-  pybind11::class_<RamEnvironment>(module, "RamEnvironment")
-    .def(pybind11::init<int, int, int, bool, int, int, int>())
+  py::class_<RamEnvironment>(module, "RamEnvironment")
+    .def(py::init<int, int, int, bool, int, int, int>())
     .def("seed", &RamEnvironment::seed)
     .def("observation_shape", &RamEnvironment::observation_shape)
     .def("dones", &RamEnvironment::dones)
@@ -122,32 +116,34 @@ PYBIND11_MODULE(agarle, module) {
     .def("step", &RamEnvironment::step)
     .def("get_state", &get_state<RamEnvironment>);
 
+  
   /* ================ Screen Environment ================ */
   /* we only include this conditionally if OpenGL was found available for linking */
 
 #ifdef INCLUDE_SCREEN_ENV
 
-//  using ScreenEnvironment = agario::env::ScreenEnvironment<true>;
+  // todo: convert ScreenEnvironment to multi-environment
+
+//  using ScreenEnvironment = agario::env::ScreenEnvironment<renderable>;
 //
-//  pybind11::class_<ScreenEnvironment>(module, "ScreenEnvironment")
-//    .def(pybind11::init<int, int, bool, int, int, int, screen_len, screen_len>())
-//    .def("step", &ScreenEnvironment::step)
-//    .def("get_state", [](const ScreenEnvironment &env) {
-//
-//      auto &observation = env.get_state();
-//      auto *data = const_cast<std::uint8_t *>(observation.frame_data());
-//      auto shape = observation.shape();
-//      auto strides = observation.strides();
-//
-//      auto format = py::format_descriptor<std::uint8_t>::format();
-//      auto buffer = py::buffer_info(data, sizeof(std::uint8_t), format, shape.size(), shape, strides);
-//      auto arr = py::array_t<std::uint8_t>(buffer);
-//      return arr;
+//  py::class_<ScreenEnvironment>(module, "ScreenEnvironment")
+//    .def(py::init<int, int, int, bool, int, int, int>())
+//    .def("seed", &ScreenEnvironment::seed)
+//    .def("observation_shape", &ScreenEnvironment::observation_shape)
+//    .def("dones", &ScreenEnvironment::dones)
+//    .def("take_actions", [](ScreenEnvironment &env, const py::list &actions) {
+//      env.take_actions(to_action_vector(actions));
 //    })
-//    .def("done", &ScreenEnvironment::done)
-//    .def("take_action", &ScreenEnvironment::take_action, "x"_a, "y"_a, "act"_a)
 //    .def("reset", &ScreenEnvironment::reset)
-//    .def("render", &ScreenEnvironment::render);
+//    .def("render", &ScreenEnvironment::render)
+//    .def("step", &ScreenEnvironment::step)
+//    .def("get_state", &get_state<ScreenEnvironment>);
+
+  module.attr("has_screen_env") = py::bool_(true);
+
+#else
+
+  module.attr("has_screen_env") = py::bool_(false);
 
 #endif
 

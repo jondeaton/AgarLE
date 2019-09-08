@@ -20,7 +20,6 @@ endif(DEFINE_RENDERABLE)
 
 set(AGARIO_ENVS_SOURCE
         envs/BaseEnvironment.hpp
-        envs/FullEnvironment.hpp
         envs/GridEnvironment.hpp
         envs/RamEnvironment.hpp)
 
@@ -42,7 +41,7 @@ if (OpenGL_FOUND)
     link_directories(${GLM_LIBRARY_DIRS})
     add_definitions(${GLM_DEFINITIONS})
 
-    pybind11_add_module(agarle bindings.cpp
+    pybind11_add_module(agarle bindings.cpp renderable.hpp
             ${AGARIO_ENVS_SOURCE}
             ${AGARIO_SCREEN_ENV_SOURCE})
 

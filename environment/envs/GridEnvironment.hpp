@@ -19,8 +19,7 @@
 
 #define DEFAULT_GRID_SIZE 128
 
-namespace agario {
-  namespace env {
+namespace agario::env{
 
     template<typename T, bool renderable>
     class GridObservation {
@@ -256,7 +255,7 @@ namespace agario {
       }
 
       /* the index of a given channel, x, y grid-coordinate in the `_data` array */
-      int _index(int channel, int grid_x, int grid_y) const {
+      [[nodiscard]] int _index(int channel, int grid_x, int grid_y) const {
         int channel_stride = config_.grid_size * config_.grid_size;
         int x_stride = config_.grid_size;
         int y_stride = 1;
@@ -264,7 +263,7 @@ namespace agario {
       }
 
       /* determines whether the given x, y grid-coordinates, are within the grid */
-      bool _inside_grid(int grid_x, int grid_y) const {
+      [[nodiscard]] bool _inside_grid(int grid_x, int grid_y) const {
         return 0 <= grid_x && grid_x < config_.grid_size && 0 <= grid_y && grid_y < config_.grid_size;
       }
 
@@ -362,5 +361,4 @@ namespace agario {
 #endif
     };
 
-  } // namespace env
-} // namespace agario
+} // namespace agario::env

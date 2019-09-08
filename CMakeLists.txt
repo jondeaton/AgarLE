@@ -31,7 +31,7 @@ if (GTEST_FOUND)
              COMMAND environment/test-envs)
 
     add_test(NAME OpenAI-Gym
-            COMMAND gym_test.py
-            WORKING_DIRECTORY ../test)
+            COMMAND python -m tests
+            WORKING_DIRECTORY ..)
 
 endif()

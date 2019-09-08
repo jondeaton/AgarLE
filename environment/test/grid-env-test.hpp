@@ -3,19 +3,13 @@
 #include <gtest/gtest.h>
 #include <environment/envs/GridEnvironment.hpp>
 
-extern constexpr bool grid_test_renderable =
-#ifdef RENDERABLE
-  true
-#else
-  false
-#endif
-  ;
+#include <environment/renderable.hpp>
 
 using namespace agario::env;
 
 namespace {
 
-  using GridEnvironment = agario::env::GridEnvironment<int, grid_test_renderable>;
+  using GridEnvironment = agario::env::GridEnvironment<int, renderable>;
   using dtype = GridEnvironment::dtype;
   using Observation = GridEnvironment::Observation;
 
@@ -29,7 +23,6 @@ namespace {
     }
     return found;
   }
-
 
   /* Constructor tests */
   TEST(GridEnvTest, NumAgents) {

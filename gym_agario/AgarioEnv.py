@@ -4,7 +4,7 @@ Date: 2019-07-30
 Author: Jon Deaton (jonpauldeaton@gmail.com)
 
 This file wraps the Agar.io Learning Environment (agarle)
-in an OpenAI gym interface. The interface offers four different
+in an OpenAI gym interface. The interface offers three different
 kinds of observation types:
 
 1. screen   - rendering of the agar.io game screen
@@ -16,11 +16,7 @@ kinds of observation types:
               OpenGL (which works fine on my machine, but probably won't work on your machine LOL)
 
 3. ram      - raw positions and velocities of every entity in a fixed-size vector
-              I haven't tried this one, but I never got "full" to work, so I'm guessing
-              that this is more difficult than "grid".
-
-4. full     - positions and velocities of every entity in a variable length vector
-              This is meant for debugging
+              I haven't tried this one, but I'm guessing that this is harder than "grid".
 
 
 This gym supports multiple agents in the same game. By default, there will
@@ -66,16 +62,14 @@ from collections import namedtuple
 
 import agarle
 
-FullObservation = namedtuple('Observation', ['pellets', 'viruses', 'foods', 'agent', 'others'])
-
 
 class AgarioEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, obs_type='screen', **kwargs):
+    def __init__(self, obs_type='grid', **kwargs):
         super(AgarioEnv, self).__init__()
 
-        if obs_type not in ("ram", "screen", "grid", "full"):
+        if obs_type not in ("ram", "screen", "grid"):
             raise ValueError(obs_type)
 
         self._env, self.observation_space = self._make_environment(obs_type, kwargs)
@@ -157,9 +151,6 @@ class AgarioEnv(gym.Env):
     def render(self, mode='human'):
         self._env.render()
 
-    def __del__(self):
-        pass
-
     def _make_observations(self):
         """ creates an observation object from the underlying environment
         representing the current state of the game
@@ -168,13 +159,7 @@ class AgarioEnv(gym.Env):
         states = self._env.get_state()
         assert len(states) == self.num_agents
 
-        if self.obs_type == "full":
-            # full observation type requires this special wrapper
-            observations = [FullObservation(pellets=state[0], viruses=state[1],
-                                          foods=state[2], agent=state[3], others=state[4:])
-                            for state in states]
-
-        elif self.obs_type in ("grid", ):
+        if self.obs_type in ("grid", ):
             # convert NCHW to NHWC
             observations = [np.transpose(state, [1, 2, 0]) for state in states]
 
@@ -186,13 +171,13 @@ class AgarioEnv(gym.Env):
 
     def _make_environment(self, obs_type, kwargs):
         """ Instantiates and configures the underlying Agar.io environment (C++ implementation)
-        :param obs_type: the observation type one of "ram", "screen", "grid", or "full"
+        :param obs_type: the observation type one of "ram", "screen", or "grid"
         :param kwargs: environment configuration parameters
         :return: tuple of
                     1) the environment object
                     2) observation space
         """
-        assert obs_type in ("ram", "screen", "grid", "full")
+        assert obs_type in ("ram", "screen", "grid")
 
         args = self._get_env_args(kwargs)
 
@@ -216,7 +201,8 @@ class AgarioEnv(gym.Env):
 
             channels, width, height = env.observation_shape()
             shape = (width, height, channels)
-            observation_space = spaces.Box(-np.inf, np.inf, shape, dtype=np.int32)
+            dtype = np.int32
+            observation_space = spaces.Box(-1, np.iinfo(dtype).max, shape, dtype=dtype)
 
         elif obs_type == "ram":
             env = agarle.RamEnvironment(*args)
@@ -224,31 +210,22 @@ class AgarioEnv(gym.Env):
             observation_space = spaces.Box(-np.inf, np.inf, shape)
 
         elif obs_type == "screen":
+            if not agarle.has_screen_env:
+                raise ValueError("agarle was not compiled to include ScreenEnvironment")
+
             # the screen environment requires the additional
             # arguments of screen width and height. We don't use
             # the "configure_observation" design here because it would
             # introduce some ugly work-arounds and layers of indirection
             # in the underlying C++ code
+
             screen_len = kwargs.get("screen_len", 256)
             args += (screen_len, screen_len)
-            try:
-                env = agarle.ScreenEnvironment(*args)
-            except AttributeError:
-                raise error.Error("Screen environment not available")
+            env = agarle.ScreenEnvironment(*args)
 
             # todo: use env.observation_shape() ?
             shape = 4, screen_len, screen_len, 3
             observation_space = spaces.Box(low=0, high=255, shape=shape, dtype=np.uint8)
-
-        elif obs_type == "full":
-            env = agarle.FullEnvironment(*args)
-            observation_space = spaces.Dict({
-                "pellets": spaces.Space(shape=(None, 2)),
-                "viruses": spaces.Space(shape=(None, 2)),
-                "foods":   spaces.Space(shape=(None, 2)),
-                "agent":   spaces.Space(shape=(None, 5)),
-                "others":  spaces.Space(shape=(None, None, 5))
-            })
 
         else:
             raise ValueError(obs_type)

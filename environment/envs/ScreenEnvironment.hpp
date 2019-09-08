@@ -13,11 +13,11 @@
 
 #include "environment/envs/BaseEnvironment.hpp"
 
-
 #define PIXEL_LEN 3
 
-namespace agario {
-  namespace env {
+// todo: needs to be converted over to multi-environment
+
+namespace agario::env {
 
     class ScreenObservation {
     public:
@@ -26,9 +26,9 @@ namespace agario {
         _frame_data = new std::uint8_t[size()];
       }
 
-      const std::uint8_t *frame_data() const { return _frame_data; }
+      [[nodiscard]] const std::uint8_t *frame_data() const { return _frame_data; }
 
-      std::size_t size() const {
+      [[nodiscard]] std::size_t size() const {
         return _num_frames * _width * _height * PIXEL_LEN;
       }
 
@@ -44,13 +44,13 @@ namespace agario {
         return &_frame_data[data_index];
       }
 
-      int num_frames() const { return _num_frames; }
+      [[nodiscard]] int num_frames() const { return _num_frames; }
 
-      std::vector<int> shape() const {
+      [[nodiscard]] std::vector<int> shape() const {
         return {_num_frames, _width, _height, PIXEL_LEN};
       }
 
-      std::vector<ssize_t> strides() const {
+      [[nodiscard]] std::vector<ssize_t> strides() const {
         return {
           _width * _height * PIXEL_LEN * dtype_size,
                    _height * PIXEL_LEN * dtype_size,
@@ -60,6 +60,7 @@ namespace agario {
       }
 
       ~ScreenObservation() { delete[] _frame_data; }
+
     private:
       int _num_frames;
       const int _width;
@@ -78,7 +79,7 @@ namespace agario {
       using Food = Food<renderable>;
 
     public:
-      typedef BaseEnvironment<renderable> Super;
+      using Super = BaseEnvironment<renderable>;
 
       explicit ScreenEnvironment(int frames_per_step, int arena_size, bool pellet_regen,
                                  int num_pellets, int num_viruses, int num_bots,
@@ -88,9 +89,9 @@ namespace agario {
         frame_buffer(std::make_shared<FrameBufferObject>(screen_width, screen_height)),
         renderer(frame_buffer, this->engine_.arena_width(), this->engine_.arena_height()) {}
 
-      const ScreenObservation &get_state() const { return _observation; }
-      screen_len screen_width() const { return frame_buffer->width(); }
-      screen_len screen_height() const { return frame_buffer->height(); }
+      [[nodiscard]] const ScreenObservation &get_state() const { return _observation; }
+      [[nodiscard]] screen_len screen_width() const { return frame_buffer->width(); }
+      [[nodiscard]] screen_len screen_height() const { return frame_buffer->height(); }
 
     private:
 
@@ -107,8 +108,7 @@ namespace agario {
 
     };
 
-  } // namespace env
-} // namespace agario
+} // namespace agario:env
 
 
 
