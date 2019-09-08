@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 File: grid_test
 Date: 6/7/19 
@@ -64,7 +66,7 @@ class GridGymTest(unittest.TestCase):
         """
         env = gym.make(env_name, **default_config)
         env.reset()
-        for _ in range(10):
+        for _ in range(1024):
             state, reward, done, info = env.step(null_action)
             self.assertIsInstance(reward, float, "reward was not a float")
             self.assertIsInstance(done, bool, "done is not a boolean")
@@ -135,6 +137,11 @@ class GridGymTest(unittest.TestCase):
 
         # this one is really important
         self.assertLess(state.min(), state.max())  # not all just one value
+
+        # fill the state array with zeros ensures that the numpy data pointer
+        # points to a valid array. If an invalid pointer was provided, this would
+        # probably cause a segmentation fault shortly after
+        state.fill(0)
 
     def _assertCorrectShape(self, env, state):
         """ asserts that the shape of `state` is valid given the observation space of `env`

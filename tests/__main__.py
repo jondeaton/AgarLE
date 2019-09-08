@@ -13,8 +13,7 @@ from tests.grid_env_test import GridGymTest
 
 # only test the screen environment if its available
 if "agario-screen-v0" in [env_spec.id for env_spec in envs.registry.all()]:
-    # from tests.screen_env_test import ScreenGymTest
-    pass
+    from tests.screen_env_test import ScreenGymTest
 
 if __name__ == "__main__":
     unittest.main()

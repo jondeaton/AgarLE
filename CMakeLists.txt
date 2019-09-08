@@ -17,9 +17,10 @@ add_subdirectory(environment)
 add_subdirectory(utils)
 add_subdirectory(bench)
 
+enable_testing()
+
 find_package(gtest)
 if (GTEST_FOUND)
-    enable_testing()
 
     add_test(NAME GameEngine
              COMMAND agario/test-engine)
@@ -30,8 +31,8 @@ if (GTEST_FOUND)
     add_test(NAME LearningEnvironment
              COMMAND environment/test-envs)
 
-    add_test(NAME OpenAI-Gym
-            COMMAND python -m tests
-            WORKING_DIRECTORY ..)
-
 endif()
+
+add_test(NAME OpenAI-Gym
+        COMMAND python -m tests
+        WORKING_DIRECTORY ..)
