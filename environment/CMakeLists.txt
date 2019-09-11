@@ -59,6 +59,7 @@ if (INCLUDE_SCREEN_ENV AND OpenGL_FOUND)
     target_include_directories(agarle PRIVATE "..")
     target_include_directories(agarle  PRIVATE ${OPENGL_INCLUDE_DIR} ${GLM_INCLUDE_DIRS})
     target_link_libraries(agarle PUBLIC ${OPENGL_LIBRARIES} glm glfw)
+    target_compile_options(agarle PUBLIC -fsized-deallocation)
 
 else()
 
@@ -66,6 +67,7 @@ else()
     pybind11_add_module(agarle bindings.cpp renderable.hpp
             ${AGARIO_ENVS_SOURCE})
     target_include_directories(agarle PRIVATE "..")
+    target_compile_options(agarle PUBLIC -fsized-deallocation)
 
 endif()
 
@@ -74,7 +76,7 @@ endif()
 # Testing
 # ============================================================
 
-find_package(gtest)
+find_package(GTest)
 if (GTEST_FOUND)
 
     set(TEST_SRC

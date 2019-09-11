@@ -7,7 +7,11 @@ The Agar.io Learning Environment (AgarLE) is a performant implementation of the 
 </p>
 
 # Installation
-You can build and install the agario gym interace simply by running
+To install: clone this repository and initialize it's submodules
+
+    git clone --recursive https://github.com/jondeaton/AgarLE.git
+
+and then just run the installation script
 
     python setup.py install
 
@@ -16,6 +20,7 @@ To build the client (to play the game yourself) or to build a version
 of the gym environment that can be rendered, use the following advanced
 setup guide
 
+    git submodule update --init --recursive
     mkdir build && cd build
     cmake -DCMAKE_BUILD_TYPE=Release ..
     make -j 2 client agarle

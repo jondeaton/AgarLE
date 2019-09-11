@@ -19,7 +19,7 @@ add_subdirectory(bench)
 
 enable_testing()
 
-find_package(gtest)
+find_package(GTest)
 if (GTEST_FOUND)
 
     add_test(NAME GameEngine

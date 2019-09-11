@@ -121,7 +121,7 @@ set(TEST_SRC
         test/renderable.hpp
         test/main.cpp)
 
-find_package(gtest)
+find_package(GTest)
 if (GTEST_FOUND)
     #set(TEST_FLAGS "-g -O0 -Wall -Wextra -pedantic")
 
