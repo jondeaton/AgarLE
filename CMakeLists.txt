@@ -7,7 +7,7 @@ project(AgarLE
         HOMEPAGE_URL "https://github.com/jondeaton/AgarLE"
         LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # To configure for "release", then run cmake with:
 # cmake -DCMAKE_BUILD_TYPE=Release
@@ -17,9 +17,10 @@ add_subdirectory(environment)
 add_subdirectory(utils)
 add_subdirectory(bench)
 
-find_package(gtest)
+enable_testing()
+
+find_package(GTest)
 if (GTEST_FOUND)
-    enable_testing()
 
     add_test(NAME GameEngine
              COMMAND agario/test-engine)
@@ -30,8 +31,8 @@ if (GTEST_FOUND)
     add_test(NAME LearningEnvironment
              COMMAND environment/test-envs)
 
-    add_test(NAME OpenAI-Gym
-            COMMAND gym_test.py
-            WORKING_DIRECTORY ../test)
-
 endif()
+
+add_test(NAME OpenAI-Gym
+        COMMAND python -m tests
+        WORKING_DIRECTORY ..)

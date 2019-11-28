@@ -5,10 +5,12 @@
 #include <agario/core/Entities.hpp>
 #include <agario/core/Ball.hpp>
 #include <agario/bots/bots.hpp>
-#include "agario/engine/GameState.hpp"
+#include <agario/engine/GameState.hpp>
 #include <agario/core/settings.hpp>
 
-#include "environment/envs/BaseEnvironment.hpp"
+#include <environment/envs/BaseEnvironment.hpp>
+
+#include <tuple>
 
 #define DEFAULT_NUM_FOODS 10
 
@@ -34,18 +36,26 @@ namespace agario {
 
     public:
       using dtype = float;
+      using Shape = std::tuple<int>;
+      using Strides = std::tuple<ssize_t>;
 
       /* Construct a ram observation from the perspective of `player` for the
        * given game state `game_state`.
        */
       explicit RamObservation(const Player &player, const GameState &game_state,
-                              int num_pellets, int num_viruses) {
-        _make_shapes(game_state, num_pellets, num_viruses);
-
-        // todo: we can get rid of this dynamic memory allocation
+                              int num_pellets, int num_viruses):
+                              num_pellets(num_pellets), num_viruses(num_viruses){
+        _make_shapes(game_state);
         _data = new dtype[length()];
-        std::fill(_data, _data + length(), 0);
+      }
 
+      void clear_data() {
+        std::fill(_data, _data + length(), 0);
+      }
+
+      /* captures the state of the game as a "RAM" observation */
+      void capture_ram(const Player &player, const GameState &game_state) {
+        clear_data();
         _data[0] = game_state.ticks;
         _data[1] = game_state.arena_width;
         _data[2] = game_state.arena_height;
@@ -53,6 +63,7 @@ namespace agario {
         int index = 3;
         index = _store_player(player, index);
 
+        // store each player
         for (auto &pair : game_state.players) {
           if (*pair.second != player)
             index = _store_player(*pair.second, index);
@@ -64,12 +75,12 @@ namespace agario {
       }
 
       /* data buffer, mulit-dim array shape and sizes*/
-      const dtype *data() const { return _data; }
-      std::vector<int> shape() const { return _shape; }
-      std::vector<ssize_t> strides() const { return _strides; }
+      [[nodiscard]] const dtype *data() const { return _data; }
+      [[nodiscard]] const Shape &shape() const { return _shape; }
+      [[nodiscard]] const Shape & strides() const { return _strides; }
 
       /* full length of data array */
-      int length() const { return _strides[0]; }
+      [[nodiscard]] int length() const { return std::get<0>(shape()); }
 
       RamObservation(const RamObservation &) = delete; // no copy constructor
       RamObservation &operator=(const RamObservation &) = delete; // no copy assignments
@@ -94,11 +105,12 @@ namespace agario {
 
     private:
       dtype *_data;
-      std::vector<int> _shape;
-      std::vector<ssize_t> _strides;
+      Shape _shape;
+      Shape _strides;
+      int num_pellets, num_viruses;
 
       /* crates the shape and strides to represent the multi-dimensional array */
-      void _make_shapes(const GameState &state, int num_pellets, int num_viruses) {
+      void _make_shapes(const GameState &state) {
         auto length = 1 + 2; // ticks, arena_width, arena_height
         length += 5 * state.players.size();
         length += 2 * num_pellets;
@@ -147,21 +159,19 @@ namespace agario {
     template<bool renderable>
     class RamEnvironment : public BaseEnvironment<renderable> {
       using Player = agario::Player<renderable>;
-
       static constexpr int cell_limit = PLAYER_CELL_LIMIT;
       static constexpr int num_foods = DEFAULT_NUM_FOODS;
-      using Observation = RamObservation<renderable, cell_limit, num_foods>;
 
     public:
+      using Observation = RamObservation<renderable, cell_limit, num_foods>;
       using dtype = typename Observation::dtype;
 
       typedef BaseEnvironment <renderable> Super;
-      explicit RamEnvironment(int frames_per_step, int arena_size, bool pellet_regen,
+      explicit RamEnvironment(int num_agents, int ticks_per_step, int arena_size, bool pellet_regen,
                               int num_pellets, int num_viruses, int num_bots) :
-        Super(frames_per_step, arena_size, pellet_regen, num_pellets, num_viruses, num_bots),
+        Super(num_agents, ticks_per_step, arena_size, pellet_regen, num_pellets, num_viruses, num_bots),
         num_pellets(num_pellets), num_viruses(num_viruses) {
-
-        /* I would use if constexpr from C++17 here but that's not an option */
+        /* could use "if constexpr" from C++17 but meh */
 #ifdef RENDERABLE
         window = std::make_shared<Window>("Agar.io Environment", 512, 512);
         renderer = std::make_unique<agario::Renderer>(window,
@@ -170,29 +180,50 @@ namespace agario {
 #endif
       }
 
-      /* returns the length of the observation data... assumes  */
-      int observation_length() const {
+      /* returns the length of the observation data  */
+      typename Observation::Shape observation_shape() const {
         auto length = 1 + 2; // ticks, arena_width, arena_height
-        length += 5 * (1 + this->num_bots);
+        length += 5 * (1 + this->num_bots_);
         length += 2 * num_pellets;
         length += 2 * num_viruses;
         length += 2 * num_foods;
-        return length;
+        return { length };
       }
 
       /**
        * Returns the current state of the world (without advancing through time)
        * @return An Observation object representing the "RAM" of the game
        */
-      Observation get_state() const {
-        auto &player = this->engine.get_player(this->pid);
-        auto &game_state = this->engine.get_game_state();
-
-        Observation observation(player, game_state, num_pellets, num_viruses);
-        return observation; // return-value-optimization
+      const std::vector<Observation> &get_observations() const {
+        return observations;
       }
 
-      void render() {
+      /* since we reuse the observation's data buffer for each step,
+       * we need to have the data cleared at the beginning of each step */
+      void _step_hook() override {
+        for (auto &observation : observations)
+          observation.clear_data();
+      }
+
+      /* allows for intermediate grid frames to be stored in the GridObservation */
+      void _partial_observation(int agent_index, int tick_index) override {
+        assert(agent_index < this->num_agents());
+        assert(tick_index < this->ticks_per_step());
+
+        // only capture the RAM after the final tick of the step
+        if (tick_index != this->ticks_per_step() - 1)
+          return;
+
+        auto &player = this->engine_.player(this->pids_[agent_index]);
+        if (player.dead()) return;
+
+        Observation &observation = observations[agent_index];
+        auto &state = this->engine_.game_state();
+
+        observation.capture_ram(player, state);
+      }
+
+      void render() override {
 #ifdef RENDERABLE
         auto &player = this->engine.player(this->pid);
         renderer->render_screen(player, this->engine.game_state());
@@ -203,6 +234,7 @@ namespace agario {
       }
 
     private:
+      std::vector<Observation> observations;
       int num_pellets, num_viruses;
 
 #ifdef RENDERABLE

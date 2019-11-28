@@ -6,6 +6,7 @@ Author: Jon Deaton (jdeaton@stanford.edu)
 
 import gym
 import gym_agario
+
 import numpy as np
 
 import unittest
@@ -58,5 +59,6 @@ class ScreenGymTest(unittest.TestCase):
             self.assertFalse(np.all(next_state == 255))
 
 
+# if you wanna just run these tests, you can
 if __name__ == "__main__":
     unittest.main()

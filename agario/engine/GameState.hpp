@@ -7,6 +7,7 @@
 #include <vector>
 #include <unordered_map>
 #include <iomanip>
+#include <memory>
 
 namespace agario {
 
