@@ -8,6 +8,7 @@ import numpy as np
 
 null_action = (np.zeros(2), 0)
 
+# Default environment configuration for tests.
 default_config = {
             'ticks_per_step':  4,
             'num_frames':      1,

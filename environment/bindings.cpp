@@ -25,7 +25,7 @@ std::vector<T> to_vector(Tuple&& tuple) {
   }, std::forward<Tuple>(tuple));
 }
 
-/* converts a python list of actions to the C++ action wrapper*/
+/* converts a python list of actions to the C++ action wrapper */
 std::vector<agario::env::Action> to_action_vector(const py::list &actions) {
   std::vector<agario::env::Action> acts;
   acts.reserve(actions.size());
