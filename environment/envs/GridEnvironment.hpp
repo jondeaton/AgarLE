@@ -19,7 +19,7 @@
 
 #define DEFAULT_GRID_SIZE 128
 
-namespace agario::env{
+namespace agario::env {
 
     template<typename T, bool renderable>
     class GridObservation {

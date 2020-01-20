@@ -20,14 +20,17 @@ Bugs
 
 Performance
 - Build out performance benchmarks
+- Improve performance of C++ interface
+    - Add method for setting the buffer in which to populate state
 - better algorithms for collision detection
-  - Soft food positions by x position (faster)
+    - Sort food positions by x position (faster?)
 
 
-- Convert to moden OpenGL that supports headless rendering easily
+- Convert to modern OpenGL that supports headless rendering easily
 - Get rid of dock icon in ScreenEnvironment
 - auto clone pybind11 and cxxopts repositories during build
 - Make agarle pip installable
+- Fix compilation under GCC
 
 - Documentation
 - Automated CI
