@@ -1,7 +1,6 @@
 #include <benchmark/benchmark.h>
 
 #include <agario/engine/Engine.hpp>
-#include <agario/core/renderables.hpp>
 #include <agario/bots/ExampleBot.hpp>
 
 static void CreateEngine(benchmark::State& state) {
