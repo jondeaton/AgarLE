@@ -15,10 +15,6 @@ and then just run the installation script
 
     python setup.py install
 
-currently compilation/installation is only working with Clang, so if you're on Linux then you'll need to set your C++ compiler to Clang in your environment before installing.
-
-    CXX=`which clang++`
-
 # Example
 
 ```python
@@ -57,28 +53,46 @@ config = {
 env = gym.make("agario-grid-v0", **config)
 ```
 
+# Caveats
+
+Currently compilation/installation is only working with Clang, so if you're
+on Linux then you'll need to set your C++ compiler to Clang in your environment
+before installing.
+
+    CXX=`which clang++`
+
+The only enviornment which has been tested extensively is `agario-grid-v0`,
+although the RAM environment `agario-ram-v0` and screen environment `agario-screen-v0`
+should work with some coaxing. The `agario-screen-v0` requires a window manager to
+work so will not work on headless Linux machines, for instance. Calling `render`
+will only work if the executable has been built with rendering turned on as can be
+done by following the advanced set up guide. Rendering will not work
+with the "screen" environment, despite the fact that that environment uses
+the screen image as the environment's observation.
+
 # Advanced setup
-To build the client (to play the game yourself) or to build a version 
-of the gym environment that can be rendered, use the following advanced
-setup guide
+In order to play the game yourself or enable rendering in the gym environment,
+you will need to build the game client yourself on a system where OpenGL has
+been installed. To do so, issue the following commands
 
     git submodule update --init --recursive
     mkdir build && cd build
     cmake -DCMAKE_BUILD_TYPE=Release ..
     make -j 2 client agarle
 
-This will output an executable named `client` which you can run  like so
+This will output an executable named `client` in the directory `agario`
 
-    agario/client
+    agario/client  # play the game
 
-This will also output a python-importable `*.so` file called `agarle`. To
-use it, copy it into the "site packages" for your Python interpreter like so:
+If you also build the `agarle` target, then a python-importable dynamic library
+(i.e. `*.so` file) named `agarle` will have been produced. To use it, copy it
+into the "site packages" for your Python interpreter like so:
 
-    cp environment/agarle* ~/.local/lib/python3.7/site-packages/
+    cp environment/agarle* `python -m site --user-site`
 
-The `agario_full_env` environment can be compiled such that calling `render()`
+The underlying gym environments may be compiled such that calling `render()`
 will render the game onto the screen. This feature is turned off by default
-but can be turned on during compilation by using the following cmake
-command instead of the one shown above. 
+for performance and portability reasons, but can be turned on during
+compilation by using the following cmake command instead of the one shown above. 
 
     cmake -DCMAKE_BUILD_TYPE=Release -DDEFINE_RENDERABLE=ON ..
