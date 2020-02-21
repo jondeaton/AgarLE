@@ -15,6 +15,42 @@ and then just run the installation script
 
     python setup.py install
 
+# Example
+
+    import gym
+    import gym_agario
+    
+    env = gym.make("agario-grid-v0")
+    
+    game_state = env.reset()
+    game_state.shape # (128, 128, 10) , (grid_size, grid_size, num_channels)
+
+    action = np.array([0, 0]), 0  # don't move, don't split
+    while True:
+      game_state, reward, done, info = env.step(action)
+      if done: break
+
+
+You can also configure the Agario game and observations space like so:
+
+    config = {
+      'ticks_per_step':  4,     # Number of game ticks per step
+      'num_frames':      1,     # Number of ticks of gameplay observed after each step
+      'arena_size':      1000,  # Size of game arena
+      'num_pellets':     1000,
+      'num_viruses':     25,
+      'num_bots':        25,
+      'pellet_regen':    True,  # Whether pellets regenerate when eaten
+      'grid_size':       128,   # Size of spatial dimentions of observations
+      'observe_cells':   True,  # Include an observation channel with player cells
+      'observe_others':  True,  # Include an observation channel with other players' cells
+      'observe_viruses': True,  # Include an observation channel with viruses
+      'observe_pellets': True   # Include an observation channel with pellets
+    }
+
+    env = gym.make("agario-grid-v0", **config)
+
+
 # Advanced setup
 To build the client (to play the game yourself) or to build a version 
 of the gym environment that can be rendered, use the following advanced
