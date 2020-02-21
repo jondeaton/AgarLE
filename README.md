@@ -17,6 +17,7 @@ and then just run the installation script
 
 # Example
 
+```python
     import gym
     import gym_agario
     
@@ -29,10 +30,11 @@ and then just run the installation script
     while True:
       game_state, reward, done, info = env.step(action)
       if done: break
-
+```
 
 You can also configure the Agario game and observations space like so:
 
+```python
     config = {
       'ticks_per_step':  4,     # Number of game ticks per step
       'num_frames':      1,     # Number of ticks of gameplay observed after each step
@@ -49,7 +51,7 @@ You can also configure the Agario game and observations space like so:
     }
 
     env = gym.make("agario-grid-v0", **config)
-
+```
 
 # Advanced setup
 To build the client (to play the game yourself) or to build a version 
