@@ -15,6 +15,10 @@ and then just run the installation script
 
     python setup.py install
 
+currently compilation/installation is only working with Clang, so if you're on Linux then you'll need to set your C++ compiler to Clang in your environment before installing.
+
+    CXX=`which clang++`
+
 # Example
 
 ```python
