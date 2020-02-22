@@ -1,21 +1,25 @@
-<img width="380" alt="Screen Shot 2019-07-01 at 5 13 18 PM" src="https://user-images.githubusercontent.com/15920014/60447827-9d1a1a00-9c24-11e9-8a8b-a8043e8e1302.png">
+<img width="380" alt="AgarLE" src="https://user-images.githubusercontent.com/15920014/60447827-9d1a1a00-9c24-11e9-8a8b-a8043e8e1302.png">
 
 The Agar.io Learning Environment (AgarLE) is a performant implementation of the popular online multi-player game agar.io along with an [OpenAI Gym](https://gym.openai.com/) interface suitable for reinforcement learning in Python.
 
 <p align="center">
-<img width="460" alt="screenshot" src="https://user-images.githubusercontent.com/15920014/57587859-dbb31400-74c0-11e9-8f47-3e39113b99b4.png">
+<img width="460" alt="Screenshot" src="https://user-images.githubusercontent.com/15920014/57587859-dbb31400-74c0-11e9-8f47-3e39113b99b4.png">
 </p>
 
 # Installation
-To install: clone this repository and initialize it's submodules
+Clone this repository (with submodules)
 
     git clone --recursive https://github.com/jondeaton/AgarLE.git
 
-and then just run the installation script
+run the included installation script
 
     python setup.py install
 
-# Example
+# Usage
+
+Installation will have installed the python module `gym_agario`, which when imported
+registers the AgarLE gym environments. You need only import `gym_agario` and then
+make an environment in the standard way 
 
 ```python
 import gym
@@ -24,7 +28,7 @@ import gym_agario
 env = gym.make("agario-grid-v0")
     
 game_state = env.reset()
-game_state.shape # (128, 128, 10) , (grid_size, grid_size, num_channels)
+print(game_state.shape) # (128, 128, 10) , (grid_size, grid_size, num_channels)
 
 action = np.array([0, 0]), 0  # don't move, don't split
 while True:
@@ -32,19 +36,21 @@ while True:
   if done: break
 ```
 
-You can also configure the Agario game and observations space like so:
+The Agar.io game and observation space are highly configurable. You can change
+the parameters of the game and observation properties like so (default configuration
+shown).
 
 ```python
 config = {
   'ticks_per_step':  4,     # Number of game ticks per step
-  'num_frames':      1,     # Number of ticks of gameplay observed after each step
-  'arena_size':      1000,  # Size of game arena
+  'num_frames':      2,     # Number of game ticks observed at each step
+  'arena_size':      1000,  # Game arena size
   'num_pellets':     1000,
   'num_viruses':     25,
   'num_bots':        25,
-  'pellet_regen':    True,  # Whether pellets regenerate when eaten
-  'grid_size':       128,   # Size of spatial dimentions of observations
-  'observe_cells':   True,  # Include an observation channel with player cells
+  'pellet_regen':    True,  # Whether pellets regenerate randomly when eaten
+  'grid_size':       128,   # Size of spatial dimensions of observations
+  'observe_cells':   True,  # Include an observation channel with agent's cells
   'observe_others':  True,  # Include an observation channel with other players' cells
   'observe_viruses': True,  # Include an observation channel with viruses
   'observe_pellets': True   # Include an observation channel with pellets
@@ -52,6 +58,42 @@ config = {
 
 env = gym.make("agario-grid-v0", **config)
 ```
+
+# Multi-Agent Environments
+
+This gym supports multiple agents in the same game. By default, there will
+only be a single agent, and the gym will conform to the typical gym interface
+(note that there may still be any number of "bots" in the environment).
+However, if you pass `"multi_agent": True` to the environment configuration
+then the environment will have multiple agents all interacting within the
+same agar.io game simultaneously.
+
+    env = gym.make("agario-grid-v0", **{
+        "multi_agent": True,
+        "num_agents": 5
+    })
+
+With this configuration, the environment will no longer conform to the 
+typical OpenAI gym interface in the following ways.
+
+1. `step()` will expect a list of actions of the same length
+as the number of agents, which specifies the action for each agent.
+
+2. The return value of `step()` will be a list of observations,
+list of rewards, and list of dones each with length equal to
+the number of agents. The `i`'th elements of each lists
+correspond to the `i`th agent consistently throughout the episode.
+
+3. `reset()` will return a list of observations of length equal
+to the number of agents.
+
+4. When an agent is "done", observations for that agent will be None.
+The environment may still be stepped while there is at least one agent
+that is not "done". Only when all agents are done must the environment
+be reset.
+
+Note that if you pass `num_agents` greater than 1, `multi_agent`
+will be set True automatically.
 
 # Caveats
 
@@ -61,7 +103,7 @@ before installing.
 
     CXX=`which clang++`
 
-The only enviornment which has been tested extensively is `agario-grid-v0`,
+The only environment which has been tested extensively is `agario-grid-v0`,
 although the RAM environment `agario-ram-v0` and screen environment `agario-screen-v0`
 should work with some coaxing. The `agario-screen-v0` requires a window manager to
 work so will not work on headless Linux machines, for instance. Calling `render`
@@ -73,7 +115,8 @@ the screen image as the environment's observation.
 # Advanced setup
 In order to play the game yourself or enable rendering in the gym environment,
 you will need to build the game client yourself on a system where OpenGL has
-been installed. To do so, issue the following commands
+been installed. This is most likely to succeed on macOS, but will probably work
+on Linux. Issue the following commands
 
     git submodule update --init --recursive
     mkdir build && cd build
