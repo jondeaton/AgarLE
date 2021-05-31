@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8...3.20)
 cmake_policy(SET CMP0048 NEW)
 
 project(Agario
@@ -75,7 +75,7 @@ set(AGARIO_SRC ${AGARIO_CORE_SRC} ${AGARIO_ENGINE_SRC})
 
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
-find_library(GLFW REQUIRED)
+#find_library(GLFW REQUIRED)
 find_package(glm REQUIRED)
 
 include_directories(${GLM_INCLUDE_DIRS})
