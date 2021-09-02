@@ -23,6 +23,7 @@ endif ()
 set(AGARIO_ENVS_SOURCE
         envs/BaseEnvironment.hpp
         envs/GridEnvironment.hpp
+        envs/raster_circle.hpp
         envs/RamEnvironment.hpp)
 
 set(AGARIO_SCREEN_ENV_SOURCE

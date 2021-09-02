@@ -10,6 +10,7 @@
 #include <agario/engine/GameState.hpp>
 
 #include "environment/envs/BaseEnvironment.hpp"
+#include "environment/envs/raster_circle.hpp"
 
 #ifdef RENDERABLE
 #include <agario/core/renderables.hpp>
@@ -106,6 +107,7 @@ namespace agario::env {
           channel++;
           for (auto &pair : game_state.players) {
             Player &other_player = *pair.second;
+            if (other_player.pid() == player.pid()) continue;
             _store_entities<Cell>(other_player.cells, player, channel);
           }
         }
@@ -199,12 +201,21 @@ namespace agario::env {
 
         int grid_x, grid_y;
         for (auto &entity : entities) {
-          _world_to_grid(player, entity.location(), view_size, grid_x, grid_y);
-
-          int index = _index(channel, grid_x, grid_y);
-          if (_inside_grid(grid_x, grid_y))
-            data_[index] = entity.mass();
+          std::tie(grid_x, grid_y) = _world_to_grid(player, entity.location(), view_size);
+          float grid_radius = config_.grid_size * entity.radius() / view_size;
+          
+          for (const auto& [dx, dy] : RasterCircle(grid_radius)) {
+            _set_grid_point(channel, grid_x + dx, grid_y + dy, /*value=*/1);
+          }
         }
+      }
+
+      /* Safely sets a grid point to a value. */
+      void _set_grid_point(int channel, int grid_x, int grid_y, int value) const {
+          if (_inside_grid(grid_x, grid_y)) {
+              int index = _index(channel, grid_x, grid_y);
+              data_[index] = value;
+          }
       }
 
       /* marks out-of-bounds locations on the given `channel` */
@@ -230,16 +241,16 @@ namespace agario::env {
       }
 
       /* converts world-coordinates to grid-coordinates */
-      void _world_to_grid(const Player &player, const Location &loc,
-                          float view_size, int &grid_x, int &grid_y) const {
-
+      std::pair<int, int> _world_to_grid(
+        const Player &player, const Location &loc, float view_size) const {
         float centering = config_.grid_size / 2.0;
 
         auto diff_x = loc.x - player.x();
         auto diff_y = loc.y - player.y();
 
-        grid_x = static_cast<int>(config_.grid_size * diff_x / view_size + centering);
-        grid_y = static_cast<int>(config_.grid_size * diff_y / view_size + centering);
+        int grid_x = static_cast<int>(config_.grid_size * diff_x / view_size + centering);
+        int grid_y = static_cast<int>(config_.grid_size * diff_y / view_size + centering);
+        return {grid_x, grid_y};
       }
 
       /* converts grid-coordinates to world-coordinates */
