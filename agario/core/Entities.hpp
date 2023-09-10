@@ -10,6 +10,9 @@
 #define FOOD_MASS 10
 #define VIRUS_MASS 100
 
+// Minimum cell size required to eat another cell.
+#define CELL_EAT_REQUIREMENT 25
+
 #define PELLET_SIDES 5
 #define VIRUS_SIDES 150
 #define FOOD_SIDES 7
@@ -122,6 +125,17 @@ namespace agario {
     Cell(distance x, distance y, agario::mass mass) : Cell(Location(x, y), Velocity(), mass) {}
 
     agario::mass mass() const override { return _mass; }
+
+    template<typename T>
+    bool can_eat(const T& other) const {
+      return Ball::can_eat(other);
+    }
+
+    // Enforce only eating others once size is sufficiently high.
+    bool can_eat(const Cell& other) const {
+      return false; // no eating other cells
+      return mass() > CELL_EAT_REQUIREMENT && Ball::can_eat(other);
+    }
 
     distance radius() const override {
       return radius_conversion(mass());
